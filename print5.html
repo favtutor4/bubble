@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 300px;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .bar {
+            margin: 0 2px;
+            width: 40px;
+            background-color: #4CAF50;
+            transition: height 0.3s;
+            position: relative;
+            border-radius: 3px 3px 0 0;
+        }
+        .bar-value {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+        }
+        .comparing {
+            background-color: #FF9800;
+        }
+        .swapping {
+            background-color: #F44336;
+        }
+        .sorted {
+            background-color: #2196F3;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #2196F3;
+        }
+        .nav-btn:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bubble Sort Animation</h1>
+        
+        <div class="explanation" id="explanation">
+            <p>Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order.</p>
+            <p>Click "Start" to see how Bubble Sort works step by step!</p>
+        </div>
+        
+        <div class="array-container" id="array-container"></div>
+        
+        <div class="controls">
+            <button id="resetBtn">Reset Array</button>
+            <button id="startBtn">Start</button>
+            <button id="nextBtn" disabled>Next Step</button>
+            <button id="prevBtn" disabled>Previous Step</button>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevLesson">← Previous Lesson</button>
+            <button class="nav-btn" id="nextLesson">Next Lesson →</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        let array = [64, 34, 25, 12, 22, 11, 90];
+        let arrayStates = [];
+        let explanationStates = [];
+        let currentStateIndex = -1;
+        let sortingInProgress = false;
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('array-container');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const explanationElement = document.getElementById('explanation');
+        const prevLessonBtn = document.getElementById('prevLesson');
+        const nextLessonBtn = document.getElementById('nextLesson');
+        
+        // Initialize array display
+        function initArray() {
+            arrayContainer.innerHTML = '';
+            const maxValue = Math.max(...array);
+            
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${(value / maxValue) * 250}px`;
+                
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.textContent = value;
+                
+                bar.appendChild(barValue);
+                arrayContainer.appendChild(bar);
+            });
+        }
+        
+        // Save current state
+        function saveState(i, j, swapped, completed, explanation) {
+            const stateCopy = {
+                array: [...array],
+                i: i,
+                j: j,
+                swapped: swapped,
+                completed: completed
+            };
+            
+            arrayStates.push(stateCopy);
+            explanationStates.push(explanation);
+            currentStateIndex = arrayStates.length - 1;
+        }
+        
+        // Display the current state
+        function displayState(stateIndex) {
+            if (stateIndex < 0 || stateIndex >= arrayStates.length) return;
+            
+            const state = arrayStates[stateIndex];
+            const explanation = explanationStates[stateIndex];
+            
+            arrayContainer.innerHTML = '';
+            const maxValue = Math.max(...state.array);
+            
+            state.array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                
+                // Determine bar state for coloring
+                if (state.completed && state.completed.includes(index)) {
+                    bar.classList.add('sorted');
+                } else if (index === state.j) {
+                    bar.classList.add('comparing');
+                } else if (index === state.j + 1 && state.j !== undefined) {
+                    bar.classList.add('comparing');
+                } else if (state.swapped && (index === state.j || index === state.j + 1)) {
+                    bar.classList.add('swapping');
+                }
+                
+                bar.style.height = `${(value / maxValue) * 250}px`;
+                
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.textContent = value;
+                
+                bar.appendChild(barValue);
+                arrayContainer.appendChild(bar);
+            });
+            
+            explanationElement.innerHTML = explanation;
+            
+            // Update button states
+            prevBtn.disabled = stateIndex <= 0;
+            nextBtn.disabled = stateIndex >= arrayStates.length - 1;
+        }
+        
+        // Perform bubble sort with animation
+        async function bubbleSort() {
+            // Reset states
+            arrayStates = [];
+            explanationStates = [];
+            currentStateIndex = -1;
+            
+            // Save initial state
+            saveState(-1, -1, false, [], 
+                "<p>This is our starting array. Bubble Sort will compare adjacent elements and swap them if needed.</p>"
+            );
+            
+            const n = array.length;
+            let completed = [];
+            
+            // Main bubble sort algorithm
+            for (let i = 0; i < n - 1; i++) {
+                let swapped = false;
+                
+                for (let j = 0; j < n - i - 1; j++) {
+                    // Save state before comparison
+                    saveState(i, j, false, [...completed], 
+                        `<p>Comparing elements at positions ${j} (${array[j]}) and ${j+1} (${array[j+1]})</p>`
+                    );
+                    
+                    if (array[j] > array[j + 1]) {
+                        // Swap elements
+                        let temp = array[j];
+                        array[j] = array[j + 1];
+                        array[j + 1] = temp;
+                        swapped = true;
+                        
+                        // Save state after swap
+                        saveState(i, j, true, [...completed], 
+                            `<p>Swapped elements: ${array[j]} and ${array[j+1]} because ${array[j]} < ${array[j+1]}</p>`
+                        );
+                    }
+                }
+                
+                // Mark the largest element as sorted
+                completed.push(n - i - 1);
+                
+                // Save state after each pass
+                saveState(i, -1, false, [...completed], 
+                    `<p>Pass ${i+1} complete. The largest element ${array[n-i-1]} is now in its correct position.</p>` +
+                    (completed.length < n ? `<p>The blue elements are already sorted.</p>` : 
+                    `<p>The array is now completely sorted!</p>`)
+                );
+                
+                // If no swapping occurred in this pass, the array is already sorted
+                if (!swapped) {
+                    break;
+                }
+            }
+            
+            // Mark all elements as sorted if not already
+            if (completed.length < n) {
+                completed = Array.from({ length: n }, (_, i) => i);
+                saveState(-1, -1, false, completed, 
+                    "<p>The array is now fully sorted! Bubble Sort is complete.</p>"
+                );
+            }
+            
+            // Display the first state
+            displayState(0);
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            if (!sortingInProgress) {
+                sortingInProgress = true;
+                startBtn.disabled = true;
+                bubbleSort();
+                nextBtn.disabled = false;
+            }
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            array = [64, 34, 25, 12, 22, 11, 90];
+            initArray();
+            
+            arrayStates = [];
+            explanationStates = [];
+            currentStateIndex = -1;
+            sortingInProgress = false;
+            
+            startBtn.disabled = false;
+            nextBtn.disabled = true;
+            prevBtn.disabled = true;
+            
+            explanationElement.innerHTML = "<p>Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order.</p><p>Click \"Start\" to see how Bubble Sort works step by step!</p>";
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStateIndex < arrayStates.length - 1) {
+                currentStateIndex++;
+                displayState(currentStateIndex);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStateIndex > 0) {
+                currentStateIndex--;
+                displayState(currentStateIndex);
+            }
+        });
+        
+        prevLessonBtn.addEventListener('click', () => {
+            alert("Navigation to previous lesson would occur here.");
+        });
+        
+        nextLessonBtn.addEventListener('click', () => {
+            alert("Navigation to next lesson would occur here.");
+        });
+        
+        // Initialize the visualization
+        initArray();
+    </script>
+</body>
+</html>
