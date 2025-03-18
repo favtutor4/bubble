@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 250px;
+            margin: 20px 0;
+            gap: 4px;
+        }
+        .array-bar {
+            width: 40px;
+            background-color: #6c87cf;
+            transition: height 0.3s ease, background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        .pivot {
+            background-color: #ff6347;
+        }
+        .sorted {
+            background-color: #4caf50;
+        }
+        .comparing {
+            background-color: #ffeb3b;
+            color: #333;
+        }
+        .swapping {
+            background-color: #e91e63;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #6c87cf;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .step-counter {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quick Sort Animation</h1>
+        
+        <div class="explanation" id="explanation">
+            Welcome to Quick Sort Animation! Quick Sort is a divide-and-conquer algorithm that picks an element as a pivot and partitions the array around the pivot.
+        </div>
+        
+        <div class="array-container" id="array-container"></div>
+        
+        <div class="step-counter" id="step-counter">Step: 0 / 0</div>
+        
+        <div class="controls">
+            <button id="randomize">Randomize Array</button>
+            <button id="start">Start Animation</button>
+            <button id="reset">Reset</button>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev" disabled>Previous Step</button>
+            <button id="next" disabled>Next Step</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const arrayContainer = document.getElementById('array-container');
+        const explanationEl = document.getElementById('explanation');
+        const randomizeBtn = document.getElementById('randomize');
+        const startBtn = document.getElementById('start');
+        const resetBtn = document.getElementById('reset');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const stepCounterEl = document.getElementById('step-counter');
+        
+        // Variables
+        let array = [];
+        let animationSteps = [];
+        let currentStep = -1;
+        let isAnimating = false;
+        
+        // Initialize
+        function init() {
+            generateRandomArray();
+            resetAnimation();
+        }
+        
+        // Generate random array
+        function generateRandomArray() {
+            array = [];
+            for (let i = 0; i < 10; i++) {
+                array.push(Math.floor(Math.random() * 80) + 10); // Values between 10 and 90
+            }
+            displayArray(array);
+        }
+        
+        // Display array as bars
+        function displayArray(arr, pivotIndex = -1, leftIndex = -1, rightIndex = -1, sortedIndices = []) {
+            arrayContainer.innerHTML = '';
+            
+            arr.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'array-bar';
+                bar.style.height = `${value * 2}px`;
+                bar.innerText = value;
+                
+                if (sortedIndices.includes(index)) {
+                    bar.classList.add('sorted');
+                }
+                else if (index === pivotIndex) {
+                    bar.classList.add('pivot');
+                }
+                else if (index === leftIndex || index === rightIndex) {
+                    bar.classList.add('comparing');
+                }
+                
+                arrayContainer.appendChild(bar);
+            });
+        }
+        
+        // Generate animation steps for Quick Sort
+        function quickSortAnimationSteps(arr) {
+            const steps = [];
+            const sortedIndices = new Set();
+            
+            function quickSort(array, start, end) {
+                if (start >= end) {
+                    if (start >= 0 && start < array.length) {
+                        sortedIndices.add(start);
+                        steps.push({
+                            array: [...array],
+                            sortedIndices: [...sortedIndices],
+                            explanation: `Element at index ${start} is now in its correct sorted position.`
+                        });
+                    }
+                    return;
+                }
+                
+                steps.push({
+                    array: [...array],
+                    pivotIndex: end,
+                    explanation: `Select pivot element ${array[end]} (last element)`
+                });
+                
+                let pivotValue = array[end];
+                let partitionIndex = start;
+                
+                for (let i = start; i < end; i++) {
+                    steps.push({
+                        array: [...array],
+                        pivotIndex: end,
+                        leftIndex: i,
+                        rightIndex: partitionIndex,
+                        explanation: `Compare element ${array[i]} with pivot ${pivotValue}`
+                    });
+                    
+                    if (array[i] <= pivotValue) {
+                        if (i !== partitionIndex) {
+                            steps.push({
+                                array: [...array],
+                                pivotIndex: end,
+                                swapIndices: [i, partitionIndex],
+                                explanation: `Swap ${array[i]} and ${array[partitionIndex]} because ${array[i]} ≤ ${pivotValue}`
+                            });
+                            
+                            // Perform the swap
+                            [array[i], array[partitionIndex]] = [array[partitionIndex], array[i]];
+                            
+                            steps.push({
+                                array: [...array],
+                                pivotIndex: end,
+                                explanation: `After swap: ${array[partitionIndex]} is now before the partition index`
+                            });
+                        } else {
+                            steps.push({
+                                array: [...array],
+                                pivotIndex: end,
+                                explanation: `${array[i]} is already in the correct position`
+                            });
+                        }
+                        partitionIndex++;
+                    } else {
+                        steps.push({
+                            array: [...array],
+                            pivotIndex: end,
+                            explanation: `${array[i]} > ${pivotValue}, so we don't swap`
+                        });
+                    }
+                }
+                
+                steps.push({
+                    array: [...array],
+                    pivotIndex: end,
+                    swapIndices: [partitionIndex, end],
+                    explanation: `Swap pivot ${pivotValue} with element at partition index ${array[partitionIndex]}`
+                });
+                
+                // Swap pivot with partition index
+                [array[partitionIndex], array[end]] = [array[end], array[partitionIndex]];
+                
+                steps.push({
+                    array: [...array],
+                    pivotIndex: partitionIndex,
+                    explanation: `Pivot ${pivotValue} is now at its correct sorted position (index ${partitionIndex})`
+                });
+                
+                sortedIndices.add(partitionIndex);
+                
+                // Recursive call for left and right subarrays
+                quickSort(array, start, partitionIndex - 1);
+                quickSort(array, partitionIndex + 1, end);
+            }
+            
+            quickSort([...arr], 0, arr.length - 1);
+            
+            // Final step showing fully sorted array
+            steps.push({
+                array: [...arr].sort((a, b) => a - b),
+                sortedIndices: Array.from({ length: arr.length }, (_, i) => i),
+                explanation: "Array is fully sorted!"
+            });
+            
+            return steps;
+        }
+        
+        // Reset animation
+        function resetAnimation() {
+            isAnimating = false;
+            currentStep = -1;
+            displayArray(array);
+            explanationEl.textContent = "Welcome to Quick Sort Animation! Quick Sort is a divide-and-conquer algorithm that picks an element as a pivot and partitions the array around the pivot.";
+            prevBtn.disabled = true;
+            nextBtn.disabled = false;
+            startBtn.disabled = false;
+            updateStepCounter();
+        }
+        
+        // Update step counter
+        function updateStepCounter() {
+            stepCounterEl.textContent = `Step: ${currentStep + 1} / ${animationSteps.length}`;
+        }
+        
+        // Show animation step
+        function showStep(step) {
+            if (step < 0 || step >= animationSteps.length) return;
+            
+            currentStep = step;
+            const currentAnimation = animationSteps[step];
+            
+            const {
+                array: stepArray,
+                pivotIndex = -1,
+                leftIndex = -1,
+                rightIndex = -1,
+                sortedIndices = [],
+                swapIndices = [],
+                explanation = ""
+            } = currentAnimation;
+            
+            // Display the array for this step
+            arrayContainer.innerHTML = '';
+            
+            stepArray.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'array-bar';
+                bar.style.height = `${value * 2}px`;
+                bar.innerText = value;
+                
+                if (sortedIndices.includes(index)) {
+                    bar.classList.add('sorted');
+                }
+                else if (index === pivotIndex) {
+                    bar.classList.add('pivot');
+                }
+                else if (index === leftIndex || index === rightIndex) {
+                    bar.classList.add('comparing');
+                }
+                else if (swapIndices.includes(index)) {
+                    bar.classList.add('swapping');
+                }
+                
+                arrayContainer.appendChild(bar);
+            });
+            
+            // Update explanation
+            explanationEl.textContent = explanation;
+            
+            // Update navigation buttons
+            prevBtn.disabled = step <= 0;
+            nextBtn.disabled = step >= animationSteps.length - 1;
+            
+            updateStepCounter();
+        }
+        
+        // Event Listeners
+        randomizeBtn.addEventListener('click', () => {
+            generateRandomArray();
+            resetAnimation();
+            animationSteps = quickSortAnimationSteps([...array]);
+        });
+        
+        startBtn.addEventListener('click', () => {
+            if (animationSteps.length === 0) {
+                animationSteps = quickSortAnimationSteps([...array]);
+            }
+            
+            if (currentStep === -1) {
+                showStep(0);
+            }
+            
+            startBtn.disabled = true;
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            displayArray(array);
+            resetAnimation();
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                showStep(currentStep - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < animationSteps.length - 1) {
+                showStep(currentStep + 1);
+            }
+        });
+        
+        // Initialize
+        window.onload = () => {
+            init();
+            animationSteps = quickSortAnimationSteps([...array]);
+        };
+    </script>
+</body>
+</html>
