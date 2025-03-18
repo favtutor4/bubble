@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heap Sort Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .canvas-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+        }
+        .step-indicator {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .description {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Heap Sort Animation</h1>
+        
+        <div class="canvas-container">
+            <canvas id="heapCanvas" width="700" height="350"></canvas>
+        </div>
+        
+        <div class="step-indicator">
+            Step <span id="currentStep">1</span> of <span id="totalSteps">9</span>
+        </div>
+        
+        <div class="description" id="explanation">
+            Heap Sort is an efficient sorting algorithm that uses a binary heap data structure.
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        // Setup canvas and context
+        const canvas = document.getElementById('heapCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Array to be sorted
+        let array = [12, 11, 13, 5, 6, 7];
+        const originalArray = [...array];
+        
+        // Animation properties
+        let currentStep = 1;
+        const totalSteps = 9;
+        let animationFrameId;
+        
+        // Node properties
+        const nodeRadius = 25;
+        const horizontalSpacing = 80;
+        const verticalSpacing = 70;
+        
+        // Colors
+        const normalColor = "#4CAF50";
+        const highlightColor = "#FF5722";
+        const sortedColor = "#3F51B5";
+        const swapColor = "#FFC107";
+        
+        // Explanation texts for each step
+        const explanations = [
+            "Heap Sort is an efficient sorting algorithm that uses a binary heap data structure.",
+            "Step 1: Build a max heap from the unsorted array. A max heap is a complete binary tree where the parent node is greater than or equal to its children.",
+            "Step 2: Heapify the first element. In a max heap, the largest element is at the root.",
+            "Step 3: Swap the root (largest element) with the last element in the heap.",
+            "Step 4: Reduce the heap size by 1 (exclude the sorted element) and heapify the root.",
+            "Step 5: Swap the new root with the last element in the reduced heap.",
+            "Step 6: Reduce the heap size by 1 again and heapify the root.",
+            "Step 7: Continue this process until the entire array is sorted.",
+            "Step 8: The array is now sorted in ascending order.",
+            "Final: The heap sort is complete! Time complexity: O(n log n) in all cases."
+        ];
+        
+        // Array states at different steps
+        const steps = [
+            { array: [12, 11, 13, 5, 6, 7], heapSize: 6, highlight: [], swap: [], sorted: [] },
+            { array: [13, 11, 12, 5, 6, 7], heapSize: 6, highlight: [0, 1, 2], swap: [], sorted: [] },
+            { array: [13, 11, 12, 5, 6, 7], heapSize: 6, highlight: [0], swap: [0, 5], sorted: [] },
+            { array: [7, 11, 12, 5, 6, 13], heapSize: 5, highlight: [], swap: [], sorted: [5] },
+            { array: [12, 11, 7, 5, 6, 13], heapSize: 5, highlight: [0, 2], swap: [0, 4], sorted: [5] },
+            { array: [6, 11, 7, 5, 12, 13], heapSize: 4, highlight: [], swap: [], sorted: [4, 5] },
+            { array: [11, 6, 7, 5, 12, 13], heapSize: 4, highlight: [0, 1], swap: [0, 3], sorted: [4, 5] },
+            { array: [5, 6, 7, 11, 12, 13], heapSize: 3, highlight: [], swap: [], sorted: [3, 4, 5] },
+            { array: [5, 6, 7, 11, 12, 13], heapSize: 0, highlight: [], swap: [], sorted: [0, 1, 2, 3, 4, 5] }
+        ];
+
+        // Draw tree node
+        function drawNode(x, y, value, color = normalColor) {
+            // Draw circle
+            ctx.beginPath();
+            ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw text
+            ctx.fillStyle = "#fff";
+            ctx.font = "16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(value, x, y);
+        }
+        
+        // Draw line between nodes
+        function drawLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = "#666";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // Draw array representation
+        function drawArray(array, step) {
+            const boxWidth = 40;
+            const boxHeight = 40;
+            const startX = (canvas.width - (array.length * boxWidth)) / 2;
+            const startY = canvas.height - 60;
+            
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#333";
+            ctx.textAlign = "center";
+            ctx.fillText("Array Representation", canvas.width / 2, startY - 20);
+            
+            for (let i = 0; i < array.length; i++) {
+                const x = startX + i * boxWidth;
+                const y = startY;
+                
+                // Box
+                ctx.beginPath();
+                ctx.rect(x, y, boxWidth, boxHeight);
+                
+                // Color based on element state
+                if (step.sorted.includes(i)) {
+                    ctx.fillStyle = sortedColor;
+                } else if (step.swap.includes(i)) {
+                    ctx.fillStyle = swapColor;
+                } else if (step.highlight.includes(i)) {
+                    ctx.fillStyle = highlightColor;
+                } else {
+                    ctx.fillStyle = normalColor;
+                }
+                
+                ctx.fill();
+                ctx.strokeStyle = "#333";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // Index
+                ctx.fillStyle = "#333";
+                ctx.font = "12px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(i, x + boxWidth / 2, y + boxHeight + 15);
+                
+                // Value
+                ctx.fillStyle = "#fff";
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(array[i], x + boxWidth / 2, y + boxHeight / 2);
+            }
+        }
+        
+        // Draw the complete binary heap tree
+        function drawHeapTree(array, step) {
+            // Calculate positions for a binary tree with a maximum of 3 levels (7 nodes)
+            const levelHeight = [80, 170, 260];
+            const positions = [
+                { x: canvas.width / 2, y: levelHeight[0] }, // Root
+                { x: canvas.width / 2 - horizontalSpacing, y: levelHeight[1] }, // Level 1, Left
+                { x: canvas.width / 2 + horizontalSpacing, y: levelHeight[1] }, // Level 1, Right
+                { x: canvas.width / 2 - horizontalSpacing * 1.5, y: levelHeight[2] }, // Level 2, Left-Left
+                { x: canvas.width / 2 - horizontalSpacing * 0.5, y: levelHeight[2] }, // Level 2, Left-Right
+                { x: canvas.width / 2 + horizontalSpacing * 0.5, y: levelHeight[2] }, // Level 2, Right-Left
+                { x: canvas.width / 2 + horizontalSpacing * 1.5, y: levelHeight[2] }  // Level 2, Right-Right
+            ];
+            
+            // Draw connections first (so they appear behind nodes)
+            for (let i = 0; i < step.heapSize && i < positions.length; i++) {
+                // Draw lines to children if they exist
+                const leftChildIndex = 2 * i + 1;
+                const rightChildIndex = 2 * i + 2;
+                
+                if (leftChildIndex < step.heapSize && leftChildIndex < positions.length) {
+                    drawLine(
+                        positions[i].x, positions[i].y,
+                        positions[leftChildIndex].x, positions[leftChildIndex].y
+                    );
+                }
+                
+                if (rightChildIndex < step.heapSize && rightChildIndex < positions.length) {
+                    drawLine(
+                        positions[i].x, positions[i].y,
+                        positions[rightChildIndex].x, positions[rightChildIndex].y
+                    );
+                }
+            }
+            
+            // Draw the nodes
+            for (let i = 0; i < step.heapSize && i < positions.length; i++) {
+                let nodeColor = normalColor;
+                
+                // Apply colors based on node state
+                if (step.sorted.includes(i)) {
+                    nodeColor = sortedColor;
+                } else if (step.swap.includes(i)) {
+                    nodeColor = swapColor;
+                } else if (step.highlight.includes(i)) {
+                    nodeColor = highlightColor;
+                }
+                
+                drawNode(positions[i].x, positions[i].y, array[i], nodeColor);
+            }
+        }
+        
+        // Draw the current state
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const currentStateIndex = currentStep - 1;
+            if (currentStateIndex < steps.length) {
+                const currentState = steps[currentStateIndex];
+                drawHeapTree(currentState.array, currentState);
+                drawArray(currentState.array, currentState);
+                
+                // Update explanation
+                document.getElementById('explanation').textContent = explanations[currentStateIndex];
+            }
+            
+            // Update step indicator
+            document.getElementById('currentStep').textContent = currentStep;
+        }
+        
+        // Initialize
+        function init() {
+            draw();
+            updateButtons();
+        }
+        
+        // Reset to initial state
+        function reset() {
+            cancelAnimationFrame(animationFrameId);
+            currentStep = 1;
+            array = [...originalArray];
+            draw();
+            updateButtons();
+        }
+        
+        // Update button states
+        function updateButtons() {
+            document.getElementById('prevBtn').disabled = currentStep <= 1;
+            document.getElementById('nextBtn').disabled = currentStep >= totalSteps;
+        }
+        
+        // Event listeners
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                draw();
+                updateButtons();
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                draw();
+                updateButtons();
+            }
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>
