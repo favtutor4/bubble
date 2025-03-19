@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lomuto Partition Scheme Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #6c7ae0;
+            color: white;
+            font-size: 20px;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .pivot {
+            background-color: #ff6b6b;
+        }
+        
+        .current {
+            background-color: #1dd1a1;
+        }
+        
+        .less-than-pivot {
+            background-color: #54a0ff;
+        }
+        
+        .swap-animation {
+            animation: swap 1s ease;
+        }
+        
+        @keyframes swap {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(30px); }
+            100% { transform: translateY(0); }
+        }
+        
+        .marker {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #6c7ae0;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #5a68d5;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lomuto Partition Scheme Visualization</h1>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Lomuto Partition Scheme visualization. This is a key component of the QuickSort algorithm.
+            Click "Next" to begin the step-by-step process with the array [10, 7, 8, 9, 1, 5].
+        </div>
+        
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6c7ae0;"></div>
+                <span>Regular Element</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                <span>Pivot</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #1dd1a1;"></div>
+                <span>Current Element</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #54a0ff;"></div>
+                <span>Less Than Pivot</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const originalArray = [10, 7, 8, 9, 1, 5];
+        let array = [...originalArray];
+        const pivotIndex = array.length - 1;
+        const pivotValue = array[pivotIndex];
+        
+        // Animation steps
+        const steps = [];
+        
+        // Function to create steps for the animation
+        function createSteps() {
+            // Initial state
+            steps.push({
+                array: [...array],
+                pivot: pivotIndex,
+                i: -1,
+                j: -1,
+                lessThanPivotBoundary: -1,
+                explanation: "We start with the array [10, 7, 8, 9, 1, 5]. In the Lomuto Partition scheme, we choose the rightmost element (5) as the pivot."
+            });
+            
+            // Lomuto partitioning process
+            let i = -1;
+            
+            for (let j = 0; j < array.length - 1; j++) {
+                // Step: Comparing current element with pivot
+                steps.push({
+                    array: [...array],
+                    pivot: pivotIndex,
+                    i: i,
+                    j: j,
+                    lessThanPivotBoundary: i,
+                    explanation: `Compare element at position j (${array[j]}) with the pivot (${pivotValue}). i = ${i} is the boundary between elements less than the pivot and elements greater than or equal to the pivot.`
+                });
+                
+                if (array[j] <= pivotValue) {
+                    i++;
+                    
+                    // Step: Ready to swap
+                    if (i !== j) {
+                        steps.push({
+                            array: [...array],
+                            pivot: pivotIndex,
+                            i: i,
+                            j: j,
+                            lessThanPivotBoundary: i - 1,
+                            swap: [i, j],
+                            explanation: `${array[j]} ≤ ${pivotValue}, so we increment i to ${i} and swap elements at positions i (${array[i]}) and j (${array[j]}).`
+                        });
+                    } else {
+                        steps.push({
+                            array: [...array],
+                            pivot: pivotIndex,
+                            i: i,
+                            j: j,
+                            lessThanPivotBoundary: i - 1,
+                            explanation: `${array[j]} ≤ ${pivotValue}, so we increment i to ${i}. Since i = j, no swap is needed.`
+                        });
+                    }
+                    
+                    // Perform swap
+                    [array[i], array[j]] = [array[j], array[i]];
+                    
+                    // Step: After swap
+                    steps.push({
+                        array: [...array],
+                        pivot: pivotIndex,
+                        i: i,
+                        j: j,
+                        lessThanPivotBoundary: i,
+                        explanation: `After the swap (if any), array becomes [${array.join(', ')}]. All elements to the left of or at position i (${i}) are less than or equal to the pivot.`
+                    });
+                } else {
+                    // Step: Element greater than pivot
+                    steps.push({
+                        array: [...array],
+                        pivot: pivotIndex,
+                        i: i,
+                        j: j,
+                        lessThanPivotBoundary: i,
+                        explanation: `${array[j]} > ${pivotValue}, so we leave it where it is and move to the next element.`
+                    });
+                }
+            }
+            
+            // Final swap with pivot
+            steps.push({
+                array: [...array],
+                pivot: pivotIndex,
+                i: i,
+                j: -1,
+                lessThanPivotBoundary: i,
+                swap: [i + 1, pivotIndex],
+                explanation: `Now we place the pivot at its correct position by swapping it with the element at position i+1 (${i+1}).`
+            });
+            
+            // Perform final swap
+            [array[i + 1], array[pivotIndex]] = [array[pivotIndex], array[i + 1]];
+            
+            // Final state
+            steps.push({
+                array: [...array],
+                pivot: i + 1,
+                i: -1,
+                j: -1,
+                lessThanPivotBoundary: i + 1,
+                explanation: `Partitioning complete! The array is now [${array.join(', ')}]. The pivot (5) is at position ${i + 1} with all elements less than 5 to its left and all elements greater than 5 to its right.`
+            });
+        }
+        
+        // Create the animation steps
+        createSteps();
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Current step index
+        let currentStep = 0;
+        
+        // Function to render a step
+        function renderStep(step) {
+            // Clear array container
+            arrayContainer.innerHTML = '';
+            
+            // Create array elements
+            for (let i = 0; i < step.array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                
+                // Add classes based on the current state
+                if (i === step.pivot) {
+                    element.classList.add('pivot');
+                    element.innerHTML = `<span class="marker">pivot</span>${step.array[i]}`;
+                } else if (i === step.j) {
+                    element.classList.add('current');
+                    element.innerHTML = `<span class="marker">j</span>${step.array[i]}`;
+                } else if (i === step.i) {
+                    element.classList.add('current');
+                    element.innerHTML = `<span class="marker">i</span>${step.array[i]}`;
+                } else if (i <= step.lessThanPivotBoundary) {
+                    element.classList.add('less-than-pivot');
+                    element.textContent = step.array[i];
+                } else {
+                    element.textContent = step.array[i];
+                }
+                
+                arrayContainer.appendChild(element);
+            }
+            
+            // Set explanation
+            explanation.textContent = step.explanation;
+            
+            // If this step involves a swap, add animation
+            if (step.swap) {
+                setTimeout(() => {
+                    const elements = arrayContainer.querySelectorAll('.array-element');
+                    elements[step.swap[0]].classList.add('swap-animation');
+                    elements[step.swap[1]].classList.add('swap-animation');
+                }, 100);
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Initialize with the first step
+        renderStep(steps[currentStep]);
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(steps[currentStep]);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(steps[currentStep]);
+            }
+        });
+    </script>
+</body>
+</html>
