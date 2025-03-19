@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Time Complexity Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .visualization {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .scenario-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #333;
+        }
+        .complexity-info {
+            text-align: center;
+            margin: 10px 0 20px;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+        }
+        .svg-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .step-details {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        .array-element {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 2px;
+            background-color: #ddd;
+            border-radius: 4px;
+        }
+        .pivot {
+            background-color: #ff9800;
+        }
+        .current {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .sorted {
+            background-color: #2196F3;
+            color: white;
+        }
+        .scenario-controls {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .scenario-btn {
+            margin: 0 5px;
+            padding: 8px 15px;
+            background-color: #673AB7;
+        }
+        .scenario-btn.active {
+            background-color: #512DA8;
+            font-weight: bold;
+        }
+        .tree-node {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 2px;
+        }
+        .tree-node.pivot {
+            fill: #ff9800;
+        }
+        .tree-node.sorted {
+            fill: #2196F3;
+        }
+        .tree-link {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2px;
+        }
+        .tree-label {
+            font-size: 12px;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .slides {
+            display: none;
+        }
+        .slide.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quick Sort Time Complexity Visualization</h1>
+        
+        <div class="scenario-controls">
+            <button class="scenario-btn active" data-scenario="best">Best Case</button>
+            <button class="scenario-btn" data-scenario="average">Average Case</button>
+            <button class="scenario-btn" data-scenario="worst">Worst Case</button>
+        </div>
+        
+        <div class="visualization">
+            <div id="best-case" class="scenario">
+                <div class="scenario-title">Best Case Scenario - Balanced Partitioning</div>
+                <div class="complexity-info">
+                    <strong>Time Complexity: O(n log n)</strong><br>
+                    When the pivot divides the array into nearly equal parts
+                </div>
+                <div class="svg-container" id="best-case-svg"></div>
+                <div class="step-details" id="best-case-details">
+                    In the best case, the pivot divides the array into nearly equal halves each time.
+                    This creates a balanced recursion tree with a height of log n.
+                    With n elements being processed at each level, we get O(n log n) complexity.
+                </div>
+            </div>
+            
+            <div id="average-case" class="scenario" style="display: none;">
+                <div class="scenario-title">Average Case Scenario - Somewhat Balanced Partitioning</div>
+                <div class="complexity-info">
+                    <strong>Time Complexity: O(n log n)</strong><br>
+                    When the pivot divides the array somewhat unevenly, but not worst case
+                </div>
+                <div class="svg-container" id="average-case-svg"></div>
+                <div class="step-details" id="average-case-details">
+                    In average cases, the pivot doesn't perfectly split the array but still provides a reasonably balanced partition.
+                    The recursion tree is not perfectly balanced but its height is still approximately log n.
+                    This also leads to O(n log n) complexity, although with a larger constant factor than the best case.
+                </div>
+            </div>
+            
+            <div id="worst-case" class="scenario" style="display: none;">
+                <div class="scenario-title">Worst Case Scenario - Unbalanced Partitioning</div>
+                <div class="complexity-info">
+                    <strong>Time Complexity: O(n²)</strong><br>
+                    When the pivot is always the smallest or largest element
+                </div>
+                <div class="svg-container" id="worst-case-svg"></div>
+                <div class="step-details" id="worst-case-details">
+                    In the worst case, each pivot creates a highly unbalanced partition (e.g., one element on one side, rest on the other).
+                    This creates a recursion tree with a height of n.
+                    With each level processing a decreasing number of elements but having n levels, we get O(n²) complexity.
+                </div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ddd;"></div>
+                <span>Unsorted Element</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff9800;"></div>
+                <span>Pivot Element</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2196F3;"></div>
+                <span>Sorted Element</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Define the scenarios and their steps
+        const scenarios = {
+            best: {
+                title: "Best Case Scenario - Balanced Partitioning",
+                complexity: "O(n log n)",
+                description: "In the best case, the pivot divides the array into nearly equal halves each time. This creates a balanced recursion tree with a height of log n. With n elements being processed at each level, we get O(n log n) complexity.",
+                data: [4, 2, 6, 1, 3, 5, 7, 8],
+                steps: [
+                    {
+                        description: "We start with the full array [4, 2, 6, 1, 3, 5, 7, 8]. We choose 4 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: elements smaller than 4 go to the left [2, 1, 3], and larger to the right [6, 5, 7, 8]. The pivot 4 is in its final position.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null },
+                            { id: 1, label: "[2, 1, 3]", pivot: null, parent: 0 },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: null, parent: 0 }
+                        ]
+                    },
+                    {
+                        description: "We process the left sub-array [2, 1, 3]. We choose 2 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null },
+                            { id: 1, label: "[2, 1, 3]", pivot: 2, parent: 0 },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: null, parent: 0 }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [1] is to the left of pivot 2, and [3] is to the right.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null },
+                            { id: 1, label: "[2, 1, 3]", pivot: 2, parent: 0 },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: null, parent: 0 },
+                            { id: 3, label: "[1]", pivot: null, parent: 1 },
+                            { id: 4, label: "[3]", pivot: null, parent: 1 }
+                        ]
+                    },
+                    {
+                        description: "We process the right sub-array [6, 5, 7, 8]. We choose 6 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null },
+                            { id: 1, label: "[2, 1, 3]", pivot: 2, parent: 0 },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: 6, parent: 0 },
+                            { id: 3, label: "[1]", pivot: null, parent: 1 },
+                            { id: 4, label: "[3]", pivot: null, parent: 1 }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [5] is to the left of pivot 6, and [7, 8] is to the right.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null },
+                            { id: 1, label: "[2, 1, 3]", pivot: 2, parent: 0 },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: 6, parent: 0 },
+                            { id: 3, label: "[1]", pivot: null, parent: 1 },
+                            { id: 4, label: "[3]", pivot: null, parent: 1 },
+                            { id: 5, label: "[5]", pivot: null, parent: 2 },
+                            { id: 6, label: "[7, 8]", pivot: null, parent: 2 }
+                        ]
+                    },
+                    {
+                        description: "Processing [7, 8]: We choose 7 as the pivot and partition, resulting in [] to the left and [8] to the right.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null },
+                            { id: 1, label: "[2, 1, 3]", pivot: 2, parent: 0 },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: 6, parent: 0 },
+                            { id: 3, label: "[1]", pivot: null, parent: 1 },
+                            { id: 4, label: "[3]", pivot: null, parent: 1 },
+                            { id: 5, label: "[5]", pivot: null, parent: 2 },
+                            { id: 6, label: "[7, 8]", pivot: 7, parent: 2 },
+                            { id: 7, label: "[]", pivot: null, parent: 6 },
+                            { id: 8, label: "[8]", pivot: null, parent: 6 }
+                        ]
+                    },
+                    {
+                        description: "Tree height is log₂(8) = 3 levels. With n=8 elements processed across 3 levels, we get O(n log n) = O(8 * 3) = O(24) operations.",
+                        tree: [
+                            { id: 0, label: "[4, 2, 6, 1, 3, 5, 7, 8]", pivot: 4, parent: null, sorted: true },
+                            { id: 1, label: "[2, 1, 3]", pivot: 2, parent: 0, sorted: true },
+                            { id: 2, label: "[6, 5, 7, 8]", pivot: 6, parent: 0, sorted: true },
+                            { id: 3, label: "[1]", pivot: null, parent: 1, sorted: true },
+                            { id: 4, label: "[3]", pivot: null, parent: 1, sorted: true },
+                            { id: 5, label: "[5]", pivot: null, parent: 2, sorted: true },
+                            { id: 6, label: "[7, 8]", pivot: 7, parent: 2, sorted: true },
+                            { id: 7, label: "[]", pivot: null, parent: 6, sorted: true },
+                            { id: 8, label: "[8]", pivot: null, parent: 6, sorted: true }
+                        ]
+                    }
+                ]
+            },
+            average: {
+                title: "Average Case Scenario - Somewhat Balanced Partitioning",
+                complexity: "O(n log n)",
+                description: "In average cases, the pivot doesn't perfectly split the array but still provides a reasonably balanced partition. The recursion tree is not perfectly balanced but its height is still approximately log n. This also leads to O(n log n) complexity, although with a larger constant factor than the best case.",
+                data: [5, 3, 8, 2, 1, 7, 6, 4],
+                steps: [
+                    {
+                        description: "We start with the full array [5, 3, 8, 2, 1, 7, 6, 4]. We choose 5 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: elements smaller than 5 go to the left [3, 2, 1, 4], and larger to the right [8, 7, 6]. The pivot 5 is in its final position.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: null, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: null, parent: 0 }
+                        ]
+                    },
+                    {
+                        description: "We process the left sub-array [3, 2, 1, 4]. We choose 3 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: null, parent: 0 }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [2, 1] is to the left of pivot 3, and [4] is to the right.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: null, parent: 0 },
+                            { id: 3, label: "[2, 1]", pivot: null, parent: 1 },
+                            { id: 4, label: "[4]", pivot: null, parent: 1 }
+                        ]
+                    },
+                    {
+                        description: "We process [2, 1]. We choose 2 as the pivot and partition, resulting in [1] to the left and [] to the right.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: null, parent: 0 },
+                            { id: 3, label: "[2, 1]", pivot: 2, parent: 1 },
+                            { id: 4, label: "[4]", pivot: null, parent: 1 },
+                            { id: 5, label: "[1]", pivot: null, parent: 3 },
+                            { id: 6, label: "[]", pivot: null, parent: 3 }
+                        ]
+                    },
+                    {
+                        description: "We process the right sub-array [8, 7, 6]. We choose 8 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: 8, parent: 0 },
+                            { id: 3, label: "[2, 1]", pivot: 2, parent: 1 },
+                            { id: 4, label: "[4]", pivot: null, parent: 1 },
+                            { id: 5, label: "[1]", pivot: null, parent: 3 },
+                            { id: 6, label: "[]", pivot: null, parent: 3 }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [7, 6] is to the left of pivot 8, and [] is to the right.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: 8, parent: 0 },
+                            { id: 3, label: "[2, 1]", pivot: 2, parent: 1 },
+                            { id: 4, label: "[4]", pivot: null, parent: 1 },
+                            { id: 5, label: "[1]", pivot: null, parent: 3 },
+                            { id: 6, label: "[]", pivot: null, parent: 3 },
+                            { id: 7, label: "[7, 6]", pivot: null, parent: 2 },
+                            { id: 8, label: "[]", pivot: null, parent: 2 }
+                        ]
+                    },
+                    {
+                        description: "We process [7, 6]. We choose 7 as the pivot and partition, resulting in [6] to the left and [] to the right.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0 },
+                            { id: 2, label: "[8, 7, 6]", pivot: 8, parent: 0 },
+                            { id: 3, label: "[2, 1]", pivot: 2, parent: 1 },
+                            { id: 4, label: "[4]", pivot: null, parent: 1 },
+                            { id: 5, label: "[1]", pivot: null, parent: 3 },
+                            { id: 6, label: "[]", pivot: null, parent: 3 },
+                            { id: 7, label: "[7, 6]", pivot: 7, parent: 2 },
+                            { id: 8, label: "[]", pivot: null, parent: 2 },
+                            { id: 9, label: "[6]", pivot: null, parent: 7 },
+                            { id: 10, label: "[]", pivot: null, parent: 7 }
+                        ]
+                    },
+                    {
+                        description: "The tree has a maximum height of 4, which is close to but a bit more than log₂(8) = 3. We still get an O(n log n) = O(8 * 4) = O(32) time complexity, but with a slightly higher constant than the best case.",
+                        tree: [
+                            { id: 0, label: "[5, 3, 8, 2, 1, 7, 6, 4]", pivot: 5, parent: null, sorted: true },
+                            { id: 1, label: "[3, 2, 1, 4]", pivot: 3, parent: 0, sorted: true },
+                            { id: 2, label: "[8, 7, 6]", pivot: 8, parent: 0, sorted: true },
+                            { id: 3, label: "[2, 1]", pivot: 2, parent: 1, sorted: true },
+                            { id: 4, label: "[4]", pivot: null, parent: 1, sorted: true },
+                            { id: 5, label: "[1]", pivot: null, parent: 3, sorted: true },
+                            { id: 6, label: "[]", pivot: null, parent: 3, sorted: true },
+                            { id: 7, label: "[7, 6]", pivot: 7, parent: 2, sorted: true },
+                            { id: 8, label: "[]", pivot: null, parent: 2, sorted: true },
+                            { id: 9, label: "[6]", pivot: null, parent: 7, sorted: true },
+                            { id: 10, label: "[]", pivot: null, parent: 7, sorted: true }
+                        ]
+                    }
+                ]
+            },
+            worst: {
+                title: "Worst Case Scenario - Unbalanced Partitioning",
+                complexity: "O(n²)",
+                description: "In the worst case, each pivot creates a highly unbalanced partition (e.g., one element on one side, rest on the other). This creates a recursion tree with a height of n. With each level processing a decreasing number of elements but having n levels, we get O(n²) complexity.",
+                data: [1, 2, 3, 4, 5, 6, 7, 8],
+                steps: [
+                    {
+                        description: "We start with an already sorted array [1, 2, 3, 4, 5, 6, 7, 8] and always choose the first element as pivot, which leads to the worst case.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [] is to the left of pivot 1, and [2, 3, 4, 5, 6, 7, 8] is to the right. This is highly unbalanced!",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: null, parent: 0 }
+                        ]
+                    },
+                    {
+                        description: "We process the right sub-array [2, 3, 4, 5, 6, 7, 8]. We choose 2 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0 }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [] is to the left of pivot 2, and [3, 4, 5, 6, 7, 8] is to the right. Still unbalanced.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0 },
+                            { id: 3, label: "[]", pivot: null, parent: 2 },
+                            { id: 4, label: "[3, 4, 5, 6, 7, 8]", pivot: null, parent: 2 }
+                        ]
+                    },
+                    {
+                        description: "We process [3, 4, 5, 6, 7, 8]. We choose 3 as the pivot.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0 },
+                            { id: 3, label: "[]", pivot: null, parent: 2 },
+                            { id: 4, label: "[3, 4, 5, 6, 7, 8]", pivot: 3, parent: 2 }
+                        ]
+                    },
+                    {
+                        description: "After partitioning: [] is to the left of pivot 3, and [4, 5, 6, 7, 8] is to the right.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0 },
+                            { id: 3, label: "[]", pivot: null, parent: 2 },
+                            { id: 4, label: "[3, 4, 5, 6, 7, 8]", pivot: 3, parent: 2 },
+                            { id: 5, label: "[]", pivot: null, parent: 4 },
+                            { id: 6, label: "[4, 5, 6, 7, 8]", pivot: null, parent: 4 }
+                        ]
+                    },
+                    {
+                        description: "The pattern continues: we choose 4 as pivot for [4, 5, 6, 7, 8], resulting in [] to the left and [5, 6, 7, 8] to the right.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0 },
+                            { id: 3, label: "[]", pivot: null, parent: 2 },
+                            { id: 4, label: "[3, 4, 5, 6, 7, 8]", pivot: 3, parent: 2 },
+                            { id: 5, label: "[]", pivot: null, parent: 4 },
+                            { id: 6, label: "[4, 5, 6, 7, 8]", pivot: 4, parent: 4 },
+                            { id: 7, label: "[]", pivot: null, parent: 6 },
+                            { id: 8, label: "[5, 6, 7, 8]", pivot: null, parent: 6 }
+                        ]
+                    },
+                    {
+                        description: "This continues all the way down to the last element, creating a tree with height n=8 instead of log₂(8)=3.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null },
+                            { id: 1, label: "[]", pivot: null, parent: 0 },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0 },
+                            { id: 3, label: "[]", pivot: null, parent: 2 },
+                            { id: 4, label: "[3, 4, 5, 6, 7, 8]", pivot: 3, parent: 2 },
+                            { id: 5, label: "[]", pivot: null, parent: 4 },
+                            { id: 6, label: "[4, 5, 6, 7, 8]", pivot: 4, parent: 4 },
+                            { id: 7, label: "[]", pivot: null, parent: 6 },
+                            { id: 8, label: "[5, 6, 7, 8]", pivot: 5, parent: 6 },
+                            { id: 9, label: "[]", pivot: null, parent: 8 },
+                            { id: 10, label: "[6, 7, 8]", pivot: 6, parent: 8 },
+                            { id: 11, label: "[]", pivot: null, parent: 10 },
+                            { id: 12, label: "[7, 8]", pivot: 7, parent: 10 },
+                            { id: 13, label: "[]", pivot: null, parent: 12 },
+                            { id: 14, label: "[8]", pivot: 8, parent: 12 }
+                        ]
+                    },
+                    {
+                        description: "With a tree height of n=8 and a total of n*(n+1)/2 = 8*9/2 = 36 operations, we get O(n²) time complexity.",
+                        tree: [
+                            { id: 0, label: "[1, 2, 3, 4, 5, 6, 7, 8]", pivot: 1, parent: null, sorted: true },
+                            { id: 1, label: "[]", pivot: null, parent: 0, sorted: true },
+                            { id: 2, label: "[2, 3, 4, 5, 6, 7, 8]", pivot: 2, parent: 0, sorted: true },
+                            { id: 3, label: "[]", pivot: null, parent: 2, sorted: true },
+                            { id: 4, label: "[3, 4, 5, 6, 7, 8]", pivot: 3, parent: 2, sorted: true },
+                            { id: 5, label: "[]", pivot: null, parent: 4, sorted: true },
+                            { id: 6, label: "[4, 5, 6, 7, 8]", pivot: 4, parent: 4, sorted: true },
+                            { id: 7, label: "[]", pivot: null, parent: 6, sorted: true },
+                            { id: 8, label: "[5, 6, 7, 8]", pivot: 5, parent: 6, sorted: true },
+                            { id: 9, label: "[]", pivot: null, parent: 8, sorted: true },
+                            { id: 10, label: "[6, 7, 8]", pivot: 6, parent: 8, sorted: true },
+                            { id: 11, label: "[]", pivot: null, parent: 10, sorted: true },
+                            { id: 12, label: "[7, 8]", pivot: 7, parent: 10, sorted: true },
+                            { id: 13, label: "[]", pivot: null, parent: 12, sorted: true },
+                            { id: 14, label: "[8]", pivot: 8, parent: 12, sorted: true }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Rendering functions
+        function renderTree(containerId, data, level) {
+            // Clear existing SVG
+            d3.select(`#${containerId}`).html("");
+            
+            // Set dimensions for the tree
+            const width = Math.max(data.length * 70, 600);
+            const height = Math.max(level * 100 + 100, 350);
+            
+            // Create SVG
+            const svg = d3.select(`#${containerId}`)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(0,20)");
+            
+            // Create nodes array and links array based on the data
+            const nodes = [];
+            const links = [];
+            
+            // Create dictionary to map node ids to positions
+            const nodePositions = {};
+            
+            // Process nodes to calculate positions
+            const maxLevel = d3.max(data, d => d.parent === null ? 0 : getNodeLevel(data, d.id));
+            const levelWidths = new Array(maxLevel + 1).fill(0);
+            
+            // Calculate the number of nodes per level
+            data.forEach(node => {
+                const level = node.parent === null ? 0 : getNodeLevel(data, node.id);
+                levelWidths[level]++;
+            });
+            
+            // Assign positions to nodes
+            data.forEach(node => {
+                const level = node.parent === null ? 0 : getNodeLevel(data, node.id);
+                const levelNodes = data.filter(n => (n.parent === null && level === 0) || 
+                                                (n.parent !== null && getNodeLevel(data, n.id) === level));
+                const nodeIndex = levelNodes.findIndex(n => n.id === node.id);
+                
+                const y = level * 70 + 50;
+                const levelWidth = width;
+                const x = levelWidth * (nodeIndex + 1) / (levelNodes.length + 1);
+                
+                nodes.push({
+                    id: node.id,
+                    x,
+                    y,
+                    label: node.label,
+                    pivot: node.pivot,
+                    sorted: node.sorted
+                });
+                
+                nodePositions[node.id] = { x, y };
+                
+                // Add links to parent
+                if (node.parent !== null) {
+                    links.push({
+                        source: node.parent,
+                        target: node.id
+                    });
+                }
+            });
+            
+            // Draw links first so they're behind the nodes
+            svg.selectAll(".tree-link")
+                .data(links)
+                .enter()
+                .append("path")
+                .attr("class", "tree-link")
+                .attr("d", d => {
+                    const source = nodePositions[d.source];
+                    const target = nodePositions[d.target];
+                    return `M${source.x},${source.y} C${source.x},${(source.y + target.y) / 2} ${target.x},${(source.y + target.y) / 2} ${target.x},${target.y}`;
+                });
+            
+            // Create node groups
+            const nodeGroups = svg.selectAll(".node")
+                .data(nodes)
+                .enter()
+                .append("g")
+                .attr("transform", d => `translate(${d.x}, ${d.y})`);
+            
+            // Draw circles for nodes
+            nodeGroups.append("circle")
+                .attr("class", d => `tree-node${d.pivot ? " pivot" : ""}${d.sorted ? " sorted" : ""}`)
+                .attr("r", 25);
+            
+            // Add text labels
+            nodeGroups.append("text")
+                .attr("class", "tree-label")
+                .text(d => {
+                    if (d.label.length > 10) {
+                        return d.label.substring(0, 8) + "...";
+                    }
+                    return d.label;
+                })
+                .attr("dy", 0);
+            
+            // Add pivot indicators
+            nodeGroups.filter(d => d.pivot)
+                .append("text")
+                .attr("class", "tree-label")
+                .text(d => `pivot: ${d.pivot}`)
+                .attr("dy", 15);
+            
+            // Helper function to get node level
+            function getNodeLevel(data, nodeId) {
+                let level = 0;
+                let currentNode = data.find(n => n.id === nodeId);
+                
+                while (currentNode && currentNode.parent !== null) {
+                    level++;
+                    currentNode = data.find(n => n.id === currentNode.parent);
+                }
+                
+                return level;
+            }
+        }
+
+        // Initialize the visualization
+        let currentScenario = 'best';
+        let currentStep = 0;
+        
+        // Update function to display the current step in the current scenario
+        function updateVisualization() {
+            const scenario = scenarios[currentScenario];
+            const step = scenario.steps[currentStep];
+            
+            // Update details
+            document.getElementById(`${currentScenario}-case-details`).textContent = step.description;
+            
+            // Render the tree for this step
+            renderTree(`${currentScenario}-case-svg`, step.tree, currentStep + 1);
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === scenario.steps.length - 1;
+        }
+        
+        // Event listeners for buttons
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < scenarios[currentScenario].steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Scenario selection
+        document.querySelectorAll('.scenario-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Hide all scenarios
+                document.querySelectorAll('.scenario').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // Remove active class from all buttons
+                document.querySelectorAll('.scenario-btn').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // Show selected scenario
+                const scenario = btn.dataset.scenario;
+                document.getElementById(`${scenario}-case`).style.display = 'block';
+                btn.classList.add('active');
+                
+                // Update current scenario and reset step
+                currentScenario = scenario;
+                currentStep = 0;
+                updateVisualization();
+            });
+        });
+        
+        // Initialize the visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
