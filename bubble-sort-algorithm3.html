@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Performance Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sorting Algorithm Performance Comparison</h1>
+        
+        <div class="legend" id="legend"></div>
+        
+        <div class="chart-container">
+            <canvas id="sortingChart"></canvas>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <!-- Explanation will be inserted here -->
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Define the slides (demonstrations)
+        const slides = [
+            {
+                title: "Small Input Sizes",
+                description: "For small input sizes (n < 100), all sorting algorithms perform reasonably well. Notice how the O(n²) algorithms (Bubble, Selection, Insertion) are still manageable with small inputs. This view shows algorithm performance with datasets of 10 to 100 elements.",
+                range: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                showAll: true
+            },
+            {
+                title: "Medium Input Sizes",
+                description: "As we increase to medium input sizes (n = 100 to 1000), we start to see the O(n²) algorithms (Bubble, Selection, Insertion) becoming significantly slower compared to O(n log n) algorithms (QuickSort, MergeSort, HeapSort). The quadratic growth becomes more apparent.",
+                range: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
+                showAll: true
+            },
+            {
+                title: "Large Input Sizes",
+                description: "With large inputs (n > 1000), the difference becomes dramatic. O(n²) algorithms become impractical for large datasets, while O(n log n) algorithms continue to perform efficiently. Note how the quadratic algorithms' performance degrades much more rapidly.",
+                range: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000],
+                showAll: true
+            },
+            {
+                title: "Bubble Sort vs QuickSort",
+                description: "This comparison highlights the vast difference between Bubble Sort (one of the slowest sorting algorithms at O(n²)) and QuickSort (one of the fastest at O(n log n)). For a dataset of 10,000 elements, QuickSort might take milliseconds while Bubble Sort could take several seconds.",
+                range: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000],
+                algorithms: ["Bubble Sort", "QuickSort"]
+            },
+            {
+                title: "O(n log n) Algorithms Comparison",
+                description: "Among the O(n log n) algorithms, there are still performance differences due to implementation details and constant factors. QuickSort generally performs best in practice for random data, though MergeSort and HeapSort have advantages in specific scenarios (such as MergeSort for linked lists or when stable sorting is needed).",
+                range: [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000],
+                algorithms: ["QuickSort", "MergeSort", "HeapSort"]
+            }
+        ];
+        
+        let currentSlide = 0;
+        let sortingChart;
+        
+        // Algorithm colors
+        const algorithmColors = {
+            "Bubble Sort": "rgba(255, 99, 132, 0.8)",
+            "Selection Sort": "rgba(54, 162, 235, 0.8)",
+            "Insertion Sort": "rgba(255, 206, 86, 0.8)",
+            "QuickSort": "rgba(75, 192, 192, 0.8)",
+            "MergeSort": "rgba(153, 102, 255, 0.8)",
+            "HeapSort": "rgba(255, 159, 64, 0.8)"
+        };
+        
+        // Algorithm complexity functions
+        function getComplexity(algorithm, n) {
+            switch(algorithm) {
+                case "Bubble Sort":
+                case "Selection Sort":
+                case "Insertion Sort":
+                    return n * n; // O(n²)
+                case "QuickSort":
+                case "MergeSort":
+                case "HeapSort":
+                    return n * Math.log2(n); // O(n log n)
+                default:
+                    return 0;
+            }
+        }
+
+        // Create legend
+        function createLegend() {
+            const legendDiv = document.getElementById('legend');
+            legendDiv.innerHTML = '';
+            
+            Object.entries(algorithmColors).forEach(([algo, color]) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = color;
+                
+                const label = document.createElement('span');
+                label.textContent = algo;
+                
+                legendItem.appendChild(colorBox);
+                legendItem.appendChild(label);
+                legendDiv.appendChild(legendItem);
+            });
+        }
+        
+        // Update chart based on current slide
+        function updateChart() {
+            const slide = slides[currentSlide];
+            document.getElementById('explanation').innerHTML = `<h3>${slide.title}</h3><p>${slide.description}</p>`;
+            
+            // If chart exists, destroy it to recreate
+            if (sortingChart) {
+                sortingChart.destroy();
+            }
+            
+            const algorithms = slide.showAll ? 
+                Object.keys(algorithmColors) : 
+                slide.algorithms;
+            
+            const datasets = algorithms.map(algorithm => {
+                return {
+                    label: algorithm,
+                    data: slide.range.map(n => getComplexity(algorithm, n)),
+                    backgroundColor: algorithmColors[algorithm],
+                    borderColor: algorithmColors[algorithm].replace("0.8", "1"),
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: false
+                };
+            });
+            
+            const ctx = document.getElementById('sortingChart').getContext('2d');
+            sortingChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: slide.range,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Operations (Relative)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Input Size (n)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sorting Algorithm Performance (Time Complexity)',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        legend: {
+                            display: false  // We use our custom legend
+                        }
+                    }
+                }
+            });
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === slides.length - 1;
+        }
+        
+        // Next button handler
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateChart();
+            }
+        });
+        
+        // Previous button handler
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateChart();
+            }
+        });
+        
+        // Initialize
+        createLegend();
+        updateChart();
+    </script>
+</body>
+</html>
