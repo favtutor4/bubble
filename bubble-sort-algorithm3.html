@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Performance Chart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .chart {
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-top: 20px;
+        }
+        .bar-group {
+            display: flex;
+            align-items: flex-end;
+            height: 100%;
+            flex-direction: column;
+            width: 18%;
+        }
+        .bar {
+            width: 100%;
+            background-color: #3498db;
+            margin-bottom: 5px;
+            position: relative;
+            transition: height 1s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            border-radius: 4px 4px 0 0;
+        }
+        .bar-label {
+            text-align: center;
+            font-size: 14px;
+            color: #333;
+            padding: 5px 0;
+            width: 100%;
+        }
+        .axis {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #333;
+        }
+        .y-axis {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #333;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .time-complexity {
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #2980b9;
+        }
+        .nav-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .slide {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            color: #333;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .y-labels {
+            position: absolute;
+            left: -50px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+        .y-label {
+            transform: translateY(50%);
+        }
+        .animation-controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        #animateBtn {
+            padding: 10px 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #animateBtn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sorting Algorithm Performance Chart</h1>
+        
+        <div class="slide active" id="slide1">
+            <div class="explanation">
+                <p>Sorting algorithms arrange data in a specific order, and they vary in efficiency. This chart compares the performance of popular sorting algorithms for different input sizes.</p>
+                <p>Let's first understand what we're comparing:</p>
+                <ul>
+                    <li><strong>Bubble Sort:</strong> Repeatedly steps through the list, compares adjacent elements, and swaps them if needed.</li>
+                    <li><strong>Selection Sort:</strong> Finds the minimum element from the unsorted part and puts it at the beginning.</li>
+                    <li><strong>Insertion Sort:</strong> Builds the sorted array one item at a time.</li>
+                    <li><strong>Quick Sort:</strong> Uses a divide-and-conquer strategy, selecting a 'pivot' to partition the array.</li>
+                    <li><strong>Merge Sort:</strong> Divides the list in half, sorts each half, then merges them back together.</li>
+                </ul>
+            </div>
+            
+            <div class="animation-controls">
+                <button id="animateBtn">Animate Performance Comparison</button>
+            </div>
+            
+            <div class="chart-container">
+                <div class="y-axis"></div>
+                <div class="axis"></div>
+                <div class="y-labels">
+                    <div class="y-label">O(n²)</div>
+                    <div class="y-label">O(n log n)</div>
+                    <div class="y-label">O(n)</div>
+                </div>
+                <div class="chart" id="timeComplexityChart">
+                    <div class="bar-group">
+                        <div class="bar" id="bubble" style="height: 0%; background-color: #e74c3c;">
+                            <span class="bar-value">O(n²)</span>
+                        </div>
+                        <div class="bar-label">Bubble Sort</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" id="selection" style="height: 0%; background-color: #f39c12;">
+                            <span class="bar-value">O(n²)</span>
+                        </div>
+                        <div class="bar-label">Selection Sort</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" id="insertion" style="height: 0%; background-color: #3498db;">
+                            <span class="bar-value">O(n²)</span>
+                        </div>
+                        <div class="bar-label">Insertion Sort</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" id="quick" style="height: 0%; background-color: #2ecc71;">
+                            <span class="bar-value">O(n log n)</span>
+                        </div>
+                        <div class="bar-label">Quick Sort</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" id="merge" style="height: 0%; background-color: #9b59b6;">
+                            <span class="bar-value">O(n log n)</span>
+                        </div>
+                        <div class="bar-label">Merge Sort</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="explanation">
+                <p>The chart shows the <strong>time complexity</strong> of each sorting algorithm, which indicates how the run time increases as the input size grows.</p>
+                <p>Bubble, Selection, and Insertion Sort all have <strong>O(n²)</strong> time complexity, making them inefficient for large datasets, while Quick Sort and Merge Sort have <strong>O(n log n)</strong> time complexity, performing much better with larger inputs.</p>
+                <p>For small datasets, the simpler algorithms may perform adequately, but as data size increases, the efficiency gap widens dramatically.</p>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide2">
+            <div class="explanation">
+                <h2>Performance with Different Input Sizes</h2>
+                <p>Now let's look at how these sorting algorithms perform with different input sizes in more detail.</p>
+            </div>
+            
+            <div class="chart-container">
+                <div class="y-axis"></div>
+                <div class="axis"></div>
+                <div class="chart" id="inputSizeChart">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="explanation">
+                <p>As you can see from the chart:</p>
+                <ul>
+                    <li>For small inputs (e.g., 10 elements), all algorithms perform similarly because the constant factors dominate the running time.</li>
+                    <li>For medium inputs (e.g., 100 elements), the O(n²) algorithms start showing their inefficiency.</li>
+                    <li>For large inputs (e.g., 1000+ elements), Quick Sort and Merge Sort are dramatically faster than the simpler algorithms.</li>
+                </ul>
+                <p>This is why most programming language libraries use optimized versions of Quick Sort or Merge Sort for their built-in sorting functions.</p>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide3">
+            <div class="explanation">
+                <h2>Best, Average, and Worst Case Scenarios</h2>
+                <p>Each sorting algorithm performs differently depending on the initial state of the data.</p>
+            </div>
+            
+            <div class="chart-container">
+                <div class="y-axis"></div>
+                <div class="axis"></div>
+                <div class="chart" id="scenariosChart">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="explanation">
+                <p><strong>Key observations:</strong></p>
+                <ul>
+                    <li><strong>Bubble Sort:</strong> Best case O(n) when already sorted, worst case O(n²)</li>
+                    <li><strong>Insertion Sort:</strong> Best case O(n) when already sorted, worst case O(n²)</li>
+                    <li><strong>Quick Sort:</strong> Best and average case O(n log n), but worst case can be O(n²) with poor pivot selection</li>
+                    <li><strong>Merge Sort:</strong> Consistently O(n log n) in all cases, making it very reliable</li>
+                </ul>
+                <p>This explains why Merge Sort is often preferred for critical applications where consistent performance matters, while Quick Sort is commonly used where average-case performance is more important than worst-case guarantees.</p>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Navigation logic
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        let currentSlide = 0;
+        
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+                
+                // Initialize charts for other slides when they become active
+                if (currentSlide === 1) {
+                    initInputSizeChart();
+                } else if (currentSlide === 2) {
+                    initScenariosChart();
+                }
+            }
+        });
+        
+        // Animation for first slide
+        document.getElementById('animateBtn').addEventListener('click', () => {
+            const bubbleBar = document.getElementById('bubble');
+            const selectionBar = document.getElementById('selection');
+            const insertionBar = document.getElementById('insertion');
+            const quickBar = document.getElementById('quick');
+            const mergeBar = document.getElementById('merge');
+            
+            // Reset heights
+            bubbleBar.style.height = '0%';
+            selectionBar.style.height = '0%';
+            insertionBar.style.height = '0%';
+            quickBar.style.height = '0%';
+            mergeBar.style.height = '0%';
+            
+            // Animate to show relative time complexities
+            setTimeout(() => {
+                bubbleBar.style.height = '80%';  // O(n²)
+            }, 500);
+            
+            setTimeout(() => {
+                selectionBar.style.height = '75%';  // O(n²)
+            }, 1000);
+            
+            setTimeout(() => {
+                insertionBar.style.height = '70%';  // O(n²), but slightly better than bubble/selection
+            }, 1500);
+            
+            setTimeout(() => {
+                quickBar.style.height = '40%';  // O(n log n)
+            }, 2000);
+            
+            setTimeout(() => {
+                mergeBar.style.height = '45%';  // O(n log n)
+            }, 2500);
+        });
+        
+        // Initialize Input Size Chart for slide 2
+        function initInputSizeChart() {
+            const chart = document.getElementById('inputSizeChart');
+            chart.innerHTML = '';
+            
+            const inputSizes = ['10 elements', '100 elements', '1000 elements'];
+            const algorithms = ['Bubble', 'Selection', 'Insertion', 'Quick', 'Merge'];
+            const colors = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71', '#9b59b6'];
+            
+            // Performance data (arbitrary units)
+            const performances = {
+                'Bubble': [5, 120, 11000],
+                'Selection': [4, 100, 10000],
+                'Insertion': [3, 90, 9000],
+                'Quick': [6, 40, 600],
+                'Merge': [7, 50, 700]
+            };
+            
+            // Max value for scaling
+            const maxValue = 12000;
+            
+            // Create grouped bar chart
+            inputSizes.forEach((size, sizeIndex) => {
+                const sizeGroup = document.createElement('div');
+                sizeGroup.classList.add('size-group');
+                sizeGroup.style.display = 'flex';
+                sizeGroup.style.flexDirection = 'column';
+                sizeGroup.style.width = '30%';
+                sizeGroup.style.alignItems = 'center';
+                
+                const barsContainer = document.createElement('div');
+                barsContainer.style.display = 'flex';
+                barsContainer.style.width = '100%';
+                barsContainer.style.height = '300px';
+                barsContainer.style.alignItems = 'flex-end';
+                barsContainer.style.justifyContent = 'space-around';
+                
+                algorithms.forEach((algo, algoIndex) => {
+                    const barContainer = document.createElement('div');
+                    barContainer.style.width = '18%';
+                    barContainer.style.height = '100%';
+                    barContainer.style.display = 'flex';
+                    barContainer.style.flexDirection = 'column';
+                    barContainer.style.alignItems = 'center';
+                    barContainer.style.justifyContent = 'flex-end';
+                    
+                    const bar = document.createElement('div');
+                    const value = performances[algo][sizeIndex];
+                    const heightPercentage = (value / maxValue) * 100;
+                    
+                    bar.style.width = '100%';
+                    bar.style.height = '0%'; // Start at 0 for animation
+                    bar.style.backgroundColor = colors[algoIndex];
+                    bar.style.position = 'relative';
+                    bar.style.transition = 'height 1s ease-out';
+                    bar.style.borderRadius = '4px 4px 0 0';
+                    
+                    const label = document.createElement('div');
+                    label.textContent = algo;
+                    label.style.fontSize = '10px';
+                    label.style.marginTop = '5px';
+                    
+                    // Add value label
+                    const valueLabel = document.createElement('span');
+                    valueLabel.textContent = value.toLocaleString();
+                    valueLabel.style.position = 'absolute';
+                    valueLabel.style.top = '-20px';
+                    valueLabel.style.fontSize = '10px';
+                    valueLabel.style.color = '#333';
+                    
+                    bar.appendChild(valueLabel);
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(label);
+                    barsContainer.appendChild(barContainer);
+                    
+                    // Animate height after a delay
+                    setTimeout(() => {
+                        bar.style.height = heightPercentage + '%';
+                    }, 500 + (algoIndex * 300) + (sizeIndex * 1000));
+                });
+                
+                const sizeLabel = document.createElement('div');
+                sizeLabel.textContent = size;
+                sizeLabel.style.marginTop = '15px';
+                sizeLabel.style.fontWeight = 'bold';
+                
+                sizeGroup.appendChild(barsContainer);
+                sizeGroup.appendChild(sizeLabel);
+                chart.appendChild(sizeGroup);
+            });
+        }
+        
+        // Initialize Best/Average/Worst Case Chart for slide 3
+        function initScenariosChart() {
+            const chart = document.getElementById('scenariosChart');
+            chart.innerHTML = '';
+            
+            const scenarios = ['Best Case', 'Average Case', 'Worst Case'];
+            const algorithms = ['Bubble', 'Selection', 'Insertion', 'Quick', 'Merge'];
+            const colors = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71', '#9b59b6'];
+            
+            // Performance notation
+            const performances = {
+                'Bubble': ['O(n)', 'O(n²)', 'O(n²)'],
+                'Selection': ['O(n²)', 'O(n²)', 'O(n²)'],
+                'Insertion': ['O(n)', 'O(n²)', 'O(n²)'],
+                'Quick': ['O(n log n)', 'O(n log n)', 'O(n²)'],
+                'Merge': ['O(n log n)', 'O(n log n)', 'O(n log n)']
+            };
+            
+            // Performance values for visualization (arbitrary units, just for illustration)
+            const performanceValues = {
+                'Bubble': [10, 80, 80],
+                'Selection': [70, 70, 70],
+                'Insertion': [10, 65, 65],
+                'Quick': [30, 30, 80],
+                'Merge': [35, 35, 35]
+            };
+            
+            // Create grouped bar chart
+            scenarios.forEach((scenario, scenarioIndex) => {
+                const scenarioGroup = document.createElement('div');
+                scenarioGroup.classList.add('scenario-group');
+                scenarioGroup.style.display = 'flex';
+                scenarioGroup.style.flexDirection = 'column';
+                scenarioGroup.style.width = '30%';
+                scenarioGroup.style.alignItems = 'center';
+                
+                const barsContainer = document.createElement('div');
+                barsContainer.style.display = 'flex';
+                barsContainer.style.width = '100%';
+                barsContainer.style.height = '300px';
+                barsContainer.style.alignItems = 'flex-end';
+                barsContainer.style.justifyContent = 'space-around';
+                
+                algorithms.forEach((algo, algoIndex) => {
+                    const barContainer = document.createElement('div');
+                    barContainer.style.width = '18%';
+                    barContainer.style.height = '100%';
+                    barContainer.style.display = 'flex';
+                    barContainer.style.flexDirection = 'column';
+                    barContainer.style.alignItems = 'center';
+                    barContainer.style.justifyContent = 'flex-end';
+                    
+                    const bar = document.createElement('div');
+                    bar.style.width = '100%';
+                    bar.style.height = '0%'; // Start at 0 for animation
+                    bar.style.backgroundColor = colors[algoIndex];
+                    bar.style.position = 'relative';
+                    bar.style.transition = 'height 1s ease-out';
+                    bar.style.borderRadius = '4px 4px 0 0';
+                    
+                    const label = document.createElement('div');
+                    label.textContent = algo;
+                    label.style.fontSize = '10px';
+                    label.style.marginTop = '5px';
+                    
+                    // Add complexity notation
+                    const complexityLabel = document.createElement('span');
+                    complexityLabel.textContent = performances[algo][scenarioIndex];
+                    complexityLabel.style.position = 'absolute';
+                    complexityLabel.style.top = '-20px';
+                    complexityLabel.style.fontSize = '10px';
+                    complexityLabel.style.color = '#333';
+                    
+                    bar.appendChild(complexityLabel);
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(label);
+                    barsContainer.appendChild(barContainer);
+                    
+                    // Animate height after a delay
+                    setTimeout(() => {
+                        bar.style.height = performanceValues[algo][scenarioIndex] + '%';
+                    }, 500 + (algoIndex * 300) + (scenarioIndex * 1000));
+                });
+                
+                const scenarioLabel = document.createElement('div');
+                scenarioLabel.textContent = scenario;
+                scenarioLabel.style.marginTop = '15px';
+                scenarioLabel.style.fontWeight = 'bold';
+                
+                scenarioGroup.appendChild(barsContainer);
+                scenarioGroup.appendChild(scenarioLabel);
+                chart.appendChild(scenarioGroup);
+            });
+        }
+    </script>
+</body>
+</html>
