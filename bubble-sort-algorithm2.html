@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            perspective: 1000px;
+        }
+        .element {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #6c7ae0;
+            color: white;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+        }
+        .comparing {
+            background-color: #ff9800;
+            transform: translateY(-10px);
+        }
+        .swapping {
+            background-color: #f44336;
+        }
+        .sorted {
+            background-color: #4CAF50;
+        }
+        .description {
+            min-height: 60px;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            font-size: 18px;
+        }
+        .navigation {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 0 10px;
+            cursor: pointer;
+            background-color: #6c7ae0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #5563cc;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bubble Sort Visualization</h1>
+        <div class="description" id="description">
+            Welcome to Bubble Sort visualization! Click 'Next' to start the animation.
+        </div>
+        <div class="array-container" id="array-container">
+            <!-- Array elements will be inserted here by JavaScript -->
+        </div>
+        <div class="navigation">
+            <button id="prevBtn" onclick="prevStep()" disabled>Previous</button>
+            <button id="nextBtn" onclick="nextStep()">Next</button>
+        </div>
+        <div class="progress" id="progress">
+            Step 0 of 0 | Pass: 0
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const initialArray = [5, 3, 8, 4, 2];
+        let currentArray = [...initialArray];
+        
+        // Animation steps
+        let steps = [];
+        let currentStep = -1;
+        
+        // Generate bubble sort steps
+        function generateBubbleSortSteps(arr) {
+            const steps = [];
+            const array = [...arr];
+            const n = array.length;
+            
+            steps.push({
+                array: [...array],
+                comparing: [],
+                swapping: [],
+                sorted: [],
+                description: "We start with the unsorted array [5, 3, 8, 4, 2]"
+            });
+            
+            // Track which elements are sorted
+            const sortedIndices = [];
+            
+            // For each pass
+            for (let pass = 0; pass < n - 1; pass++) {
+                steps.push({
+                    array: [...array],
+                    comparing: [],
+                    swapping: [],
+                    sorted: [...sortedIndices],
+                    description: `Starting pass ${pass + 1}: We'll compare adjacent elements and swap if they're in the wrong order`
+                });
+                
+                // For each comparison in this pass
+                for (let i = 0; i < n - 1 - pass; i++) {
+                    // Comparing step
+                    steps.push({
+                        array: [...array],
+                        comparing: [i, i + 1],
+                        swapping: [],
+                        sorted: [...sortedIndices],
+                        description: `Comparing elements ${array[i]} and ${array[i + 1]}`
+                    });
+                    
+                    // Check if swap is needed
+                    if (array[i] > array[i + 1]) {
+                        // Swapping step
+                        steps.push({
+                            array: [...array],
+                            comparing: [],
+                            swapping: [i, i + 1],
+                            sorted: [...sortedIndices],
+                            description: `${array[i]} > ${array[i + 1]}, so we swap them`
+                        });
+                        
+                        // Perform the swap
+                        [array[i], array[i + 1]] = [array[i + 1], array[i]];
+                        
+                        // After swap state
+                        steps.push({
+                            array: [...array],
+                            comparing: [],
+                            swapping: [],
+                            sorted: [...sortedIndices],
+                            description: `After swapping, the array is now [${array}]`
+                        });
+                    } else {
+                        steps.push({
+                            array: [...array],
+                            comparing: [],
+                            swapping: [],
+                            sorted: [...sortedIndices],
+                            description: `${array[i]} ≤ ${array[i + 1]}, no swap needed`
+                        });
+                    }
+                }
+                
+                // Mark the largest element of this pass as sorted
+                sortedIndices.push(n - 1 - pass);
+                
+                // End of pass
+                steps.push({
+                    array: [...array],
+                    comparing: [],
+                    swapping: [],
+                    sorted: [...sortedIndices],
+                    description: `End of pass ${pass + 1}: The largest element has bubbled up to position ${n - 1 - pass}`
+                });
+            }
+            
+            // All elements are sorted now
+            sortedIndices.push(0);
+            steps.push({
+                array: [...array],
+                comparing: [],
+                swapping: [],
+                sorted: Array.from({ length: n }, (_, i) => i),
+                description: "Bubble sort complete! The array is now sorted: [" + array + "]"
+            });
+            
+            return steps;
+        }
+        
+        // Initialize the visualization
+        function init() {
+            steps = generateBubbleSortSteps(initialArray);
+            renderArray(initialArray);
+            updateProgress();
+        }
+        
+        // Render the array
+        function renderArray(arr, comparing = [], swapping = [], sorted = []) {
+            const container = document.getElementById('array-container');
+            container.innerHTML = '';
+            
+            arr.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                
+                if (comparing.includes(index)) {
+                    element.classList.add('comparing');
+                } else if (swapping.includes(index)) {
+                    element.classList.add('swapping');
+                } else if (sorted.includes(index)) {
+                    element.classList.add('sorted');
+                }
+                
+                container.appendChild(element);
+            });
+        }
+        
+        // Update the step description
+        function updateDescription(text) {
+            document.getElementById('description').textContent = text;
+        }
+        
+        // Update progress indicator
+        function updateProgress() {
+            const progressElement = document.getElementById('progress');
+            const currentPass = getCurrentPass();
+            progressElement.textContent = `Step ${currentStep + 1} of ${steps.length} | Pass: ${currentPass}`;
+        }
+        
+        // Determine current pass
+        function getCurrentPass() {
+            if (currentStep < 0) return 0;
+            
+            let pass = 0;
+            for (let i = 0; i <= currentStep; i++) {
+                if (steps[i].description.includes('Starting pass')) {
+                    pass = parseInt(steps[i].description.match(/pass (\d+)/)[1]);
+                }
+            }
+            return pass;
+        }
+        
+        // Go to next step
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                const step = steps[currentStep];
+                renderArray(step.array, step.comparing, step.swapping, step.sorted);
+                updateDescription(step.description);
+                updateProgress();
+                
+                document.getElementById('prevBtn').disabled = false;
+                if (currentStep === steps.length - 1) {
+                    document.getElementById('nextBtn').disabled = true;
+                }
+            }
+        }
+        
+        // Go to previous step
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                const step = steps[currentStep];
+                renderArray(step.array, step.comparing, step.swapping, step.sorted);
+                updateDescription(step.description);
+                updateProgress();
+                
+                document.getElementById('nextBtn').disabled = false;
+                if (currentStep === 0) {
+                    document.getElementById('prevBtn').disabled = true;
+                }
+            }
+        }
+        
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>
