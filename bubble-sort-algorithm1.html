@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort First Pass Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 800px;
+            max-width: 95%;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .animation-container {
+            height: 300px;
+            position: relative;
+            margin: 40px auto;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .array-element {
+            width: 60px;
+            height: 60px;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .comparison-arrow {
+            position: absolute;
+            top: -40px;
+            color: #e74c3c;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .swap-arrow {
+            position: absolute;
+            bottom: -40px;
+            color: #2ecc71;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .highlight {
+            background-color: #e74c3c;
+        }
+        .step-counter {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bubble Sort - First Pass Animation</h1>
+        
+        <div class="animation-container">
+            <div class="array-container" id="arrayContainer">
+                <div class="array-element" id="elem0">5
+                    <div class="comparison-arrow" id="compare0">↓</div>
+                    <div class="swap-arrow" id="swap0">↔</div>
+                </div>
+                <div class="array-element" id="elem1">3
+                    <div class="comparison-arrow" id="compare1">↓</div>
+                    <div class="swap-arrow" id="swap1">↔</div>
+                </div>
+                <div class="array-element" id="elem2">8
+                    <div class="comparison-arrow" id="compare2">↓</div>
+                    <div class="swap-arrow" id="swap2">↔</div>
+                </div>
+                <div class="array-element" id="elem3">4
+                    <div class="comparison-arrow" id="compare3">↓</div>
+                    <div class="swap-arrow" id="swap3">↔</div>
+                </div>
+                <div class="array-element" id="elem4">2
+                    <div class="comparison-arrow" id="compare4">↓</div>
+                    <div class="swap-arrow" id="swap4">↔</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            We start with an unsorted array [5, 3, 8, 4, 2]. In bubble sort, we compare adjacent elements and swap them if they're in the wrong order. Click "Next" to begin the first pass.
+        </div>
+        
+        <div class="step-counter">
+            Step: <span id="stepCounter">0</span> of 4
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [5, 3, 8, 4, 2];
+        const steps = [
+            {
+                text: "We start with an unsorted array [5, 3, 8, 4, 2]. In bubble sort, we compare adjacent elements and swap them if they're in the wrong order. Click \"Next\" to begin the first pass.",
+                compare: [-1, -1],
+                swap: false,
+                array: [5, 3, 8, 4, 2]
+            },
+            {
+                text: "First, we compare the first two elements: 5 and 3. Since 5 > 3, they are in the wrong order, so we swap them.",
+                compare: [0, 1],
+                swap: true,
+                array: [3, 5, 8, 4, 2]
+            },
+            {
+                text: "Next, we compare the second and third elements: 5 and 8. Since 5 < 8, they are already in the correct order, so we don't swap them.",
+                compare: [1, 2],
+                swap: false,
+                array: [3, 5, 8, 4, 2]
+            },
+            {
+                text: "Now, we compare the third and fourth elements: 8 and 4. Since 8 > 4, they are in the wrong order, so we swap them.",
+                compare: [2, 3],
+                swap: true,
+                array: [3, 5, 4, 8, 2]
+            },
+            {
+                text: "Finally, we compare the fourth and fifth elements: 8 and 2. Since 8 > 2, they are in the wrong order, so we swap them. This completes the first pass of bubble sort.",
+                compare: [3, 4],
+                swap: true,
+                array: [3, 5, 4, 2, 8]
+            }
+        ];
+
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounter = document.getElementById('stepCounter');
+        const explanation = document.getElementById('explanation');
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            // Update elements and their values
+            for (let i = 0; i < array.length; i++) {
+                document.getElementById(`elem${i}`).textContent = step.array[i];
+                document.getElementById(`elem${i}`).classList.remove('highlight');
+                document.getElementById(`compare${i}`).style.opacity = '0';
+                document.getElementById(`swap${i}`).style.opacity = '0';
+            }
+            
+            // Show comparison arrows
+            if (step.compare[0] >= 0 && step.compare[1] >= 0) {
+                document.getElementById(`elem${step.compare[0]}`).classList.add('highlight');
+                document.getElementById(`elem${step.compare[1]}`).classList.add('highlight');
+                document.getElementById(`compare${step.compare[0]}`).style.opacity = '1';
+                document.getElementById(`compare${step.compare[1]}`).style.opacity = '1';
+                
+                // Show swap arrows if swap happened
+                if (step.swap) {
+                    document.getElementById(`swap${step.compare[0]}`).style.opacity = '1';
+                    document.getElementById(`swap${step.compare[1]}`).style.opacity = '1';
+                }
+            }
+            
+            // Update explanation
+            explanation.textContent = step.text;
+            
+            // Update step counter
+            stepCounter.textContent = currentStep;
+            
+            // Enable/disable buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        });
+
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>
