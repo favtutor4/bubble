@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Performance Comparison</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .algorithm {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .bubble { background-color: #FF6384; color: white; }
+        .selection { background-color: #36A2EB; color: white; }
+        .insertion { background-color: #FFCE56; color: black; }
+        .quick { background-color: #4BC0C0; color: white; }
+        .merge { background-color: #9966FF; color: white; }
+        .heap { background-color: #FF9F40; color: white; }
+        
+        .performance-container {
+            display: flex;
+            height: 300px;
+            align-items: flex-end;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .bar {
+            width: 60px;
+            transition: height 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .bar-label {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .line-chart {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .x-axis, .y-axis {
+            position: absolute;
+            background-color: #333;
+        }
+        
+        .x-axis {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+        }
+        
+        .y-axis {
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-size: 12px;
+        }
+        
+        .space-complexity {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        
+        .space-item {
+            text-align: center;
+            padding: 10px;
+            width: 120px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sorting Algorithm Performance Comparison</h1>
+        
+        <div class="slides">
+            <div class="slide active" id="slide1">
+                <h2>Overview of Sorting Algorithms</h2>
+                <p>Sorting algorithms are methods used to arrange elements in a specific order. Let's explore and compare the most common sorting algorithms:</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <div class="algorithm bubble">Bubble Sort</div>
+                    <div class="algorithm selection">Selection Sort</div>
+                    <div class="algorithm insertion">Insertion Sort</div>
+                    <div class="algorithm quick">QuickSort</div>
+                    <div class="algorithm merge">MergeSort</div>
+                    <div class="algorithm heap">HeapSort</div>
+                </div>
+                <p>Each algorithm has different time and space complexity characteristics, making them suitable for different scenarios.</p>
+            </div>
+            
+            <div class="slide" id="slide2">
+                <h2>Time Complexity Comparison</h2>
+                <p>Time complexity represents how the running time of an algorithm scales with the input size.</p>
+                
+                <div class="performance-container">
+                    <div class="bar">
+                        <div class="bar-value">O(n²)</div>
+                        <div class="bar-fill bubble" style="height: 0px;"></div>
+                        <div class="bar-label">Bubble</div>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-value">O(n²)</div>
+                        <div class="bar-fill selection" style="height: 0px;"></div>
+                        <div class="bar-label">Selection</div>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-value">O(n²)</div>
+                        <div class="bar-fill insertion" style="height: 0px;"></div>
+                        <div class="bar-label">Insertion</div>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-value">O(n log n)</div>
+                        <div class="bar-fill quick" style="height: 0px;"></div>
+                        <div class="bar-label">Quick</div>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-value">O(n log n)</div>
+                        <div class="bar-fill merge" style="height: 0px;"></div>
+                        <div class="bar-label">Merge</div>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-value">O(n log n)</div>
+                        <div class="bar-fill heap" style="height: 0px;"></div>
+                        <div class="bar-label">Heap</div>
+                    </div>
+                </div>
+                <p><strong>Note:</strong> Smaller bars represent better performance. Bubble, Selection, and Insertion sorts have quadratic time complexity O(n²), while Quick, Merge, and Heap sorts have O(n log n) which is significantly faster for large datasets.</p>
+            </div>
+            
+            <div class="slide" id="slide3">
+                <h2>Space Complexity Comparison</h2>
+                <p>Space complexity represents the amount of memory an algorithm uses relative to the input size.</p>
+                
+                <div class="space-complexity">
+                    <div class="space-item bubble">
+                        <h3>Bubble Sort</h3>
+                        <p>O(1)</p>
+                    </div>
+                    <div class="space-item selection">
+                        <h3>Selection Sort</h3>
+                        <p>O(1)</p>
+                    </div>
+                    <div class="space-item insertion">
+                        <h3>Insertion Sort</h3>
+                        <p>O(1)</p>
+                    </div>
+                </div>
+                
+                <div class="space-complexity">
+                    <div class="space-item quick">
+                        <h3>QuickSort</h3>
+                        <p>O(log n)</p>
+                    </div>
+                    <div class="space-item merge">
+                        <h3>MergeSort</h3>
+                        <p>O(n)</p>
+                    </div>
+                    <div class="space-item heap">
+                        <h3>HeapSort</h3>
+                        <p>O(1)</p>
+                    </div>
+                </div>
+                
+                <p>Bubble, Selection, Insertion, and HeapSort have constant space complexity, QuickSort has logarithmic, and MergeSort requires linear additional space.</p>
+            </div>
+            
+            <div class="slide" id="slide4">
+                <h2>Performance for Different Input Sizes</h2>
+                <p>How these algorithms scale with increasing data size:</p>
+                
+                <div id="line-chart" class="line-chart">
+                    <div class="x-axis"></div>
+                    <div class="y-axis"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <div class="algorithm bubble">Bubble Sort</div>
+                    <div class="algorithm selection">Selection Sort</div>
+                    <div class="algorithm insertion">Insertion Sort</div>
+                    <div class="algorithm quick">QuickSort</div>
+                    <div class="algorithm merge">MergeSort</div>
+                    <div class="algorithm heap">HeapSort</div>
+                </div>
+                
+                <p>As input size increases, the performance gap between O(n²) and O(n log n) algorithms grows dramatically.</p>
+            </div>
+            
+            <div class="slide" id="slide5">
+                <h2>Detailed Comparison Table</h2>
+                <table>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>Best Case</th>
+                        <th>Average Case</th>
+                        <th>Worst Case</th>
+                        <th>Space</th>
+                        <th>Stability</th>
+                    </tr>
+                    <tr>
+                        <td class="bubble" style="color: white">Bubble Sort</td>
+                        <td>O(n)</td>
+                        <td>O(n²)</td>
+                        <td>O(n²)</td>
+                        <td>O(1)</td>
+                        <td>Stable</td>
+                    </tr>
+                    <tr>
+                        <td class="selection" style="color: white">Selection Sort</td>
+                        <td>O(n²)</td>
+                        <td>O(n²)</td>
+                        <td>O(n²)</td>
+                        <td>O(1)</td>
+                        <td>Unstable</td>
+                    </tr>
+                    <tr>
+                        <td class="insertion">Insertion Sort</td>
+                        <td>O(n)</td>
+                        <td>O(n²)</td>
+                        <td>O(n²)</td>
+                        <td>O(1)</td>
+                        <td>Stable</td>
+                    </tr>
+                    <tr>
+                        <td class="quick" style="color: white">QuickSort</td>
+                        <td>O(n log n)</td>
+                        <td>O(n log n)</td>
+                        <td>O(n²)</td>
+                        <td>O(log n)</td>
+                        <td>Unstable</td>
+                    </tr>
+                    <tr>
+                        <td class="merge" style="color: white">MergeSort</td>
+                        <td>O(n log n)</td>
+                        <td>O(n log n)</td>
+                        <td>O(n log n)</td>
+                        <td>O(n)</td>
+                        <td>Stable</td>
+                    </tr>
+                    <tr>
+                        <td class="heap" style="color: white">HeapSort</td>
+                        <td>O(n log n)</td>
+                        <td>O(n log n)</td>
+                        <td>O(n log n)</td>
+                        <td>O(1)</td>
+                        <td>Unstable</td>
+                    </tr>
+                </table>
+                <p><strong>Stability:</strong> A sorting algorithm is stable if elements with the same values appear in the same order in the sorted output as they appear in the input.</p>
+            </div>
+            
+            <div class="slide" id="slide6">
+                <h2>When to Use Each Algorithm</h2>
+                <p>Choosing the right sorting algorithm depends on the specific scenario:</p>
+                
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 20px;">
+                    <div style="width: 48%; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <h3 class="bubble" style="color: white; padding: 5px;">Bubble Sort</h3>
+                        <p>Best for educational purposes and when the list is nearly sorted with a small number of elements.</p>
+                    </div>
+                    
+                    <div style="width: 48%; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <h3 class="selection" style="color: white; padding: 5px;">Selection Sort</h3>
+                        <p>Good when memory writes are costly and when the input size is small.</p>
+                    </div>
+                    
+                    <div style="width: 48%; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <h3 class="insertion" style="padding: 5px;">Insertion Sort</h3>
+                        <p>Efficient for small data sets and nearly sorted arrays. Used as part of more complex algorithms.</p>
+                    </div>
+                    
+                    <div style="width: 48%; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <h3 class="quick" style="color: white; padding: 5px;">QuickSort</h3>
+                        <p>Often the fastest in practice for large arrays. Used in many standard library implementations.</p>
+                    </div>
+                    
+                    <div style="width: 48%; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <h3 class="merge" style="color: white; padding: 5px;">MergeSort</h3>
+                        <p>Preferred for linked lists, external sorting, and when stability is required.</p>
+                    </div>
+                    
+                    <div style="width: 48%; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <h3 class="heap" style="color: white; padding: 5px;">HeapSort</h3>
+                        <p>Great when guaranteed O(n log n) performance is needed with minimal space requirements.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentSlide = 1;
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            function showSlide(slideIndex) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                document.getElementById(`slide${slideIndex}`).classList.add('active');
+                
+                prevBtn.disabled = (slideIndex === 1);
+                nextBtn.disabled = (slideIndex === totalSlides);
+                
+                // Run animation for specific slides
+                if (slideIndex === 2) {
+                    animateTimeBars();
+                } else if (slideIndex === 4) {
+                    drawLineChart();
+                }
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentSlide > 1) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentSlide < totalSlides) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            });
+            
+            function animateTimeBars() {
+                const bars = document.querySelectorAll('.bar-fill');
+                
+                // Quadratic time complexity (O(n²))
+                setTimeout(() => {
+                    bars[0].style.height = '250px'; // Bubble Sort
+                    bars[1].style.height = '250px'; // Selection Sort
+                    bars[2].style.height = '250px'; // Insertion Sort
+                }, 100);
+                
+                // Logarithmic time complexity (O(n log n))
+                setTimeout(() => {
+                    bars[3].style.height = '125px'; // QuickSort
+                    bars[4].style.height = '125px'; // MergeSort
+                    bars[5].style.height = '125px'; // HeapSort
+                }, 600);
+            }
+            
+            function drawLineChart() {
+                const chart = document.getElementById('line-chart');
+                const width = chart.offsetWidth;
+                const height = chart.offsetHeight;
+                
+                // Clear previous chart
+                while (chart.childNodes.length > 2) {
+                    chart.removeChild(chart.lastChild);
+                }
+                
+                // Add axis labels
+                for (let i = 0; i <= 5; i++) {
+                    const xLabel = document.createElement('div');
+                    xLabel.className = 'axis-label';
+                    xLabel.style.bottom = '-20px';
+                    xLabel.style.left = `${i * 20}%`;
+                    xLabel.textContent = `${i * 20}n`;
+                    chart.appendChild(xLabel);
+                }
+                
+                for (let i = 0; i <= 5; i++) {
+                    const yLabel = document.createElement('div');
+                    yLabel.className = 'axis-label';
+                    yLabel.style.left = '-25px';
+                    yLabel.style.bottom = `${i * 20}%`;
+                    yLabel.textContent = `${100 - i * 20}%`;
+                    chart.appendChild(yLabel);
+                }
+                
+                // Create line for each algorithm
+                const createLine = (points, color, algorithm) => {
+                    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    svg.setAttribute("width", "100%");
+                    svg.setAttribute("height", "100%");
+                    svg.style.position = "absolute";
+                    svg.style.top = "0";
+                    svg.style.left = "0";
+                    
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    let d = `M ${points[0][0]} ${points[0][1]}`;
+                    
+                    for (let i = 1; i < points.length; i++) {
+                        d += ` L ${points[i][0]} ${points[i][1]}`;
+                    }
+                    
+                    path.setAttribute("d", d);
+                    path.setAttribute("stroke", color);
+                    path.setAttribute("stroke-width", "3");
+                    path.setAttribute("fill", "none");
+                    
+                    svg.appendChild(path);
+                    chart.appendChild(svg);
+                };
+                
+                // Define points for each algorithm (x,y)
+                setTimeout(() => {
+                    // Bubble Sort (O(n²))
+                    createLine([
+                        [0, height], 
+                        [width * 0.2, height * 0.8], 
+                        [width * 0.4, height * 0.4], 
+                        [width * 0.6, height * 0.1], 
+                        [width * 0.8, height * 0], 
+                        [width, height * 0]
+                    ], '#FF6384', 'Bubble Sort');
+                    
+                    // Selection Sort (O(n²))
+                    createLine([
+                        [0, height], 
+                        [width * 0.2, height * 0.8], 
+                        [width * 0.4, height * 0.4], 
+                        [width * 0.6, height * 0.1], 
+                        [width * 0.8, height * 0], 
+                        [width, height * 0]
+                    ], '#36A2EB', 'Selection Sort');
+                    
+                    // Insertion Sort (O(n²))
+                    createLine([
+                        [0, height], 
+                        [width * 0.2, height * 0.8], 
+                        [width * 0.4, height * 0.4], 
+                        [width * 0.6, height * 0.1], 
+                        [width * 0.8, height * 0], 
+                        [width, height * 0]
+                    ], '#FFCE56', 'Insertion Sort');
+                }, 100);
+                
+                setTimeout(() => {
+                    // QuickSort (O(n log n))
+                    createLine([
+                        [0, height], 
+                        [width * 0.2, height * 0.9], 
+                        [width * 0.4, height * 0.75], 
+                        [width * 0.6, height * 0.65], 
+                        [width * 0.8, height * 0.55], 
+                        [width, height * 0.5]
+                    ], '#4BC0C0', 'QuickSort');
+                    
+                    // MergeSort (O(n log n))
+                    createLine([
+                        [0, height], 
+                        [width * 0.2, height * 0.9], 
+                        [width * 0.4, height * 0.75], 
+                        [width * 0.6, height * 0.65], 
+                        [width * 0.8, height * 0.55], 
+                        [width, height * 0.5]
+                    ], '#9966FF', 'MergeSort');
+                    
+                    // HeapSort (O(n log n))
+                    createLine([
+                        [0, height], 
+                        [width * 0.2, height * 0.9], 
+                        [width * 0.4, height * 0.75], 
+                        [width * 0.6, height * 0.65], 
+                        [width * 0.8, height * 0.55], 
+                        [width, height * 0.5]
+                    ], '#FF9F40', 'HeapSort');
+                }, 600);
+            }
+        });
+    </script>
+</body>
+</html>
