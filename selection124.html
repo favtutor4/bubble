@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Recursive Partitioning Animation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .visualization {
+            width: 100%;
+            height: 500px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .array-element {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        .pivot {
+            background-color: #e74c3c;
+        }
+        .sorted {
+            background-color: #2ecc71;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 5px solid #3498db;
+        }
+        .step-counter {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .level-line {
+            position: absolute;
+            border-top: 2px dashed #7f8c8d;
+            z-index: -1;
+        }
+        .connector {
+            position: absolute;
+            border-left: 2px dashed #7f8c8d;
+            z-index: -1;
+        }
+        .partition-label {
+            position: absolute;
+            font-size: 12px;
+            color: #7f8c8d;
+            background-color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quick Sort Recursive Partitioning Flow</h1>
+    <div class="container">
+        <div class="visualization" id="visualization"></div>
+        <div class="explanation" id="explanation">
+            Welcome to Quick Sort visualization. Click "Next" to begin the animation.
+        </div>
+        <div class="step-counter" id="stepCounter">Step: 0 / 10</div>
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const initialArray = [10, 7, 8, 9, 1, 5];
+        
+        // Animation steps
+        const steps = [
+            {
+                title: "Initial Array",
+                description: "We start with the unsorted array [10, 7, 8, 9, 1, 5]. Quick Sort works by selecting a 'pivot' element and partitioning the array around it.",
+                array: [
+                    { value: 10, x: 0, y: 0, level: 0, pivot: false, sorted: false }
+                ],
+                connections: []
+            },
+            {
+                title: "Complete Initial Array",
+                description: "Let's look at our complete array [10, 7, 8, 9, 1, 5]. We'll select the last element 5 as our pivot for the first partition.",
+                array: [
+                    { value: 10, x: 0, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 7, x: 1, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 8, x: 2, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 9, x: 3, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 1, x: 4, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 5, x: 5, y: 0, level: 0, pivot: true, sorted: false }
+                ],
+                connections: []
+            },
+            {
+                title: "First Partition Result",
+                description: "After partitioning around pivot 5: Elements smaller than 5 are moved to the left, and larger to the right. The pivot is now in its correct sorted position.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: true, sorted: true },
+                    { value: 8, x: 2, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 9, x: 3, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 1, x: 4, y: 0, level: 0, pivot: false, sorted: false, hidden: true },
+                    { value: 10, x: 5, y: 0, level: 0, pivot: false, sorted: false },
+                    { value: 7, x: 4, y: 0, level: 0, pivot: false, sorted: false }
+                ],
+                connections: []
+            },
+            {
+                title: "Recursive Partitioning - Level 1",
+                description: "Now we recursively apply Quick Sort to the sub-arrays. We have [1] on the left (already sorted) and [8, 9, 7, 10] on the right. For the right sub-array, we select 10 as the pivot.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: false, sorted: true },
+                    
+                    { value: 8, x: 0, y: 1, level: 1, pivot: false, sorted: false },
+                    { value: 9, x: 1, y: 1, level: 1, pivot: false, sorted: false },
+                    { value: 7, x: 2, y: 1, level: 1, pivot: false, sorted: false },
+                    { value: 10, x: 3, y: 1, level: 1, pivot: true, sorted: false }
+                ],
+                connections: [
+                    { from: { x: 2.5, y: 0 }, to: { x: 1.5, y: 1 }, level: 0 }
+                ]
+            },
+            {
+                title: "Second Partition Result",
+                description: "After partitioning around pivot 10: Elements [8, 9, 7] are all smaller than 10, so they move to the left. The pivot 10 is now in its correct sorted position.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: false, sorted: true },
+                    
+                    { value: 8, x: 0, y: 1, level: 1, pivot: false, sorted: false },
+                    { value: 9, x: 1, y: 1, level: 1, pivot: false, sorted: false },
+                    { value: 7, x: 2, y: 1, level: 1, pivot: false, sorted: false },
+                    { value: 10, x: 3, y: 1, level: 1, pivot: true, sorted: true }
+                ],
+                connections: [
+                    { from: { x: 2.5, y: 0 }, to: { x: 1.5, y: 1 }, level: 0 }
+                ]
+            },
+            {
+                title: "Recursive Partitioning - Level 2",
+                description: "Continuing with recursion, we apply Quick Sort to [8, 9, 7]. We select 7 as the pivot for this sub-array.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: false, sorted: true },
+                    
+                    { value: 10, x: 3, y: 1, level: 1, pivot: false, sorted: true },
+                    
+                    { value: 8, x: 0, y: 2, level: 2, pivot: false, sorted: false },
+                    { value: 9, x: 1, y: 2, level: 2, pivot: false, sorted: false },
+                    { value: 7, x: 2, y: 2, level: 2, pivot: true, sorted: false }
+                ],
+                connections: [
+                    { from: { x: 2.5, y: 0 }, to: { x: 1.5, y: 1 }, level: 0 },
+                    { from: { x: 1.5, y: 1 }, to: { x: 1, y: 2 }, level: 1 }
+                ]
+            },
+            {
+                title: "Third Partition Result",
+                description: "After partitioning around pivot 7: There are no elements smaller than 7, so it moves to the leftmost position. Elements [8, 9] are larger and stay to the right.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: false, sorted: true },
+                    
+                    { value: 10, x: 3, y: 1, level: 1, pivot: false, sorted: true },
+                    
+                    { value: 7, x: 0, y: 2, level: 2, pivot: true, sorted: true },
+                    { value: 8, x: 1, y: 2, level: 2, pivot: false, sorted: false },
+                    { value: 9, x: 2, y: 2, level: 2, pivot: false, sorted: false }
+                ],
+                connections: [
+                    { from: { x: 2.5, y: 0 }, to: { x: 1.5, y: 1 }, level: 0 },
+                    { from: { x: 1.5, y: 1 }, to: { x: 1, y: 2 }, level: 1 }
+                ]
+            },
+            {
+                title: "Recursive Partitioning - Level 3",
+                description: "Now we apply Quick Sort to [8, 9]. We select 9 as the pivot for this sub-array.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: false, sorted: true },
+                    
+                    { value: 7, x: 0, y: 2, level: 2, pivot: false, sorted: true },
+                    { value: 10, x: 3, y: 1, level: 1, pivot: false, sorted: true },
+                    
+                    { value: 8, x: 0, y: 3, level: 3, pivot: false, sorted: false },
+                    { value: 9, x: 1, y: 3, level: 3, pivot: true, sorted: false }
+                ],
+                connections: [
+                    { from: { x: 2.5, y: 0 }, to: { x: 1.5, y: 1 }, level: 0 },
+                    { from: { x: 1.5, y: 1 }, to: { x: 1, y: 2 }, level: 1 },
+                    { from: { x: 1.5, y: 2 }, to: { x: 0.5, y: 3 }, level: 2 }
+                ]
+            },
+            {
+                title: "Final Partitioning",
+                description: "After partitioning around pivot 9: Element 8 is smaller and moves to the left. Both 8 and 9 are now in their correct positions.",
+                array: [
+                    { value: 1, x: 0, y: 0, level: 0, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 0, level: 0, pivot: false, sorted: true },
+                    
+                    { value: 7, x: 0, y: 2, level: 2, pivot: false, sorted: true },
+                    { value: 10, x: 3, y: 1, level: 1, pivot: false, sorted: true },
+                    
+                    { value: 8, x: 0, y: 3, level: 3, pivot: false, sorted: true },
+                    { value: 9, x: 1, y: 3, level: 3, pivot: true, sorted: true }
+                ],
+                connections: [
+                    { from: { x: 2.5, y: 0 }, to: { x: 1.5, y: 1 }, level: 0 },
+                    { from: { x: 1.5, y: 1 }, to: { x: 1, y: 2 }, level: 1 },
+                    { from: { x: 1.5, y: 2 }, to: { x: 0.5, y: 3 }, level: 2 }
+                ]
+            },
+            {
+                title: "Sorted Array",
+                description: "All elements are now in their correct positions. The array is fully sorted: [1, 5, 7, 8, 9, 10]. QuickSort has successfully completed!",
+                array: [
+                    { value: 1, x: 0, y: 4, level: 4, pivot: false, sorted: true },
+                    { value: 5, x: 1, y: 4, level: 4, pivot: false, sorted: true },
+                    { value: 7, x: 2, y: 4, level: 4, pivot: false, sorted: true },
+                    { value: 8, x: 3, y: 4, level: 4, pivot: false, sorted: true },
+                    { value: 9, x: 4, y: 4, level: 4, pivot: false, sorted: true },
+                    { value: 10, x: 5, y: 4, level: 4, pivot: false, sorted: true }
+                ],
+                connections: []
+            }
+        ];
+
+        let currentStep = 0;
+
+        // DOM elements
+        const visualization = document.getElementById('visualization');
+        const explanation = document.getElementById('explanation');
+        const stepCounter = document.getElementById('stepCounter');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Navigation buttons event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+                updateButtonState();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+                updateButtonState();
+            }
+        });
+
+        function updateButtonState() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+            stepCounter.textContent = `Step: ${currentStep} / ${steps.length - 1}`;
+        }
+
+        function updateVisualization() {
+            // Clear visualization
+            visualization.innerHTML = '';
+            
+            const step = steps[currentStep];
+            
+            // Update explanation
+            explanation.innerHTML = `<h3>${step.title}</h3><p>${step.description}</p>`;
+            
+            // Calculate element size and spacing
+            const elementWidth = 40;
+            const elementHeight = 40;
+            const horizontalSpacing = 60;
+            const verticalSpacing = 90;
+            const leftOffset = 100;
+            const topOffset = 30;
+
+            // Add level lines
+            const maxLevel = Math.max(...step.array.map(el => el.level));
+            for (let i = 0; i <= maxLevel; i++) {
+                const line = document.createElement('div');
+                line.className = 'level-line';
+                line.style.width = '100%';
+                line.style.left = '0';
+                line.style.top = `${topOffset + i * verticalSpacing + elementHeight / 2}px`;
+                visualization.appendChild(line);
+            }
+
+            // Add connections
+            step.connections.forEach(connection => {
+                const fromX = leftOffset + connection.from.x * horizontalSpacing + elementWidth / 2;
+                const fromY = topOffset + connection.from.y * verticalSpacing + elementHeight;
+                const toX = leftOffset + connection.to.x * horizontalSpacing + elementWidth / 2;
+                const toY = topOffset + connection.to.y * verticalSpacing;
+                
+                const connector = document.createElement('div');
+                connector.className = 'connector';
+                connector.style.height = `${toY - fromY}px`;
+                connector.style.left = `${fromX}px`;
+                connector.style.top = `${fromY}px`;
+                visualization.appendChild(connector);
+            });
+            
+            // Add array elements
+            step.array.forEach(item => {
+                if (item.hidden) return;
+                
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                if (item.pivot) element.classList.add('pivot');
+                if (item.sorted) element.classList.add('sorted');
+                element.textContent = item.value;
+                
+                element.style.left = `${leftOffset + item.x * horizontalSpacing}px`;
+                element.style.top = `${topOffset + item.y * verticalSpacing}px`;
+                
+                visualization.appendChild(element);
+            });
+            
+            // Add special labels based on current step
+            if (currentStep === 2) {
+                const label = document.createElement('div');
+                label.className = 'partition-label';
+                label.textContent = 'Pivot 5 in final position';
+                label.style.left = `${leftOffset + 1 * horizontalSpacing}px`;
+                label.style.top = `${topOffset + 0 * verticalSpacing - 20}px`;
+                visualization.appendChild(label);
+            }
+            
+            if (currentStep >= 4) {
+                const pivotLabels = [
+                    { step: 4, x: 3, y: 1, text: 'Pivot 10' },
+                    { step: 6, x: 2, y: 2, text: 'Pivot 7' },
+                    { step: 8, x: 1, y: 3, text: 'Pivot 9' }
+                ];
+                
+                pivotLabels.forEach(label => {
+                    if (currentStep >= label.step) {
+                        const pivotLabel = document.createElement('div');
+                        pivotLabel.className = 'partition-label';
+                        pivotLabel.textContent = label.text;
+                        pivotLabel.style.left = `${leftOffset + label.x * horizontalSpacing}px`;
+                        pivotLabel.style.top = `${topOffset + label.y * verticalSpacing - 20}px`;
+                        visualization.appendChild(pivotLabel);
+                    }
+                });
+            }
+        }
+
+        // Initialize visualization
+        updateVisualization();
+        updateButtonState();
+    </script>
+</body>
+</html>
