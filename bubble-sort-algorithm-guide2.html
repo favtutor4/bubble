@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Complexity Comparison for Bubble Sort</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .axis {
+            position: absolute;
+            background-color: #333;
+        }
+        .y-axis {
+            width: 2px;
+            height: 350px;
+            left: 50px;
+            top: 25px;
+        }
+        .x-axis {
+            width: 700px;
+            height: 2px;
+            left: 50px;
+            top: 375px;
+        }
+        .axis-label {
+            position: absolute;
+            font-size: 14px;
+        }
+        .x-label {
+            top: 380px;
+            text-align: center;
+            width: 100px;
+        }
+        .y-tick {
+            position: absolute;
+            left: 45px;
+            width: 10px;
+            height: 1px;
+            background-color: #333;
+        }
+        .y-label {
+            position: absolute;
+            left: 0;
+            width: 45px;
+            text-align: right;
+            font-size: 12px;
+        }
+        .x-tick {
+            position: absolute;
+            top: 375px;
+            width: 1px;
+            height: 10px;
+            background-color: #333;
+        }
+        .data-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transform: translate(-4px, -4px);
+        }
+        .line {
+            position: absolute;
+            height: 2px;
+            transform-origin: left center;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 10px;
+            margin-right: 5px;
+        }
+        .explanation {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .slide {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Time Complexity Comparison for Bubble Sort</h1>
+        
+        <div class="slide active" id="slide1">
+            <div class="explanation">
+                <p>Bubble Sort is a simple sorting algorithm with different time complexities depending on the input:</p>
+                <ul>
+                    <li><strong>Best Case:</strong> O(n) - When the array is already sorted</li>
+                    <li><strong>Average Case:</strong> O(n²) - For random arrangements</li>
+                    <li><strong>Worst Case:</strong> O(n²) - When the array is sorted in reverse order</li>
+                </ul>
+                <p>Let's visualize how these different scenarios compare as the input size increases.</p>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2196F3;"></div>
+                    <span>Best Case O(n)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF9800;"></div>
+                    <span>Average Case O(n²)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #F44336;"></div>
+                    <span>Worst Case O(n²)</span>
+                </div>
+            </div>
+            
+            <div class="chart-container" id="chart">
+                <div class="axis y-axis"></div>
+                <div class="axis x-axis"></div>
+                
+                <!-- X-axis labels -->
+                <div class="axis-label x-label" style="left: 100px;">10</div>
+                <div class="axis-label x-label" style="left: 350px;">100</div>
+                <div class="axis-label x-label" style="left: 600px;">1000</div>
+                
+                <!-- X-axis ticks -->
+                <div class="x-tick" style="left: 150px;"></div>
+                <div class="x-tick" style="left: 400px;"></div>
+                <div class="x-tick" style="left: 650px;"></div>
+                
+                <!-- Y-axis labels and ticks -->
+                <div class="y-tick" style="top: 25px;"></div>
+                <div class="y-label" style="top: 20px;">1000</div>
+                
+                <div class="y-tick" style="top: 125px;"></div>
+                <div class="y-label" style="top: 120px;">750</div>
+                
+                <div class="y-tick" style="top: 225px;"></div>
+                <div class="y-label" style="top: 220px;">500</div>
+                
+                <div class="y-tick" style="top: 325px;"></div>
+                <div class="y-label" style="top: 320px;">250</div>
+                
+                <div class="y-tick" style="top: 375px;"></div>
+                <div class="y-label" style="top: a370px;">0</div>
+                
+                <!-- Axis titles -->
+                <div class="axis-label" style="left: 350px; top: 410px; text-align: center;">Array Size</div>
+                <div class="axis-label" style="left: -20px; top: 200px; transform: rotate(-90deg); transform-origin: center;">Time (ms)</div>
+            </div>
+            
+            <div class="explanation">
+                <p>Notice how the Best Case (O(n)) grows linearly with the input size, while both Average and Worst Case (O(n²)) grow quadratically.</p>
+                <p>This means that for small input sizes, the difference may not be significant, but as the input size increases, the performance gap becomes dramatic.</p>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide2">
+            <div class="explanation">
+                <h2>Understanding the Growth Patterns</h2>
+                <p>Let's break down what these different time complexities mean in practice:</p>
+                <ul>
+                    <li><strong>Best Case O(n):</strong> When the array is already sorted, Bubble Sort makes only one pass through the array, performing n comparisons and 0 swaps.</li>
+                    <li><strong>Average and Worst Case O(n²):</strong> For most input arrangements, Bubble Sort performs approximately n²/2 comparisons and swaps, which is why the time grows quadratically.</li>
+                </ul>
+                <p>For example, with an array of 1000 elements:</p>
+                <ul>
+                    <li>Best case: ~1000 operations</li>
+                    <li>Worst case: ~500,000 operations</li>
+                </ul>
+                <p>This 500x difference explains the dramatic curve in our chart!</p>
+            </div>
+            
+            <div class="explanation">
+                <h2>Practical Implications</h2>
+                <p>This time complexity comparison has real-world implications:</p>
+                <ul>
+                    <li>For small datasets (less than 100 elements), Bubble Sort might be acceptable</li>
+                    <li>For medium to large datasets, the quadratic growth makes Bubble Sort impractical</li>
+                    <li>Other algorithms like Merge Sort (O(n log n)) are much more efficient for larger datasets</li>
+                </ul>
+                <p>When choosing a sorting algorithm, always consider the expected input size and characteristics!</p>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        // Chart animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const chart = document.getElementById('chart');
+            
+            // Data points for O(n) - Best Case
+            const bestCase = [
+                { x: 150, y: 375, value: 10 },
+                { x: 400, y: 365, value: 100 },
+                { x: 650, y: 275, value: 1000 }
+            ];
+            
+            // Data points for O(n²) - Average Case
+            const avgCase = [
+                { x: 150, y: 374, value: 10 },
+                { x: 400, y: 325, value: 100 },
+                { x: 650, y: 75, value: 1000 }
+            ];
+            
+            // Data points for O(n²) - Worst Case
+            const worstCase = [
+                { x: 150, y: 373, value: 10 },
+                { x: 400, y: 300, value: 100 },
+                { x: 650, y: 25, value: 1000 }
+            ];
+            
+            // Function to create and animate data points and lines
+            function animateDataPoints(data, color, delay) {
+                setTimeout(() => {
+                    // Draw lines first
+                    for (let i = 0; i < data.length - 1; i++) {
+                        const line = document.createElement('div');
+                        line.className = 'line';
+                        line.style.backgroundColor = color;
+                        line.style.left = data[i].x + 'px';
+                        line.style.top = data[i].y + 'px';
+                        
+                        // Calculate length and angle for the line
+                        const dx = data[i+1].x - data[i].x;
+                        const dy = data[i+1].y - data[i].y;
+                        const length = Math.sqrt(dx*dx + dy*dy);
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        
+                        line.style.width = '0px';
+                        chart.appendChild(line);
+                        
+                        // Animate the line growth
+                        setTimeout(() => {
+                            line.style.width = length + 'px';
+                            line.style.transform = `rotate(${angle}deg)`;
+                        }, 100 * i);
+                    }
+                    
+                    // Then draw points
+                    data.forEach((point, index) => {
+                        setTimeout(() => {
+                            const dot = document.createElement('div');
+                            dot.className = 'data-point';
+                            dot.style.backgroundColor = color;
+                            dot.style.left = point.x + 'px';
+                            dot.style.top = point.y + 'px';
+                            chart.appendChild(dot);
+                        }, 300 * index);
+                    });
+                }, delay);
+            }
+            
+            // Animate all data series with delays
+            animateDataPoints(bestCase, '#2196F3', 500);  // Blue
+            animateDataPoints(avgCase, '#FF9800', 1500);  // Orange
+            animateDataPoints(worstCase, '#F44336', 2500); // Red
+            
+            // Navigation logic
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            let currentSlide = 0;
+            
+            function showSlide(n) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = n;
+                slides[currentSlide].classList.add('active');
+                
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.disabled = currentSlide === slides.length - 1;
+            }
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) showSlide(currentSlide - 1);
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < slides.length - 1) showSlide(currentSlide + 1);
+            });
+        });
+    </script>
+</body>
+</html>
