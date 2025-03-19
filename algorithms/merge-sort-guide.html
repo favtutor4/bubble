@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 900px;
+            height: 500px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .array-element {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            background-color: #4285f4;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .array-level {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .array-group {
+            display: flex;
+            justify-content: center;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #4285f4;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .merge-line {
+            stroke: #ea4335;
+            stroke-width: 2;
+            stroke-dasharray: 5;
+        }
+        .hidden {
+            opacity: 0;
+        }
+        .sorted {
+            background-color: #34a853;
+        }
+        .dividing {
+            background-color: #fbbc05;
+        }
+        .merging {
+            background-color: #ea4335;
+        }
+    </style>
+</head>
+<body>
+    <h1>Merge Sort: Divide and Conquer Visualization</h1>
+    
+    <div class="container" id="visualization-container">
+        <svg width="900" height="500" id="visualization-svg"></svg>
+    </div>
+    
+    <div class="explanation" id="explanation">
+        Merge Sort is a divide and conquer algorithm that divides the input array into two halves, recursively sorts them, and then merges the sorted halves.
+    </div>
+    
+    <div class="navigation">
+        <button id="prev-btn" disabled>Previous</button>
+        <button id="next-btn">Next</button>
+    </div>
+    
+    <div class="step-indicator" id="step-indicator">Step 1 of 7</div>
+    
+    <script>
+        const originalArray = [38, 27, 43, 3, 9, 82, 10];
+        
+        // Define all steps for animation
+        const steps = [
+            {
+                level: 0,
+                arrays: [originalArray],
+                explanation: "We start with the unsorted array [38, 27, 43, 3, 9, 82, 10]. Merge sort will divide this array into smaller subarrays until each has only one element."
+            },
+            {
+                level: 1,
+                arrays: [[38, 27, 43, 3], [9, 82, 10]],
+                explanation: "First, we divide the array into two halves: [38, 27, 43, 3] and [9, 82, 10]. We'll sort each half separately and then merge them back together."
+            },
+            {
+                level: 2,
+                arrays: [[38, 27], [43, 3], [9, 82], [10]],
+                explanation: "We continue dividing each subarray. Now we have [38, 27], [43, 3], [9, 82], and [10]. Notice that we keep dividing until we reach arrays of size 1."
+            },
+            {
+                level: 3,
+                arrays: [[38], [27], [43], [3], [9], [82], [10]],
+                explanation: "We've divided all subarrays down to individual elements. Since arrays with one element are already sorted, we can start merging them back together."
+            },
+            {
+                level: 2,
+                arrays: [[27, 38], [3, 43], [9, 82], [10]],
+                explanation: "We merge [38] and [27] into [27, 38], and [43] and [3] into [3, 43]. Similarly, [9] and [82] become [9, 82]. The single element [10] remains as is."
+            },
+            {
+                level: 1,
+                arrays: [[3, 27, 38, 43], [9, 10, 82]],
+                explanation: "We merge [27, 38] and [3, 43] into [3, 27, 38, 43], and [9, 82] and [10] into [9, 10, 82]. Notice how elements are placed in sorted order during merging."
+            },
+            {
+                level: 0,
+                arrays: [[3, 9, 10, 27, 38, 43, 82]],
+                explanation: "Finally, we merge the two sorted halves [3, 27, 38, 43] and [9, 10, 82] into the fully sorted array [3, 9, 10, 27, 38, 43, 82]. The merge sort is complete!"
+            }
+        ];
+        
+        let currentStep = 0;
+        const svg = document.getElementById('visualization-svg');
+        const explanationElement = document.getElementById('explanation');
+        const prevButton = document.getElementById('prev-btn');
+        const nextButton = document.getElementById('next-btn');
+        const stepIndicator = document.getElementById('step-indicator');
+        
+        function renderStep(stepIndex) {
+            const step = steps[stepIndex];
+            svg.innerHTML = '';
+            
+            // Set explanation text
+            explanationElement.textContent = step.explanation;
+            
+            // Calculate layout
+            const levelHeight = 80;
+            const yOffset = 250 - (step.arrays.length * levelHeight / 2);
+            
+            step.arrays.forEach((array, arrayIndex) => {
+                const y = yOffset + arrayIndex * levelHeight;
+                const totalWidth = array.length * 60;
+                const xOffset = 450 - (totalWidth / 2);
+                
+                // Render array elements
+                array.forEach((value, index) => {
+                    const x = xOffset + index * 60;
+                    
+                    // Create element box
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', x);
+                    rect.setAttribute('y', y);
+                    rect.setAttribute('width', 50);
+                    rect.setAttribute('height', 50);
+                    rect.setAttribute('rx', 5);
+                    rect.setAttribute('ry', 5);
+                    
+                    // Color based on step
+                    if (stepIndex === 3) {
+                        rect.setAttribute('fill', '#4285f4'); // Initial division completed
+                    } else if (stepIndex < 3) {
+                        rect.setAttribute('fill', '#fbbc05'); // Dividing phase
+                    } else {
+                        rect.setAttribute('fill', '#34a853'); // Merging phase
+                    }
+                    
+                    svg.appendChild(rect);
+                    
+                    // Add text
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x + 25);
+                    text.setAttribute('y', y + 30);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', 'white');
+                    text.setAttribute('font-weight', 'bold');
+                    text.textContent = value;
+                    svg.appendChild(text);
+                });
+                
+                // Draw connection lines if not the first level
+                if (stepIndex < 3 && arrayIndex > 0 && arrayIndex % 2 === 1) {
+                    // Connect to previous array in dividing phase
+                    const prevArray = step.arrays[arrayIndex - 1];
+                    const nextStepArray = steps[stepIndex + 1].arrays.find(arr => 
+                        arr.some(val => prevArray.includes(val) || array.includes(val))
+                    );
+                    
+                    if (nextStepArray) {
+                        const x1 = 450; // Center point
+                        const y1 = y - levelHeight / 2;
+                        const y2 = y - levelHeight + 25;
+                        
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x1);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('class', 'merge-line');
+                        svg.appendChild(line);
+                    }
+                } else if (stepIndex > 3) {
+                    // Draw merging lines
+                    const nextStepIndex = stepIndex + 1 > 6 ? 6 : stepIndex + 1;
+                    const nextStepArrays = steps[nextStepIndex].arrays;
+                    
+                    if (nextStepArrays.length < step.arrays.length) {
+                        const evenIndex = arrayIndex - (arrayIndex % 2);
+                        if (evenIndex < step.arrays.length) {
+                            const x1 = 450; // Center point
+                            const y1 = y + 25;
+                            const y2 = yOffset + Math.floor(arrayIndex / 2) * levelHeight + 25;
+                            
+                            if (arrayIndex % 2 === 0) {
+                                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                                line.setAttribute('x1', x1);
+                                line.setAttribute('y1', y + 50);
+                                line.setAttribute('x2', x1);
+                                line.setAttribute('y2', y + 50 + levelHeight / 2);
+                                line.setAttribute('class', 'merge-line');
+                                svg.appendChild(line);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${stepIndex + 1} of ${steps.length}`;
+            
+            // Update button states
+            prevButton.disabled = stepIndex === 0;
+            nextButton.disabled = stepIndex === steps.length - 1;
+        }
+        
+        // Initial render
+        renderStep(currentStep);
+        
+        // Event listeners for navigation buttons
+        prevButton.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+            }
+        });
+        
+        nextButton.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(currentStep);
+            }
+        });
+    </script>
+</body>
+</html>
