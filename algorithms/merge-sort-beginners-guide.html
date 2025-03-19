@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            height: 250px;
+            align-items: flex-end;
+        }
+        .array-bar {
+            width: 30px;
+            margin: 0 2px;
+            background-color: #3498db;
+            transition: height 0.5s, background-color 0.5s;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            color: white;
+            font-weight: bold;
+            padding-bottom: 5px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 0 10px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .explanation {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .merge-step {
+            margin-bottom: 10px;
+        }
+        .highlighted {
+            background-color: #e74c3c;
+        }
+        .sorted {
+            background-color: #2ecc71;
+        }
+        .divider {
+            width: 2px;
+            background-color: #e74c3c;
+            height: 250px;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Merge Sort Visualization</h1>
+    
+    <div class="container">
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous Step</button>
+            <button id="nextBtn">Next Step</button>
+            <button id="restartBtn">Restart</button>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <h3>Merge Sort Introduction</h3>
+            <p>Merge Sort is a divide and conquer algorithm that divides the input array into two halves, sorts them separately, and then merges the sorted halves to produce the final sorted array.</p>
+            <p>Click "Next Step" to start the animation!</p>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const initialArray = [38, 27, 43, 3, 9, 82, 10];
+        let currentStep = 0;
+        const steps = [];
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const explanationDiv = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        // Generate the visualization steps
+        function generateSteps() {
+            steps.length = 0;
+            
+            // Step 0: Initial array
+            steps.push({
+                array: [...initialArray],
+                explanation: "<h3>Initial Array</h3><p>We start with an unsorted array of numbers.</p>",
+                highlights: [],
+                divisions: []
+            });
+            
+            // Step 1: Divide the array
+            steps.push({
+                array: [...initialArray],
+                explanation: "<h3>Divide Step</h3><p>Merge sort begins by dividing the array into two halves.</p>",
+                highlights: [],
+                divisions: [Math.floor(initialArray.length / 2)]
+            });
+            
+            // Step 2: Further divide left half
+            steps.push({
+                array: [...initialArray],
+                explanation: "<h3>Divide Left Half</h3><p>We continue dividing the left half until we have individual elements.</p>",
+                highlights: [0, 1, 2],
+                divisions: [Math.floor(initialArray.length / 2), 1]
+            });
+            
+            // Step 3: Divide left half into individual elements
+            steps.push({
+                array: [...initialArray],
+                explanation: "<h3>Individual Elements (Left)</h3><p>The left half is now broken down into individual elements.</p>",
+                highlights: [0, 1, 2],
+                divisions: [Math.floor(initialArray.length / 2), 1, 0]
+            });
+            
+            // Step 4: Merge first two elements of left half
+            const step4Array = [...initialArray];
+            if (step4Array[0] > step4Array[1]) {
+                [step4Array[0], step4Array[1]] = [step4Array[1], step4Array[0]];
+            }
+            steps.push({
+                array: [...step4Array],
+                explanation: "<h3>Merge First Two Elements</h3><p>We compare and merge the first two elements: " + 
+                             initialArray[0] + " and " + initialArray[1] + ".</p>",
+                highlights: [0, 1],
+                divisions: [Math.floor(initialArray.length / 2)],
+                sorted: [0, 1]
+            });
+            
+            // Step 5: Continue with the right part of left half
+            steps.push({
+                array: [...step4Array],
+                explanation: "<h3>Process Third Element</h3><p>Now we process element " + initialArray[2] + 
+                             " and prepare to merge it with the already sorted section.</p>",
+                highlights: [2],
+                divisions: [Math.floor(initialArray.length / 2)],
+                sorted: [0, 1]
+            });
+            
+            // Step 6: Merge all elements of left half
+            const step6Array = [...step4Array];
+            // Insert initialArray[2] into the right position
+            const tempValue = step6Array[2];
+            let j = 2;
+            while (j > 0 && step6Array[j-1] > tempValue) {
+                step6Array[j] = step6Array[j-1];
+                j--;
+            }
+            step6Array[j] = tempValue;
+            
+            steps.push({
+                array: [...step6Array],
+                explanation: "<h3>Merge Left Half</h3><p>We merge all elements of the left half into a sorted subarray.</p>",
+                highlights: [],
+                divisions: [Math.floor(initialArray.length / 2)],
+                sorted: [0, 1, 2]
+            });
+            
+            // Step 7: Process right half
+            steps.push({
+                array: [...step6Array],
+                explanation: "<h3>Divide Right Half</h3><p>Now we apply the same process to the right half of the array.</p>",
+                highlights: [3, 4, 5, 6],
+                divisions: [Math.floor(initialArray.length / 2), 5],
+                sorted: [0, 1, 2]
+            });
+            
+            // Step 8: Divide right half into individual elements
+            steps.push({
+                array: [...step6Array],
+                explanation: "<h3>Individual Elements (Right)</h3><p>The right half is now broken down into individual elements.</p>",
+                highlights: [3, 4, 5, 6],
+                divisions: [Math.floor(initialArray.length / 2), 5, 4],
+                sorted: [0, 1, 2]
+            });
+            
+            // Step 9: Merge first two elements of right half
+            const step9Array = [...step6Array];
+            if (step9Array[3] > step9Array[4]) {
+                [step9Array[3], step9Array[4]] = [step9Array[4], step9Array[3]];
+            }
+            steps.push({
+                array: [...step9Array],
+                explanation: "<h3>Merge First Two Elements (Right)</h3><p>We compare and merge the first two elements of the right half.</p>",
+                highlights: [3, 4],
+                divisions: [Math.floor(initialArray.length / 2)],
+                sorted: [0, 1, 2, 3, 4]
+            });
+            
+            // Step 10: Process next elements of right half
+            steps.push({
+                array: [...step9Array],
+                explanation: "<h3>Process Remaining Elements (Right)</h3><p>Now we process the remaining elements of the right half.</p>",
+                highlights: [5, 6],
+                divisions: [Math.floor(initialArray.length / 2)],
+                sorted: [0, 1, 2, 3, 4]
+            });
+            
+            // Step 11: Merge all elements of right half
+            const step11Array = [...step9Array];
+            // Sort the right half
+            for (let i = 5; i < step11Array.length; i++) {
+                const tempValue = step11Array[i];
+                let j = i;
+                while (j > 3 && step11Array[j-1] > tempValue) {
+                    step11Array[j] = step11Array[j-1];
+                    j--;
+                }
+                step11Array[j] = tempValue;
+            }
+            
+            steps.push({
+                array: [...step11Array],
+                explanation: "<h3>Merge Right Half</h3><p>We merge all elements of the right half into a sorted subarray.</p>",
+                highlights: [],
+                divisions: [Math.floor(initialArray.length / 2)],
+                sorted: [0, 1, 2, 3, 4, 5, 6]
+            });
+            
+            // Step 12: Final merge of the two sorted halves
+            const step12Array = [...step11Array];
+            // Merge the two sorted halves (simplified representation)
+            const leftHalf = step12Array.slice(0, Math.floor(initialArray.length / 2) + 1);
+            const rightHalf = step12Array.slice(Math.floor(initialArray.length / 2) + 1);
+            
+            // Merge process (simplified for the visualization)
+            step12Array.sort((a, b) => a - b);
+            
+            steps.push({
+                array: [...step12Array],
+                explanation: "<h3>Final Merge</h3><p>Finally, we merge the two sorted halves to get the completely sorted array.</p>",
+                highlights: [],
+                divisions: [],
+                sorted: Array.from({length: initialArray.length}, (_, i) => i)
+            });
+            
+            // Final step: Show the completely sorted array
+            steps.push({
+                array: [...step12Array],
+                explanation: "<h3>Completed!</h3><p>The array is now fully sorted using Merge Sort. This algorithm has a time complexity of O(n log n).</p>",
+                highlights: [],
+                divisions: [],
+                sorted: Array.from({length: initialArray.length}, (_, i) => i)
+            });
+        }
+        
+        // Render current step
+        function renderStep() {
+            const step = steps[currentStep];
+            
+            // Clear the container
+            arrayContainer.innerHTML = '';
+            
+            // Update explanation
+            explanationDiv.innerHTML = step.explanation;
+            
+            // Render array
+            for (let i = 0; i < step.array.length; i++) {
+                const height = step.array[i] * 5;
+                const bar = document.createElement('div');
+                bar.className = 'array-bar';
+                bar.style.height = `${height}px`;
+                bar.textContent = step.array[i];
+                
+                // Add highlights
+                if (step.highlights && step.highlights.includes(i)) {
+                    bar.classList.add('highlighted');
+                }
+                
+                // Add sorted indicator
+                if (step.sorted && step.sorted.includes(i)) {
+                    bar.classList.add('sorted');
+                }
+                
+                arrayContainer.appendChild(bar);
+                
+                // Add division markers
+                if (step.divisions && step.divisions.includes(i)) {
+                    const divider = document.createElement('div');
+                    divider.className = 'divider';
+                    arrayContainer.appendChild(divider);
+                }
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep();
+            }
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            currentStep = 0;
+            renderStep();
+        });
+        
+        // Initialize
+        generateSteps();
+        renderStep();
+    </script>
+</body>
+</html>
