@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Complexity of Bubble Sort</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        #chart-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .slide {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .highlight {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Time Complexity of Bubble Sort</h1>
+    
+    <div class="container">
+        <div class="slides">
+            <div class="slide active" id="slide1">
+                <h2>What is Time Complexity?</h2>
+                <p>Time complexity measures how the running time of an algorithm increases as the size of the input grows. For Bubble Sort, we analyze three scenarios:</p>
+                <ul>
+                    <li><strong>Best Case:</strong> O(n) - When the array is already sorted</li>
+                    <li><strong>Average Case:</strong> O(n²) - Expected performance on random data</li>
+                    <li><strong>Worst Case:</strong> O(n²) - When the array is sorted in reverse order</li>
+                </ul>
+                <p>Let's visualize how these different time complexities compare as input size increases.</p>
+            </div>
+            
+            <div class="slide" id="slide2">
+                <h2>Bubble Sort Time Complexity Chart</h2>
+                <div id="chart-container"></div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <span>Best Case: O(n)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <span>Average Case: O(n²)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #9b59b6;"></div>
+                        <span>Worst Case: O(n²)</span>
+                    </div>
+                </div>
+                <p class="explanation">
+                    The chart shows how execution time grows with input size. Notice how the best case (O(n)) grows linearly, 
+                    while both average and worst cases (O(n²)) grow quadratically - but with different constant factors.
+                </p>
+            </div>
+            
+            <div class="slide" id="slide3">
+                <h2>Sample Execution Times</h2>
+                <p>This table shows approximate execution times (in milliseconds) for different input sizes:</p>
+                <table id="time-table">
+                    <tr>
+                        <th>Input Size</th>
+                        <th>Best Case O(n)</th>
+                        <th>Average Case O(n²)</th>
+                        <th>Worst Case O(n²)</th>
+                    </tr>
+                    <tr>
+                        <td>100</td>
+                        <td>0.01 ms</td>
+                        <td>0.05 ms</td>
+                        <td>0.1 ms</td>
+                    </tr>
+                    <tr>
+                        <td>1,000</td>
+                        <td>0.1 ms</td>
+                        <td>5 ms</td>
+                        <td>10 ms</td>
+                    </tr>
+                    <tr>
+                        <td>10,000</td>
+                        <td>1 ms</td>
+                        <td>500 ms</td>
+                        <td>1,000 ms</td>
+                    </tr>
+                    <tr>
+                        <td>100,000</td>
+                        <td>10 ms</td>
+                        <td>50,000 ms</td>
+                        <td>100,000 ms</td>
+                    </tr>
+                </table>
+                <p class="explanation">
+                    As you can see, when the input size increases by a factor of 10, the best case time increases 
+                    by about the same factor (10x), but the average and worst case times increase by a factor of 100!
+                </p>
+            </div>
+            
+            <div class="slide" id="slide4">
+                <h2>Why Does Bubble Sort Have These Complexities?</h2>
+                <div id="animation-container" style="text-align: center; margin: 20px 0;">
+                    <div id="array-container" style="display: flex; justify-content: center; margin-bottom: 20px;"></div>
+                    <button id="animate-btn">Run Animation</button>
+                </div>
+                <p><strong>Best Case [O(n)]:</strong> When the array is already sorted, bubble sort only needs to make one pass through the array (with no swaps) to confirm it's sorted.</p>
+                <p><strong>Average & Worst Case [O(n²)]:</strong> In these scenarios, bubble sort might need to make a swap on each comparison, requiring nested loops - one to traverse the array and another to compare adjacent elements.</p>
+            </div>
+            
+            <div class="slide" id="slide5">
+                <h2>Practical Implications</h2>
+                <p>Understanding time complexity helps you choose the right algorithm for your needs:</p>
+                <ul>
+                    <li>For small arrays (less than 100 elements), Bubble Sort's inefficiency isn't very noticeable</li>
+                    <li>For medium arrays (100-1,000 elements), you'll start to see significant slowdowns with Bubble Sort</li>
+                    <li>For large arrays (10,000+ elements), Bubble Sort becomes impractical</li>
+                </ul>
+                <p>This is why in practice, algorithms like Quick Sort [O(n log n)] or Merge Sort [O(n log n)] are preferred for larger datasets.</p>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Navigation logic
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let currentSlide = 0;
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+            
+            // Initialize chart if we're on slide 2
+            if (index === 1 && !window.myChart) {
+                initChart();
+            }
+            
+            // Initialize animation if we're on slide 4
+            if (index === 3) {
+                initBubbleSortAnimation();
+            }
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+        
+        // Chart initialization
+        function initChart() {
+            const ctx = document.createElement('canvas');
+            document.getElementById('chart-container').appendChild(ctx);
+            
+            // Input sizes
+            const inputSizes = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
+            
+            // Time complexities
+            const bestCase = inputSizes.map(n => n * 0.001); // O(n)
+            const avgCase = inputSizes.map(n => n * n * 0.00005); // O(n²) with smaller constant
+            const worstCase = inputSizes.map(n => n * n * 0.0001); // O(n²) with larger constant
+            
+            window.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: inputSizes,
+                    datasets: [
+                        {
+                            label: 'Best Case: O(n)',
+                            data: bestCase,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderWidth: 3,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Average Case: O(n²)',
+                            data: avgCase,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                            borderWidth: 3,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Worst Case: O(n²)',
+                            data: worstCase,
+                            borderColor: '#9b59b6',
+                            backgroundColor: 'rgba(155, 89, 182, 0.2)',
+                            borderWidth: 3,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Input Size (n)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Execution Time (ms)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(2)} ms`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Bubble Sort Animation
+        function initBubbleSortAnimation() {
+            const animateBtn = document.getElementById('animate-btn');
+            const arrayContainer = document.getElementById('array-container');
+            
+            // Create initial array display
+            function createArrayDisplay(arr) {
+                arrayContainer.innerHTML = '';
+                
+                arr.forEach(value => {
+                    const element = document.createElement('div');
+                    element.textContent = value;
+                    element.style.width = '40px';
+                    element.style.height = '40px';
+                    element.style.margin = '0 5px';
+                    element.style.display = 'flex';
+                    element.style.alignItems = 'center';
+                    element.style.justifyContent = 'center';
+                    element.style.backgroundColor = '#3498db';
+                    element.style.color = 'white';
+                    element.style.borderRadius = '4px';
+                    element.style.fontSize = '18px';
+                    arrayContainer.appendChild(element);
+                });
+            }
+            
+            // Initial array - slightly out of order
+            const array = [5, 3, 8, 4, 2, 7, 1, 6];
+            createArrayDisplay(array);
+            
+            animateBtn.addEventListener('click', async function() {
+                animateBtn.disabled = true;
+                
+                // Clone the array for animation
+                const animArray = [...array];
+                const elements = arrayContainer.children;
+                
+                // Bubble sort with animation
+                for (let i = 0; i < animArray.length; i++) {
+                    let swapped = false;
+                    
+                    for (let j = 0; j < animArray.length - i - 1; j++) {
+                        // Highlight elements being compared
+                        elements[j].style.backgroundColor = '#e74c3c';
+                        elements[j+1].style.backgroundColor = '#e74c3c';
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        if (animArray[j] > animArray[j+1]) {
+                            // Swap animation
+                            [animArray[j], animArray[j+1]] = [animArray[j+1], animArray[j]];
+                            
+                            // Update display
+                            elements[j].textContent = animArray[j];
+                            elements[j+1].textContent = animArray[j+1];
+                            
+                            elements[j].classList.add('highlight');
+                            elements[j+1].classList.add('highlight');
+                            
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            
+                            elements[j].classList.remove('highlight');
+                            elements[j+1].classList.remove('highlight');
+                            
+                            swapped = true;
+                        }
+                        
+                        // Reset colors
+                        elements[j].style.backgroundColor = '#3498db';
+                        elements[j+1].style.backgroundColor = '#3498db';
+                    }
+                    
+                    // Mark the last element as sorted
+                    elements[animArray.length - i - 1].style.backgroundColor = '#2ecc71';
+                    
+                    // If no swaps happened, the array is sorted
+                    if (!swapped) {
+                        // Mark remaining elements as sorted
+                        for (let k = 0; k < animArray.length - i - 1; k++) {
+                            elements[k].style.backgroundColor = '#2ecc71';
+                        }
+                        break;
+                    }
+                }
+                
+                animateBtn.disabled = false;
+            });
+        }
+        
+        // Initialize first slide
+        showSlide(0);
+    </script>
+</body>
+</html>
