@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Time Complexity</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        
+        .best-case {
+            background-color: #2ecc71;
+        }
+        
+        .average-case {
+            background-color: #f39c12;
+        }
+        
+        .worst-case {
+            background-color: #e74c3c;
+        }
+        
+        .slide {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .slide-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bubble Sort Time Complexity Comparison</h1>
+        
+        <div id="slide1" class="slide active">
+            <div class="explanation">
+                <h2>Understanding Bubble Sort Complexity</h2>
+                <p>Bubble Sort is a simple sorting algorithm that repeatedly steps through a list, compares adjacent elements, and swaps them if they are in the wrong order. The algorithm gets its name because smaller elements "bubble" to the top of the list.</p>
+                <p>Let's explore the three time complexity scenarios:</p>
+                <ul>
+                    <li><strong>Best Case: O(n)</strong> - When the array is already sorted</li>
+                    <li><strong>Average Case: O(n²)</strong> - When the array elements are randomly arranged</li>
+                    <li><strong>Worst Case: O(n²)</strong> - When the array is sorted in reverse order</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="slide2" class="slide">
+            <div class="explanation">
+                <h2>Basic Comparison of Time Complexities</h2>
+                <p>Let's visualize how these different time complexities grow as the input size increases:</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="basicComparisonChart"></canvas>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color best-case"></div>
+                    <span>Best Case O(n)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color average-case"></div>
+                    <span>Average Case O(n²)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color worst-case"></div>
+                    <span>Worst Case O(n²)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="slide3" class="slide">
+            <div class="explanation">
+                <h2>Zoomed In View (Small Inputs)</h2>
+                <p>For small input sizes (10-100 elements), the difference might not seem significant:</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="smallInputChart"></canvas>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color best-case"></div>
+                    <span>Best Case O(n)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color average-case"></div>
+                    <span>Average Case O(n²)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color worst-case"></div>
+                    <span>Worst Case O(n²)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="slide4" class="slide">
+            <div class="explanation">
+                <h2>Full Range Comparison (10-1000 Elements)</h2>
+                <p>As the input size grows to 1000 elements, the quadratic growth of average and worst cases becomes very apparent:</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="fullRangeChart"></canvas>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color best-case"></div>
+                    <span>Best Case O(n)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color average-case"></div>
+                    <span>Average Case O(n²)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color worst-case"></div>
+                    <span>Worst Case O(n²)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="slide5" class="slide">
+            <div class="explanation">
+                <h2>Key Takeaways</h2>
+                <p>From our visualization, we can conclude:</p>
+                <ul>
+                    <li>The best case (O(n)) grows linearly and remains efficient even with larger inputs</li>
+                    <li>Both average and worst cases (O(n²)) grow quadratically, meaning their performance degrades significantly as input size increases</li>
+                    <li>For small inputs (n < 50), the performance difference might not be noticeable</li>
+                    <li>For larger inputs (n > 100), the quadratic growth makes Bubble Sort very inefficient compared to algorithms with better time complexities like O(n log n)</li>
+                </ul>
+                <p>This is why Bubble Sort is generally not recommended for large datasets in practice, despite its simplicity.</p>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span>/<span id="totalSlides">5</span>
+            </div>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Slide navigation
+        let currentSlide = 1;
+        const totalSlides = 5;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentSlideSpan = document.getElementById('currentSlide');
+        
+        function updateSlideIndicator() {
+            currentSlideSpan.textContent = currentSlide;
+        }
+        
+        function showSlide(slideNumber) {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Show the current slide
+            document.getElementById(`slide${slideNumber}`).classList.add('active');
+            
+            // Update button states
+            prevBtn.disabled = slideNumber === 1;
+            nextBtn.disabled = slideNumber === totalSlides;
+            
+            // Update slide indicator
+            currentSlide = slideNumber;
+            updateSlideIndicator();
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+                
+                // Initialize chart when reaching the appropriate slide
+                if (currentSlide === 2) {
+                    initializeBasicComparisonChart();
+                } else if (currentSlide === 3) {
+                    initializeSmallInputChart();
+                } else if (currentSlide === 4) {
+                    initializeFullRangeChart();
+                }
+            }
+        });
+        
+        // Chart initialization functions
+        function initializeBasicComparisonChart() {
+            const ctx = document.getElementById('basicComparisonChart').getContext('2d');
+            
+            // Generate data
+            const inputSizes = Array.from({length: 10}, (_, i) => (i + 1) * 10);
+            const bestCaseData = inputSizes.map(n => n);
+            const averageCaseData = inputSizes.map(n => n * n);
+            const worstCaseData = inputSizes.map(n => n * n * 1.1); // Slightly worse than average
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: inputSizes,
+                    datasets: [{
+                        label: 'Best Case O(n)',
+                        data: bestCaseData,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }, {
+                        label: 'Average Case O(n²)',
+                        data: averageCaseData,
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }, {
+                        label: 'Worst Case O(n²)',
+                        data: worstCaseData,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Input Size (n)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Operations'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Time Complexity Comparison'
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value.toLocaleString()} operations`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        function initializeSmallInputChart() {
+            const ctx = document.getElementById('smallInputChart').getContext('2d');
+            
+            // Generate data for small inputs (10-100)
+            const inputSizes = Array.from({length: 10}, (_, i) => (i + 1) * 10);
+            const bestCaseData = inputSizes.map(n => n);
+            const averageCaseData = inputSizes.map(n => n * n);
+            const worstCaseData = inputSizes.map(n => n * n * 1.1);
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: inputSizes,
+                    datasets: [{
+                        label: 'Best Case O(n)',
+                        data: bestCaseData,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }, {
+                        label: 'Average Case O(n²)',
+                        data: averageCaseData,
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }, {
+                        label: 'Worst Case O(n²)',
+                        data: worstCaseData,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Input Size (n)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Operations'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Small Input Sizes (10-100 elements)'
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value.toLocaleString()} operations`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        function initializeFullRangeChart() {
+            const ctx = document.getElementById('fullRangeChart').getContext('2d');
+            
+            // Generate data for full range (10-1000)
+            const inputSizes = [10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+            const bestCaseData = inputSizes.map(n => n);
+            const averageCaseData = inputSizes.map(n => n * n);
+            const worstCaseData = inputSizes.map(n => n * n * 1.1);
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: inputSizes,
+                    datasets: [{
+                        label: 'Best Case O(n)',
+                        data: bestCaseData,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }, {
+                        label: 'Average Case O(n²)',
+                        data: averageCaseData,
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }, {
+                        label: 'Worst Case O(n²)',
+                        data: worstCaseData,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Input Size (n)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Operations'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Full Range Comparison (10-1000 elements)'
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value.toLocaleString()} operations`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Initialize the first slide
+        showSlide(1);
+    </script>
+</body>
+</html>
