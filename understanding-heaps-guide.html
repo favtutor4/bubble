@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heap Data Structure Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .animation-container {
+            width: 100%;
+            height: 350px;
+            position: relative;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            background-color: #e9f7ef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .current-step {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2e7d32;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .nav-button {
+            background-color: #2196F3;
+        }
+        .nav-button:hover {
+            background-color: #0b7dda;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Understanding Heap Data Structure</h1>
+        
+        <div class="explanation">
+            <div class="current-step" id="stepTitle">Introduction to Heap</div>
+            <div id="stepDescription">
+                A heap is a specialized tree-based data structure that satisfies the heap property. In a max heap, for any given node, the value of that node is greater than or equal to the values of its children. In a min heap, the value of each node is less than or equal to the values of its children.
+            </div>
+        </div>
+        
+        <div class="animation-container">
+            <canvas id="heapCanvas" width="900" height="350"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="insertBtn">Insert Element</button>
+            <button id="extractBtn">Extract Root</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" class="nav-button" disabled>Previous</button>
+            <button id="nextBtn" class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('heapCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Heap implementation
+        class MaxHeap {
+            constructor() {
+                this.heap = [];
+            }
+            
+            getParentIndex(index) {
+                return Math.floor((index - 1) / 2);
+            }
+            
+            getLeftChildIndex(index) {
+                return 2 * index + 1;
+            }
+            
+            getRightChildIndex(index) {
+                return 2 * index + 2;
+            }
+            
+            swap(i, j) {
+                [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
+            }
+            
+            heapifyUp(index) {
+                const parentIndex = this.getParentIndex(index);
+                if (index > 0 && this.heap[parentIndex] < this.heap[index]) {
+                    this.swap(parentIndex, index);
+                    this.heapifyUp(parentIndex);
+                }
+            }
+            
+            heapifyDown(index) {
+                let largest = index;
+                const leftChild = this.getLeftChildIndex(index);
+                const rightChild = this.getRightChildIndex(index);
+                
+                if (leftChild < this.heap.length && this.heap[leftChild] > this.heap[largest]) {
+                    largest = leftChild;
+                }
+                
+                if (rightChild < this.heap.length && this.heap[rightChild] > this.heap[largest]) {
+                    largest = rightChild;
+                }
+                
+                if (largest !== index) {
+                    this.swap(index, largest);
+                    this.heapifyDown(largest);
+                }
+            }
+            
+            insert(value) {
+                this.heap.push(value);
+                this.heapifyUp(this.heap.length - 1);
+            }
+            
+            extractMax() {
+                if (this.heap.length === 0) return null;
+                
+                const max = this.heap[0];
+                const last = this.heap.pop();
+                
+                if (this.heap.length > 0) {
+                    this.heap[0] = last;
+                    this.heapifyDown(0);
+                }
+                
+                return max;
+            }
+            
+            peek() {
+                return this.heap[0];
+            }
+            
+            size() {
+                return this.heap.length;
+            }
+        }
+        
+        // Animation and visualization
+        const heap = new MaxHeap();
+        const nodeRadius = 25;
+        const horizontalSpacing = 60;
+        const levelHeight = 70;
+        let animationStep = 0;
+        
+        // Tutorial steps
+        const tutorialSteps = [
+            {
+                title: "Introduction to Heap",
+                description: "A heap is a specialized tree-based data structure that satisfies the heap property. In a max heap, for any given node, the value of that node is greater than or equal to the values of its children. In a min heap, the value of each node is less than or equal to the values of its children."
+            },
+            {
+                title: "Heap as a Binary Tree",
+                description: "A heap is usually visualized as a binary tree, where each node has at most two children. The heap we're exploring is a max heap, where parent nodes have larger values than their children."
+            },
+            {
+                title: "Inserting Elements",
+                description: "When inserting a new element, we add it at the bottom level of the heap, at the leftmost position. Then we 'bubble up' the element by comparing it with its parent and swapping if needed, until the heap property is satisfied."
+            },
+            {
+                title: "Extracting the Root Element",
+                description: "To extract the root (maximum value in a max heap), we remove it, replace it with the last element in the heap, and then 'sink down' this element by comparing it with its children and swapping as needed."
+            },
+            {
+                title: "Heap Applications",
+                description: "Heaps are used for implementing priority queues, efficient sorting algorithms like Heap Sort, finding the kth smallest/largest element, and in graph algorithms like Dijkstra's shortest path algorithm."
+            }
+        ];
+        
+        // Update explanation based on current tutorial step
+        function updateExplanation() {
+            document.getElementById('stepTitle').textContent = tutorialSteps[animationStep].title;
+            document.getElementById('stepDescription').textContent = tutorialSteps[animationStep].description;
+            
+            // Enable/disable navigation buttons
+            document.getElementById('prevBtn').disabled = animationStep === 0;
+            document.getElementById('nextBtn').disabled = animationStep === tutorialSteps.length - 1;
+        }
+        
+        // Draw the heap as a binary tree
+        function drawHeap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (heap.size() === 0) return;
+            
+            // Calculate the total width based on the level with the most nodes
+            const height = Math.floor(Math.log2(heap.size())) + 1;
+            const maxNodesInLevel = Math.pow(2, height - 1);
+            const totalWidth = maxNodesInLevel * horizontalSpacing;
+            
+            // Draw the nodes recursively
+            drawNode(0, canvas.width / 2, 50, totalWidth / 2);
+        }
+        
+        function drawNode(index, x, y, xOffset) {
+            if (index >= heap.size()) return;
+            
+            // Draw the node
+            ctx.beginPath();
+            ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#4CAF50';
+            ctx.fill();
+            ctx.strokeStyle = '#388E3C';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw the value
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(heap.heap[index], x, y);
+            
+            // Calculate child indices
+            const leftChildIndex = heap.getLeftChildIndex(index);
+            const rightChildIndex = heap.getRightChildIndex(index);
+            
+            // Calculate child positions
+            const nextY = y + levelHeight;
+            const nextXOffset = xOffset / 2;
+            const leftX = x - nextXOffset;
+            const rightX = x + nextXOffset;
+            
+            // Draw lines to children
+            if (leftChildIndex < heap.size()) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + nodeRadius);
+                ctx.lineTo(leftX, nextY - nodeRadius);
+                ctx.strokeStyle = '#388E3C';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw left child
+                drawNode(leftChildIndex, leftX, nextY, nextXOffset);
+            }
+            
+            if (rightChildIndex < heap.size()) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + nodeRadius);
+                ctx.lineTo(rightX, nextY - nodeRadius);
+                ctx.strokeStyle = '#388E3C';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw right child
+                drawNode(rightChildIndex, rightX, nextY, nextXOffset);
+            }
+        }
+        
+        // Insert a random element into the heap
+        function insertRandomElement() {
+            if (heap.size() >= 15) {
+                alert("Heap is getting too large for visualization. Please reset first.");
+                return;
+            }
+            
+            const randomValue = Math.floor(Math.random() * 100);
+            heap.insert(randomValue);
+            drawHeap();
+        }
+        
+        // Extract the root element
+        function extractRoot() {
+            if (heap.size() === 0) {
+                alert("Heap is empty!");
+                return;
+            }
+            
+            const max = heap.extractMax();
+            alert(`Extracted max element: ${max}`);
+            drawHeap();
+        }
+        
+        // Reset the heap
+        function resetHeap() {
+            heap.heap = [];
+            drawHeap();
+        }
+        
+        // Navigation functions
+        function nextStep() {
+            if (animationStep < tutorialSteps.length - 1) {
+                animationStep++;
+                updateExplanation();
+            }
+        }
+        
+        function prevStep() {
+            if (animationStep > 0) {
+                animationStep--;
+                updateExplanation();
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('insertBtn').addEventListener('click', insertRandomElement);
+        document.getElementById('extractBtn').addEventListener('click', extractRoot);
+        document.getElementById('resetBtn').addEventListener('click', resetHeap);
+        document.getElementById('nextBtn').addEventListener('click', nextStep);
+        document.getElementById('prevBtn').addEventListener('click', prevStep);
+        
+        // Initialize
+        updateExplanation();
+        drawHeap();
+    </script>
+</body>
+</html>
