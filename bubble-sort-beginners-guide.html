@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collections in Programming - Visual Explanation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .animation-container {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .slide.active {
+            opacity: 1;
+        }
+        .array, .list, .set, .map, .queue, .stack {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+            background-color: #3498db;
+            transition: all 0.3s ease;
+        }
+        .queue-container, .stack-container {
+            border: 2px dashed #3498db;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .map-element {
+            display: flex;
+            flex-direction: column;
+            margin: 5px;
+        }
+        .key {
+            background-color: #e74c3c;
+            padding: 5px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            color: white;
+        }
+        .value {
+            background-color: #3498db;
+            padding: 5px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            color: white;
+        }
+        .description {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .slide-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Understanding Collections in Programming</h1>
+        
+        <div class="animation-container" id="animation">
+            <!-- Slide 1: Introduction -->
+            <div class="slide active" id="slide-1">
+                <div class="slide-title">What are Collections?</div>
+                <div style="text-align: center;">
+                    <div style="display: inline-block; margin: 10px; animation: pulse 2s infinite;">
+                        <div style="width: 100px; height: 100px; background-color: #3498db; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold;">Collections</div>
+                    </div>
+                </div>
+                <div class="description">Collections are containers that group multiple items into a single unit</div>
+            </div>
+            
+            <!-- Slide 2: Array -->
+            <div class="slide" id="slide-2">
+                <div class="slide-title">Arrays</div>
+                <div class="array" id="array-container"></div>
+                <div class="description">Arrays store elements in contiguous memory locations with fixed size</div>
+            </div>
+            
+            <!-- Slide 3: List -->
+            <div class="slide" id="slide-3">
+                <div class="slide-title">Lists</div>
+                <div class="list" id="list-container"></div>
+                <div class="description">Lists are dynamic arrays that can grow or shrink in size</div>
+            </div>
+            
+            <!-- Slide 4: Set -->
+            <div class="slide" id="slide-4">
+                <div class="slide-title">Sets</div>
+                <div class="set" id="set-container"></div>
+                <div class="description">Sets store unique elements with no duplicates allowed</div>
+            </div>
+            
+            <!-- Slide 5: Map -->
+            <div class="slide" id="slide-5">
+                <div class="slide-title">Maps (Dictionaries)</div>
+                <div class="map" id="map-container"></div>
+                <div class="description">Maps store key-value pairs for quick lookups</div>
+            </div>
+            
+            <!-- Slide 6: Queue -->
+            <div class="slide" id="slide-6">
+                <div class="slide-title">Queues</div>
+                <div class="queue-container">
+                    <div class="queue" id="queue-container"></div>
+                </div>
+                <div class="description">Queues follow First-In-First-Out (FIFO) principle</div>
+            </div>
+            
+            <!-- Slide 7: Stack -->
+            <div class="slide" id="slide-7">
+                <div class="slide-title">Stacks</div>
+                <div class="stack-container">
+                    <div class="stack" id="stack-container"></div>
+                </div>
+                <div class="description">Stacks follow Last-In-First-Out (LIFO) principle</div>
+            </div>
+        </div>
+        
+        <div class="pagination">Slide <span id="current-slide">1</span> of 7</div>
+        
+        <div class="nav-buttons">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 7;
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentSlideText = document.getElementById('current-slide');
+        
+        // Initialize array animation
+        const arrayContainer = document.getElementById('array-container');
+        for (let i = 0; i < 6; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = i * 10;
+            arrayContainer.appendChild(element);
+        }
+        
+        // Initialize list animation
+        const listContainer = document.getElementById('list-container');
+        const listValues = [5, 12, 8, 21, 30];
+        listValues.forEach(value => {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = value;
+            listContainer.appendChild(element);
+        });
+        
+        // Initialize set animation
+        const setContainer = document.getElementById('set-container');
+        const setValues = [3, 7, 12, 19, 22];
+        setValues.forEach(value => {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = value;
+            setContainer.appendChild(element);
+        });
+        
+        // Initialize map animation
+        const mapContainer = document.getElementById('map-container');
+        const mapEntries = [
+            { key: 'name', value: 'John' },
+            { key: 'age', value: '30' },
+            { key: 'city', value: 'NYC' }
+        ];
+        mapEntries.forEach(entry => {
+            const element = document.createElement('div');
+            element.className = 'map-element';
+            
+            const key = document.createElement('div');
+            key.className = 'key';
+            key.textContent = entry.key;
+            
+            const value = document.createElement('div');
+            value.className = 'value';
+            value.textContent = entry.value;
+            
+            element.appendChild(key);
+            element.appendChild(value);
+            mapContainer.appendChild(element);
+        });
+        
+        // Initialize queue animation
+        const queueContainer = document.getElementById('queue-container');
+        const queueValues = ['A', 'B', 'C', 'D'];
+        queueValues.forEach(value => {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = value;
+            queueContainer.appendChild(element);
+        });
+        
+        // Initialize stack animation
+        const stackContainer = document.getElementById('stack-container');
+        const stackValues = ['W', 'X', 'Y', 'Z'];
+        stackValues.forEach(value => {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = value;
+            stackContainer.appendChild(element);
+        });
+        
+        function updateSlide() {
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            
+            currentSlideText.textContent = currentSlide;
+            
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+            
+            // Slide-specific animations
+            if (currentSlide === 2) { // Array animation
+                animateArray();
+            } else if (currentSlide === 3) { // List animation
+                animateList();
+            } else if (currentSlide === 4) { // Set animation
+                animateSet();
+            } else if (currentSlide === 5) { // Map animation
+                animateMap();
+            } else if (currentSlide === 6) { // Queue animation
+                animateQueue();
+            } else if (currentSlide === 7) { // Stack animation
+                animateStack();
+            }
+        }
+        
+        function animateArray() {
+            const elements = arrayContainer.querySelectorAll('.element');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        el.style.transform = 'scale(1)';
+                    }, 300);
+                }, index * 200);
+            });
+        }
+        
+        function animateList() {
+            const elements = listContainer.querySelectorAll('.element');
+            
+            // Simulate adding a new element
+            setTimeout(() => {
+                const newElement = document.createElement('div');
+                newElement.className = 'element';
+                newElement.textContent = '42';
+                newElement.style.backgroundColor = '#e74c3c';
+                listContainer.appendChild(newElement);
+                
+                setTimeout(() => {
+                    newElement.style.backgroundColor = '#3498db';
+                }, 1000);
+            }, 1000);
+        }
+        
+        function animateSet() {
+            // Attempt to add a duplicate
+            setTimeout(() => {
+                const newElement = document.createElement('div');
+                newElement.className = 'element';
+                newElement.textContent = '7'; // Duplicate value
+                newElement.style.backgroundColor = '#e74c3c';
+                setContainer.appendChild(newElement);
+                
+                setTimeout(() => {
+                    // Simulate rejection by removing the element
+                    newElement.style.opacity = '0';
+                    setTimeout(() => {
+                        setContainer.removeChild(newElement);
+                    }, 500);
+                }, 1000);
+            }, 1000);
+        }
+        
+        function animateMap() {
+            const mapElements = mapContainer.querySelectorAll('.map-element');
+            
+            mapElements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        el.style.transform = 'translateY(0)';
+                    }, 300);
+                }, index * 300);
+            });
+        }
+        
+        function animateQueue() {
+            // FIFO animation
+            setTimeout(() => {
+                // Enqueue
+                const newElement = document.createElement('div');
+                newElement.className = 'element';
+                newElement.textContent = 'E';
+                newElement.style.backgroundColor = '#2ecc71';
+                queueContainer.appendChild(newElement);
+                
+                setTimeout(() => {
+                    // Dequeue (remove first element)
+                    const firstElement = queueContainer.querySelector('.element');
+                    firstElement.style.backgroundColor = '#e74c3c';
+                    
+                    setTimeout(() => {
+                        firstElement.style.opacity = '0';
+                        setTimeout(() => {
+                            queueContainer.removeChild(firstElement);
+                        }, 500);
+                    }, 1000);
+                }, 1500);
+            }, 1000);
+        }
+        
+        function animateStack() {
+            // LIFO animation
+            setTimeout(() => {
+                // Push
+                const newElement = document.createElement('div');
+                newElement.className = 'element';
+                newElement.textContent = 'V';
+                newElement.style.backgroundColor = '#2ecc71';
+                stackContainer.appendChild(newElement);
+                
+                setTimeout(() => {
+                    // Pop (remove last element)
+                    const elements = stackContainer.querySelectorAll('.element');
+                    const lastElement = elements[elements.length - 1];
+                    lastElement.style.backgroundColor = '#e74c3c';
+                    
+                    setTimeout(() => {
+                        lastElement.style.opacity = '0';
+                        setTimeout(() => {
+                            stackContainer.removeChild(lastElement);
+                        }, 500);
+                    }, 1000);
+                }, 1500);
+            }, 1000);
+        }
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlide();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlide();
+            }
+        });
+        
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
