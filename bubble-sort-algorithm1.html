@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            height: 200px;
+            align-items: flex-end;
+        }
+        
+        .array-bar {
+            width: 60px;
+            margin: 0 5px;
+            background-color: #6c7ae0;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            transition: height 0.5s ease, background-color 0.5s ease;
+            position: relative;
+        }
+        
+        .array-bar.comparing {
+            background-color: #ffcc00;
+        }
+        
+        .array-bar.swapping {
+            background-color: #ff6b6b;
+        }
+        
+        .array-bar.sorted {
+            background-color: #7bed9f;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            background-color: #6c7ae0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #5563d0;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .progress {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .progress-step {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #d1d1d1;
+        }
+        
+        .progress-step.active {
+            background-color: #6c7ae0;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            text-align: left;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bubble Sort Visualization</h1>
+        <p>Sorting the array [5, 1, 4, 2, 8]</p>
+        
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="status" id="status">
+            Ready to start the bubble sort animation.
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous Step</button>
+            <button id="nextBtn">Next Step</button>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, 
+            compares adjacent elements, and swaps them if they are in the wrong order. 
+            The algorithm gets its name because smaller elements "bubble" to the top of the list.
+        </div>
+    </div>
+
+    <script>
+        // Original array
+        const originalArray = [5, 1, 4, 2, 8];
+        
+        // Container for all steps of the sorting process
+        const steps = [];
+        
+        // Current step index
+        let currentStep = 0;
+        
+        // Generate all steps of the bubble sort algorithm
+        function generateBubbleSortSteps(arr) {
+            // Clone the original array to avoid modifying it
+            const array = [...arr];
+            const n = array.length;
+            
+            // First step: Initial array
+            steps.push({
+                array: [...array],
+                comparing: null,
+                swapped: false,
+                sorted: [],
+                description: "Initial array [5, 1, 4, 2, 8]. We'll start comparing adjacent elements."
+            });
+            
+            // Track sorted positions
+            const sortedIndices = [];
+            
+            // Loop through the array for bubble sort
+            for (let i = 0; i < n - 1; i++) {
+                let swapped = false;
+                
+                for (let j = 0; j < n - i - 1; j++) {
+                    // Step: Comparing elements
+                    steps.push({
+                        array: [...array],
+                        comparing: [j, j + 1],
+                        swapped: false,
+                        sorted: [...sortedIndices],
+                        description: `Comparing elements at positions ${j} and ${j + 1}: ${array[j]} and ${array[j + 1]}`
+                    });
+                    
+                    // If elements need to be swapped
+                    if (array[j] > array[j + 1]) {
+                        // Swap the elements
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                        swapped = true;
+                        
+                        // Step: After swapping
+                        steps.push({
+                            array: [...array],
+                            comparing: [j, j + 1],
+                            swapped: true,
+                            sorted: [...sortedIndices],
+                            description: `${array[j + 1]} > ${array[j]}, so swapping them.`
+                        });
+                    } else {
+                        // Step: No swap needed
+                        steps.push({
+                            array: [...array],
+                            comparing: [j, j + 1],
+                            swapped: false,
+                            noSwap: true,
+                            sorted: [...sortedIndices],
+                            description: `${array[j]} ≤ ${array[j + 1]}, no swap needed.`
+                        });
+                    }
+                }
+                
+                // Mark the last element as sorted after each pass
+                sortedIndices.push(n - i - 1);
+                
+                // Step: End of pass
+                steps.push({
+                    array: [...array],
+                    comparing: null,
+                    swapped: false,
+                    sorted: [...sortedIndices],
+                    description: `End of pass ${i + 1}. The largest ${i + 1} element${i > 0 ? 's are' : ' is'} now in the correct position.`
+                });
+                
+                // If no swapping occurred in this pass, the array is already sorted
+                if (!swapped) {
+                    // Add remaining indices as sorted
+                    for (let k = 0; k < n - i - 1; k++) {
+                        if (!sortedIndices.includes(k)) {
+                            sortedIndices.push(k);
+                        }
+                    }
+                    
+                    // Step: Array is sorted early
+                    steps.push({
+                        array: [...array],
+                        comparing: null,
+                        swapped: false,
+                        sorted: sortedIndices.sort((a, b) => a - b),
+                        description: "No swaps needed in this pass, which means the array is already sorted!"
+                    });
+                    
+                    break;
+                }
+            }
+            
+            // Final step: Sorted array
+            if (!steps[steps.length - 1].sorted.length === n) {
+                steps.push({
+                    array: [...array],
+                    comparing: null,
+                    swapped: false,
+                    sorted: Array.from({length: n}, (_, i) => i),
+                    description: "The array is now fully sorted: [1, 2, 4, 5, 8]"
+                });
+            }
+        }
+        
+        // Initialize the array visualization
+        function initializeArray() {
+            const arrayContainer = document.getElementById('arrayContainer');
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < originalArray.length; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'array-bar';
+                bar.style.height = `${originalArray[i] * 30}px`;
+                bar.textContent = originalArray[i];
+                arrayContainer.appendChild(bar);
+            }
+            
+            // Initialize progress bar
+            updateProgressBar();
+        }
+        
+        // Update the array visualization based on the current step
+        function updateVisualization() {
+            const currentStepData = steps[currentStep];
+            const arrayBars = document.querySelectorAll('.array-bar');
+            
+            // Update array values and heights
+            for (let i = 0; i < currentStepData.array.length; i++) {
+                arrayBars[i].textContent = currentStepData.array[i];
+                arrayBars[i].style.height = `${currentStepData.array[i] * 30}px`;
+                
+                // Reset all classes first
+                arrayBars[i].className = 'array-bar';
+                
+                // Apply comparing class
+                if (currentStepData.comparing && (i === currentStepData.comparing[0] || i === currentStepData.comparing[1])) {
+                    if (currentStepData.swapped) {
+                        arrayBars[i].classList.add('swapping');
+                    } else {
+                        arrayBars[i].classList.add('comparing');
+                    }
+                }
+                
+                // Apply sorted class
+                if (currentStepData.sorted && currentStepData.sorted.includes(i)) {
+                    arrayBars[i].classList.add('sorted');
+                }
+            }
+            
+            // Update status text
+            document.getElementById('status').textContent = currentStepData.description;
+            
+            // Update explanation
+            updateExplanation(currentStepData);
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentStep === 0;
+            document.getElementById('nextBtn').disabled = currentStep === steps.length - 1;
+        }
+        
+        // Update the explanation based on the current step
+        function updateExplanation(stepData) {
+            let explanation = "";
+            
+            if (currentStep === 0) {
+                explanation = "Bubble Sort works by repeatedly comparing adjacent elements and swapping them if they're in the wrong order. We'll go through the array multiple times until it's sorted.";
+            } else if (stepData.comparing) {
+                if (stepData.swapped) {
+                    explanation = `We found that ${stepData.array[stepData.comparing[0]]} and ${stepData.array[stepData.comparing[1]]} were in the wrong order, so we swapped them. In each pass, the largest unsorted element "bubbles up" to its correct position.`;
+                } else if (stepData.noSwap) {
+                    explanation = `${stepData.array[stepData.comparing[0]]} and ${stepData.array[stepData.comparing[1]]} are already in the correct order, so no swap is needed.`;
+                } else {
+                    explanation = `Now we're comparing the elements ${stepData.array[stepData.comparing[0]]} and ${stepData.array[stepData.comparing[1]]} to see if they need to be swapped.`;
+                }
+            } else if (stepData.sorted && stepData.sorted.length > 0) {
+                if (stepData.sorted.length === originalArray.length) {
+                    explanation = "The array is now completely sorted! Each element is in its correct position.";
+                } else {
+                    explanation = `After ${stepData.sorted.length} pass${stepData.sorted.length > 1 ? 'es' : ''}, the ${stepData.sorted.length} largest element${stepData.sorted.length > 1 ? 's' : ''} ${stepData.sorted.length > 1 ? 'are' : 'is'} now correctly positioned at the end of the array (shown in green).`;
+                }
+            }
+            
+            document.getElementById('explanation').textContent = explanation;
+        }
+        
+        // Update progress bar
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.innerHTML = '';
+            
+            // Create a reasonable number of progress steps (not all steps to avoid crowding)
+            const totalSteps = Math.min(20, steps.length);
+            const stepSize = Math.ceil(steps.length / totalSteps);
+            
+            for (let i = 0; i < totalSteps; i++) {
+                const progressStep = document.createElement('div');
+                progressStep.className = 'progress-step';
+                
+                if (i * stepSize <= currentStep) {
+                    progressStep.classList.add('active');
+                }
+                
+                progressBar.appendChild(progressStep);
+            }
+        }
+        
+        // Event listener for "Next" button
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Event listener for "Previous" button
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize everything when the page loads
+        window.onload = () => {
+            generateBubbleSortSteps(originalArray);
+            initializeArray();
+            updateVisualization();
+        };
+    </script>
+</body>
+</html>
