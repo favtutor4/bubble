@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Time Complexity</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .slide {
+            display: none;
+            animation: fadeIn 0.8s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .active-slide {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .axis {
+            position: absolute;
+            background-color: #333;
+        }
+        .y-axis {
+            width: 2px;
+            height: 380px;
+            left: 50px;
+            top: 10px;
+        }
+        .x-axis {
+            width: 800px;
+            height: 2px;
+            left: 50px;
+            top: 390px;
+        }
+        .bar {
+            position: absolute;
+            bottom: 10px;
+            background-color: #3498db;
+            width: 60px;
+            transition: height 1s ease-in-out;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        .bar-label {
+            position: absolute;
+            text-align: center;
+            width: 60px;
+            bottom: -25px;
+        }
+        .value-label {
+            position: absolute;
+            text-align: center;
+            width: 60px;
+            color: white;
+            font-weight: bold;
+        }
+        .axis-label {
+            position: absolute;
+            font-weight: bold;
+        }
+        .x-label {
+            left: 400px;
+            top: 420px;
+        }
+        .y-label {
+            transform: rotate(-90deg);
+            left: -60px;
+            top: 200px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .quadratic-curve {
+            position: absolute;
+            border: 2px dashed #e74c3c;
+            border-top: none;
+            border-left: none;
+            border-bottom-right-radius: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .n-squared-label {
+            position: absolute;
+            color: #e74c3c;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bubble Sort Time Complexity Comparison</h1>
+        
+        <div id="slide1" class="slide active-slide">
+            <h2>Bubble Sort: Introduction</h2>
+            <div class="explanation">
+                <p>Bubble Sort is one of the simplest sorting algorithms. It works by repeatedly stepping through the list, comparing adjacent elements and swapping them if they are in the wrong order.</p>
+                <p>The key thing to understand about Bubble Sort is how its performance scales with the input size. For an array of size n, the algorithm needs to make approximately n² comparisons in the worst case.</p>
+                <p>Let's visualize how the number of comparisons grows as the array size increases.</p>
+            </div>
+            <div class="chart-container">
+                <div class="axis y-axis"></div>
+                <div class="axis x-axis"></div>
+                <div class="axis-label x-label">Array Size (n)</div>
+                <div class="axis-label y-label">Number of Comparisons</div>
+                
+                <!-- Bars for different array sizes -->
+                <div class="bar" id="bar1" style="left: 120px; height: 0px;"></div>
+                <div class="bar-label" style="left: 120px;">n=5</div>
+                <div class="value-label" id="value1" style="left: 120px; bottom: 5px;"></div>
+                
+                <div class="bar" id="bar2" style="left: 280px; height: 0px;"></div>
+                <div class="bar-label" style="left: 280px;">n=10</div>
+                <div class="value-label" id="value2" style="left: 280px; bottom: 5px;"></div>
+                
+                <div class="bar" id="bar3" style="left: 440px; height: 0px;"></div>
+                <div class="bar-label" style="left: 440px;">n=20</div>
+                <div class="value-label" id="value3" style="left: 440px; bottom: 5px;"></div>
+                
+                <div class="bar" id="bar4" style="left: 600px; height: 0px;"></div>
+                <div class="bar-label" style="left: 600px;">n=50</div>
+                <div class="value-label" id="value4" style="left: 600px; bottom: 5px;"></div>
+                
+                <div id="quadratic-curve" class="quadratic-curve"></div>
+                <div id="n-squared-label" class="n-squared-label">O(n²)</div>
+            </div>
+        </div>
+        
+        <div id="slide2" class="slide">
+            <h2>Understanding the O(n²) Complexity</h2>
+            <div class="explanation">
+                <p>For Bubble Sort, the number of comparisons is roughly n² where n is the size of the array. Here's why:</p>
+                <ul>
+                    <li>For n=5: We need about 5² = 25 comparisons</li>
+                    <li>For n=10: We need about 10² = 100 comparisons</li>
+                    <li>For n=20: We need about 20² = 400 comparisons</li>
+                    <li>For n=50: We need about 50² = 2,500 comparisons</li>
+                </ul>
+                <p>Notice how quickly the number of comparisons grows! This quadratic growth pattern is what makes Bubble Sort inefficient for large arrays.</p>
+            </div>
+        </div>
+        
+        <div id="slide3" class="slide">
+            <h2>Why O(n²) Matters</h2>
+            <div class="explanation">
+                <p>The O(n²) time complexity of Bubble Sort has important implications:</p>
+                <ul>
+                    <li><strong>Doubling the input size</strong> quadruples the running time</li>
+                    <li>While acceptable for small arrays (n ≤ 10), it becomes very inefficient for larger arrays</li>
+                    <li>Modern sorting algorithms like QuickSort, MergeSort, and HeapSort have better time complexities (typically O(n log n))</li>
+                    <li>For n=1,000 elements, Bubble Sort would need about 1,000,000 comparisons, while an O(n log n) algorithm would only need about 10,000</li>
+                </ul>
+                <p>This visualization helps us understand why algorithm efficiency matters and why we often prefer faster sorting algorithms in practice.</p>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Slide navigation handling
+        let currentSlide = 1;
+        const totalSlides = 3;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        function showSlide(slideNumber) {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active-slide');
+            });
+            
+            // Show the current slide
+            document.getElementById('slide' + slideNumber).classList.add('active-slide');
+            
+            // Update buttons
+            prevBtn.disabled = (slideNumber === 1);
+            nextBtn.disabled = (slideNumber === totalSlides);
+            
+            // If returning to slide 1, animate the bars again
+            if (slideNumber === 1) {
+                setTimeout(animateBars, 500);
+            }
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+        
+        // Bar chart animation
+        function animateBars() {
+            // Reset bars
+            document.getElementById('bar1').style.height = '0px';
+            document.getElementById('bar2').style.height = '0px';
+            document.getElementById('bar3').style.height = '0px';
+            document.getElementById('bar4').style.height = '0px';
+            document.getElementById('value1').textContent = '';
+            document.getElementById('value2').textContent = '';
+            document.getElementById('value3').textContent = '';
+            document.getElementById('value4').textContent = '';
+            document.getElementById('quadratic-curve').style.opacity = '0';
+            document.getElementById('n-squared-label').style.opacity = '0';
+            
+            // Calculate comparison values (approximate n²)
+            const n1 = 5, n2 = 10, n3 = 20, n4 = 50;
+            const comparisons1 = n1 * n1;
+            const comparisons2 = n2 * n2;
+            const comparisons3 = n3 * n3;
+            const comparisons4 = n4 * n4;
+            
+            // Set max height for scaling (350px is the max bar height)
+            const maxComparisons = comparisons4;
+            const scale = 350 / maxComparisons;
+            
+            // Animate each bar with a delay
+            setTimeout(() => {
+                const height1 = comparisons1 * scale;
+                document.getElementById('bar1').style.height = height1 + 'px';
+                document.getElementById('value1').textContent = comparisons1;
+                document.getElementById('value1').style.bottom = (height1 + 5) + 'px';
+            }, 300);
+            
+            setTimeout(() => {
+                const height2 = comparisons2 * scale;
+                document.getElementById('bar2').style.height = height2 + 'px';
+                document.getElementById('value2').textContent = comparisons2;
+                document.getElementById('value2').style.bottom = (height2 + 5) + 'px';
+            }, 600);
+            
+            setTimeout(() => {
+                const height3 = comparisons3 * scale;
+                document.getElementById('bar3').style.height = height3 + 'px';
+                document.getElementById('value3').textContent = comparisons3;
+                document.getElementById('value3').style.bottom = (height3 + 5) + 'px';
+            }, 900);
+            
+            setTimeout(() => {
+                const height4 = comparisons4 * scale;
+                document.getElementById('bar4').style.height = height4 + 'px';
+                document.getElementById('value4').textContent = comparisons4;
+                document.getElementById('value4').style.bottom = (height4 + 5) + 'px';
+                
+                // After all bars are shown, display the quadratic curve
+                setTimeout(() => {
+                    const curve = document.getElementById('quadratic-curve');
+                    curve.style.width = '550px';
+                    curve.style.height = '350px';
+                    curve.style.left = '100px';
+                    curve.style.bottom = '10px';
+                    curve.style.opacity = '1';
+                    
+                    const label = document.getElementById('n-squared-label');
+                    label.style.left = '680px';
+                    label.style.bottom = '300px';
+                    label.style.opacity = '1';
+                }, 500);
+            }, 1200);
+        }
+        
+        // Start the animation when the page loads
+        window.onload = animateBars;
+    </script>
+</body>
+</html>
