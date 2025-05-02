@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorted vs Unsorted Arrays Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 10px;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .explanation {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .visualization {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .array-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .array {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .array-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #000000;
+        }
+        .array-element {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            background-color: #FD9F78;
+            color: #000000;
+            font-weight: bold;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .status-icon {
+            position: absolute;
+            top: -25px;
+            right: -10px;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .sorted .status-icon {
+            color: green;
+        }
+        .unsorted .status-icon {
+            color: red;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .comparison {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 5px solid #FF4800;
+        }
+        .page-indicator {
+            margin-top: 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .arrow {
+            display: inline-block;
+            position: absolute;
+            top: 50px;
+            opacity: 0;
+            color: #FF4800;
+            font-weight: bold;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sorted vs Unsorted Arrays Visualization</h1>
+        <p>A visual comparison between sorted and unsorted arrays</p>
+    </header>
+
+    <div class="container">
+        <div class="explanation">
+            <p>Arrays are sequences of elements stored in contiguous memory locations. They can be either <strong>sorted</strong> or <strong>unsorted</strong>.</p>
+        </div>
+
+        <!-- Visualization 1 -->
+        <div class="visualization" id="vis1">
+            <h2>What is a Sorted Array?</h2>
+            <p>A sorted array has elements arranged in a specific order (usually ascending or descending).</p>
+            
+            <div class="array-container">
+                <div>
+                    <div class="array-label">Sorted Array (Ascending):</div>
+                    <div class="array sorted">
+                        <div class="array-element">1</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">5</div>
+                        <div class="status-icon">✓</div>
+                    </div>
+                </div>
+                <div class="comparison">
+                    <p>In a sorted array, each element is greater than or equal to the element before it (for ascending order).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization 2 -->
+        <div class="visualization" id="vis2">
+            <h2>What is an Unsorted Array?</h2>
+            <p>An unsorted array has elements in no particular order.</p>
+            
+            <div class="array-container">
+                <div>
+                    <div class="array-label">Unsorted Array:</div>
+                    <div class="array unsorted">
+                        <div class="array-element">5</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">1</div>
+                        <div class="status-icon">✗</div>
+                    </div>
+                </div>
+                <div class="comparison">
+                    <p>In an unsorted array, elements appear in random order without following any specific sequence.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization 3 -->
+        <div class="visualization" id="vis3">
+            <h2>Examples of Sorted Arrays</h2>
+            <p>Here are different examples of sorted arrays:</p>
+            
+            <div class="array-container">
+                <div>
+                    <div class="array-label">Example 1 (Simple ascending):</div>
+                    <div class="array sorted">
+                        <div class="array-element">1</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">5</div>
+                        <div class="status-icon">✓</div>
+                        <div class="arrow" style="left: 30px;">→</div>
+                        <div class="arrow" style="left: 80px;">→</div>
+                        <div class="arrow" style="left: 130px;">→</div>
+                        <div class="arrow" style="left: 180px;">→</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="array-label">Example 2 (With repeated elements):</div>
+                    <div class="array sorted">
+                        <div class="array-element">0</div>
+                        <div class="array-element">0</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">7</div>
+                        <div class="array-element">9</div>
+                        <div class="status-icon">✓</div>
+                        <div class="arrow" style="left: 30px;">→</div>
+                        <div class="arrow" style="left: 80px;">→</div>
+                        <div class="arrow" style="left: 130px;">→</div>
+                        <div class="arrow" style="left: 180px;">→</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="array-label">Example 3 (With negative numbers):</div>
+                    <div class="array sorted">
+                        <div class="array-element">-5</div>
+                        <div class="array-element">-3</div>
+                        <div class="array-element">0</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">10</div>
+                        <div class="status-icon">✓</div>
+                        <div class="arrow" style="left: 30px;">→</div>
+                        <div class="arrow" style="left: 80px;">→</div>
+                        <div class="arrow" style="left: 130px;">→</div>
+                        <div class="arrow" style="left: 180px;">→</div>
+                    </div>
+                </div>
+                <div class="comparison">
+                    <p>Notice that in all examples, elements follow a specific order: each element is greater than or equal to the previous one.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization 4 -->
+        <div class="visualization" id="vis4">
+            <h2>Examples of Unsorted Arrays</h2>
+            <p>Here are different examples of unsorted arrays:</p>
+            
+            <div class="array-container">
+                <div>
+                    <div class="array-label">Example 1 (Reversed):</div>
+                    <div class="array unsorted">
+                        <div class="array-element">5</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">1</div>
+                        <div class="status-icon">✗</div>
+                        <div class="arrow" style="left: 30px; color: red;">←</div>
+                        <div class="arrow" style="left: 80px; color: red;">←</div>
+                        <div class="arrow" style="left: 130px; color: red;">←</div>
+                        <div class="arrow" style="left: 180px; color: red;">←</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="array-label">Example 2 (Random order):</div>
+                    <div class="array unsorted">
+                        <div class="array-element">1</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">5</div>
+                        <div class="array-element">4</div>
+                        <div class="status-icon">✗</div>
+                    </div>
+                </div>
+                <div class="comparison">
+                    <p>In unsorted arrays, at least one element is out of order. Notice how there's no clear pattern to how the elements are arranged.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization 5 -->
+        <div class="visualization" id="vis5">
+            <h2>Side-by-Side Comparison</h2>
+            <p>Let's compare sorted and unsorted arrays:</p>
+            
+            <div class="array-container">
+                <div>
+                    <div class="array-label">Sorted Array:</div>
+                    <div class="array sorted">
+                        <div class="array-element">1</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">5</div>
+                        <div class="status-icon">✓</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="array-label">Unsorted Array:</div>
+                    <div class="array unsorted">
+                        <div class="array-element">5</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">4</div>
+                        <div class="array-element">1</div>
+                        <div class="array-element">3</div>
+                        <div class="status-icon">✗</div>
+                    </div>
+                </div>
+                <div class="comparison">
+                    <p><strong>Key Differences:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Sorted arrays follow a specific order (ascending or descending)</li>
+                        <li>Unsorted arrays have elements in random order</li>
+                        <li>Sorted arrays make searching for elements much faster</li>
+                        <li>Maintaining a sorted array requires extra work when inserting new elements</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <div class="page-indicator">Page <span id="currentPage">1</span> of 5</div>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const visualizations = document.querySelectorAll('.visualization');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const currentPageSpan = document.getElementById('currentPage');
+            let currentPage = 1;
+            const totalPages = visualizations.length;
+
+            function updateNavigation() {
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage === totalPages;
+                currentPageSpan.textContent = currentPage;
+            }
+
+            function showPage(pageNum) {
+                visualizations.forEach((vis, index) => {
+                    if (index + 1 === pageNum) {
+                        vis.style.display = 'flex';
+                        animateElements(vis);
+                    } else {
+                        vis.style.display = 'none';
+                    }
+                });
+                currentPage = pageNum;
+                updateNavigation();
+            }
+
+            function animateElements(container) {
+                const elements = container.querySelectorAll('.array-element');
+                const statusIcons = container.querySelectorAll('.status-icon');
+                const arrows = container.querySelectorAll('.arrow');
+                
+                elements.forEach((element, index) => {
+                    setTimeout(() => {
+                        element.style.opacity = '1';
+                        element.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+
+                setTimeout(() => {
+                    statusIcons.forEach(icon => {
+                        icon.style.opacity = '1';
+                    });
+                }, elements.length * 100 + 300);
+
+                setTimeout(() => {
+                    arrows.forEach((arrow, index) => {
+                        setTimeout(() => {
+                            arrow.style.opacity = '1';
+                        }, index * 200);
+                    });
+                }, elements.length * 100 + 600);
+            }
+
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    showPage(currentPage - 1);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    showPage(currentPage + 1);
+                }
+            });
+
+            // Initialize with the first visualization
+            showPage(1);
+        });
+    </script>
+</body>
+</html>
