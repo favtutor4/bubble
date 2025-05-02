@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Window Transition Process</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            position: relative;
+            height: 350px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            overflow: hidden;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            background-color: #FFFFFF;
+            font-weight: bold;
+            position: relative;
+        }
+        .window {
+            position: absolute;
+            height: 70px;
+            border: 3px solid #FF4800;
+            border-radius: 8px;
+            background-color: rgba(253, 159, 120, 0.2);
+            transition: all 1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .formula {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .formula-highlight {
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .step-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF4800;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        .entering {
+            animation: enterAnimation 1s forwards;
+        }
+        .exiting {
+            animation: exitAnimation 1s forwards;
+        }
+        @keyframes enterAnimation {
+            0% { background-color: #FFFFFF; transform: scale(1); }
+            50% { background-color: #FF4800; transform: scale(1.2); }
+            100% { background-color: #FD9F78; transform: scale(1); }
+        }
+        @keyframes exitAnimation {
+            0% { background-color: #FD9F78; transform: scale(1); }
+            50% { background-color: #FF4800; transform: scale(1.2); }
+            100% { background-color: #FFFFFF; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Window Transition Process</h1>
+        
+        <div class="animation-container">
+            <div class="step-counter">Step <span id="stepNumber">1</span>/6</div>
+            <div class="array-container" id="arrayContainer"></div>
+            <div class="formula" id="formula">
+                Initial window_sum = Sum of first k elements
+            </div>
+            <div class="explanation" id="explanation">
+                We start by calculating the sum of the first k elements in our sliding window.
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Define our example array and window size
+        const arr = [1, 3, 2, 6, 4, 8, 5];
+        const k = 3;
+        
+        // Animation states
+        let currentStep = 1;
+        const totalSteps = 6;
+        
+        // Initialize the array visualization
+        const arrayContainer = document.getElementById('arrayContainer');
+        const formulaEl = document.getElementById('formula');
+        const explanationEl = document.getElementById('explanation');
+        const stepNumberEl = document.getElementById('stepNumber');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Create array elements
+        function initializeArray() {
+            arrayContainer.innerHTML = '';
+            arr.forEach((val, idx) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.id = `element-${idx}`;
+                element.textContent = val;
+                arrayContainer.appendChild(element);
+            });
+            
+            // Initial window
+            const window = document.createElement('div');
+            window.className = 'window';
+            window.id = 'sliding-window';
+            setWindowPosition(0, k);
+            arrayContainer.appendChild(window);
+        }
+        
+        // Set window position
+        function setWindowPosition(start, length) {
+            const window = document.getElementById('sliding-window');
+            const firstElement = document.getElementById(`element-${start}`);
+            const lastElement = document.getElementById(`element-${start + length - 1}`);
+            
+            if (firstElement && lastElement && window) {
+                const firstRect = firstElement.getBoundingClientRect();
+                const lastRect = lastElement.getBoundingClientRect();
+                const containerRect = arrayContainer.getBoundingClientRect();
+                
+                const left = firstElement.offsetLeft - 10;
+                const width = (lastElement.offsetLeft + lastElement.offsetWidth) - firstElement.offsetLeft + 20;
+                
+                window.style.left = `${left}px`;
+                window.style.width = `${width}px`;
+                window.style.top = `${firstElement.offsetTop - 10}px`;
+            }
+        }
+        
+        // Updates based on current step
+        function updateStep() {
+            stepNumberEl.textContent = currentStep;
+            
+            // Enable/disable buttons
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+            
+            // Reset element styles
+            arr.forEach((_, idx) => {
+                const element = document.getElementById(`element-${idx}`);
+                element.style.backgroundColor = '#FFFFFF';
+                element.classList.remove('entering', 'exiting');
+            });
+            
+            // Set window position and update content based on step
+            switch(currentStep) {
+                case 1: // Initial window
+                    setWindowPosition(0, k);
+                    formulaEl.innerHTML = `Initial window_sum = 1 + 3 + 2 = <span class="formula-highlight">6</span>`;
+                    explanationEl.textContent = 'We start by calculating the sum of the first k elements in our sliding window.';
+                    highlightElements([0, 1, 2], 'FD9F78');
+                    break;
+                    
+                case 2: // First slide - remove arr[0], add arr[3]
+                    setWindowPosition(1, k);
+                    formulaEl.innerHTML = `window_sum = 6 + 6 - 1 = <span class="formula-highlight">11</span>`;
+                    explanationEl.textContent = 'For each slide, we add the new element entering the window and subtract the element leaving the window.';
+                    highlightElements([1, 2, 3], 'FD9F78');
+                    document.getElementById(`element-0`).classList.add('exiting');
+                    document.getElementById(`element-3`).classList.add('entering');
+                    break;
+                    
+                case 3: // Second slide - remove arr[1], add arr[4]
+                    setWindowPosition(2, k);
+                    formulaEl.innerHTML = `window_sum = 11 + 4 - 3 = <span class="formula-highlight">12</span>`;
+                    explanationEl.textContent = 'Continue sliding: add the new element (4) and subtract the element leaving the window (3).';
+                    highlightElements([2, 3, 4], 'FD9F78');
+                    document.getElementById(`element-1`).classList.add('exiting');
+                    document.getElementById(`element-4`).classList.add('entering');
+                    break;
+                    
+                case 4: // Third slide - remove arr[2], add arr[5]
+                    setWindowPosition(3, k);
+                    formulaEl.innerHTML = `window_sum = 12 + 8 - 2 = <span class="formula-highlight">18</span>`;
+                    explanationEl.textContent = 'Continue sliding: add the new element (8) and subtract the element leaving the window (2).';
+                    highlightElements([3, 4, 5], 'FD9F78');
+                    document.getElementById(`element-2`).classList.add('exiting');
+                    document.getElementById(`element-5`).classList.add('entering');
+                    break;
+                    
+                case 5: // Fourth slide - remove arr[3], add arr[6]
+                    setWindowPosition(4, k);
+                    formulaEl.innerHTML = `window_sum = 18 + 5 - 6 = <span class="formula-highlight">17</span>`;
+                    explanationEl.textContent = 'Final slide: add the new element (5) and subtract the element leaving the window (6).';
+                    highlightElements([4, 5, 6], 'FD9F78');
+                    document.getElementById(`element-3`).classList.add('exiting');
+                    document.getElementById(`element-6`).classList.add('entering');
+                    break;
+                    
+                case 6: // Summary
+                    setWindowPosition(4, k);
+                    formulaEl.innerHTML = `<span class="formula-highlight">window_sum = window_sum + arr[i] - arr[i-k]</span>`;
+                    explanationEl.innerHTML = `<strong>Window Transition Formula:</strong> For each step, we add the new element entering the window and subtract the element leaving the window.<br><br>
+                                             This sliding window technique maintains an O(1) time complexity for each window transition, making it efficient for many array processing problems.`;
+                    highlightElements([4, 5, 6], 'FD9F78');
+                    break;
+            }
+        }
+        
+        // Helper to highlight elements
+        function highlightElements(indices, color) {
+            indices.forEach(idx => {
+                const element = document.getElementById(`element-${idx}`);
+                if (element) {
+                    element.style.backgroundColor = `#${color}`;
+                }
+            });
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize
+        initializeArray();
+        updateStep();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            switch(currentStep) {
+                case 1: setWindowPosition(0, k); break;
+                case 2: setWindowPosition(1, k); break;
+                case 3: setWindowPosition(2, k); break;
+                case 4: setWindowPosition(3, k); break;
+                case 5:
+                case 6: setWindowPosition(4, k); break;
+            }
+        });
+    </script>
+</body>
+</html>
