@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suffix Sum Calculation Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            height: 60px;
+            position: relative;
+        }
+        .array-box {
+            width: 50px;
+            height: 50px;
+            margin: 0 10px;
+            border: 2px solid #FF4800;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            position: relative;
+        }
+        .array-index {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .array-label {
+            position: absolute;
+            left: -120px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF4800;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        .arrow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            height: 100px;
+            position: relative;
+        }
+        .arrow {
+            position: absolute;
+            background-color: #FD9F78;
+            width: 2px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .arrow-head {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #FD9F78;
+            position: absolute;
+            bottom: -10px;
+            left: -5px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            text-align: center;
+            margin-top: 20px;
+            min-height: 50px;
+            font-size: 18px;
+            color: #000000;
+        }
+        .highlight {
+            background-color: #FD9F78 !important;
+            transition: background-color 0.5s;
+        }
+        .suffix-sum-indicator {
+            position: absolute;
+            top: 60px;
+            opacity: 0;
+            font-weight: bold;
+            color: #FF4800;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Suffix Sum Calculation Example</h1>
+        
+        <div class="array-container">
+            <div class="array-label">Original Array:</div>
+            <div class="array-box" id="orig-0"><span class="array-index">0</span>3</div>
+            <div class="array-box" id="orig-1"><span class="array-index">1</span>1</div>
+            <div class="array-box" id="orig-2"><span class="array-index">2</span>4</div>
+            <div class="array-box" id="orig-3"><span class="array-index">3</span>2</div>
+            <div class="array-box" id="orig-4"><span class="array-index">4</span>5</div>
+        </div>
+        
+        <div class="arrow-container" id="arrow-container">
+            <!-- Arrows will be created by JavaScript -->
+        </div>
+        
+        <div class="array-container">
+            <div class="array-label">Suffix Sum Array:</div>
+            <div class="array-box" id="suffix-0"><span class="array-index">0</span>15</div>
+            <div class="array-box" id="suffix-1"><span class="array-index">1</span>12</div>
+            <div class="array-box" id="suffix-2"><span class="array-index">2</span>11</div>
+            <div class="array-box" id="suffix-3"><span class="array-index">3</span>7</div>
+            <div class="array-box" id="suffix-4"><span class="array-index">4</span>5</div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Press "Next" to start the animation and learn how suffix sums are calculated!
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const originalArray = [3, 1, 4, 2, 5];
+        const suffixSumArray = [15, 12, 11, 7, 5];
+        let currentStep = 0;
+        const totalSteps = 6; // 5 calculations + 1 intro
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const explanation = document.getElementById('explanation');
+        const arrowContainer = document.getElementById('arrow-container');
+        
+        // Create suffix sum indicators
+        for (let i = 0; i < 5; i++) {
+            const indicator = document.createElement('div');
+            indicator.className = 'suffix-sum-indicator';
+            indicator.id = `indicator-${i}`;
+            indicator.style.left = `${document.getElementById(`suffix-${i}`).offsetLeft}px`;
+            indicator.textContent = ' ';
+            arrowContainer.appendChild(indicator);
+        }
+        
+        // Create arrows
+        function createArrows() {
+            arrowContainer.innerHTML = '';
+            // Recreate the indicators
+            for (let i = 0; i < 5; i++) {
+                const indicator = document.createElement('div');
+                indicator.className = 'suffix-sum-indicator';
+                indicator.id = `indicator-${i}`;
+                indicator.style.left = `${document.getElementById(`suffix-${i}`).offsetLeft + 25}px`;
+                indicator.textContent = ' ';
+                arrowContainer.appendChild(indicator);
+            }
+            
+            // Create arrows from each original array element to their corresponding suffix sum elements
+            for (let i = 0; i < 5; i++) {
+                for (let j = i; j < 5; j++) {
+                    const origBox = document.getElementById(`orig-${j}`);
+                    const suffixBox = document.getElementById(`suffix-${i}`);
+                    
+                    // Calculate positions for arrows
+                    const origRect = origBox.getBoundingClientRect();
+                    const suffixRect = suffixBox.getBoundingClientRect();
+                    const containerRect = arrowContainer.getBoundingClientRect();
+                    
+                    const startX = origRect.left + origRect.width / 2 - containerRect.left;
+                    const endX = suffixRect.left + suffixRect.width / 2 - containerRect.left;
+                    
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.id = `arrow-${i}-${j}`;
+                    
+                    // Calculate arrow properties
+                    const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(100, 2));
+                    const angle = Math.atan2(100, endX - startX);
+                    
+                    arrow.style.height = `${distance}px`;
+                    arrow.style.transform = `rotate(${angle}rad)`;
+                    arrow.style.transformOrigin = '0 0';
+                    arrow.style.left = `${startX}px`;
+                    arrow.style.top = '0';
+                    
+                    const arrowHead = document.createElement('div');
+                    arrowHead.className = 'arrow-head';
+                    arrow.appendChild(arrowHead);
+                    
+                    arrowContainer.appendChild(arrow);
+                }
+            }
+        }
+        
+        // Adjust arrows on window resize
+        window.addEventListener('resize', createArrows);
+        
+        // Create initial arrows
+        createArrows();
+        
+        function resetHighlights() {
+            for (let i = 0; i < 5; i++) {
+                document.getElementById(`orig-${i}`).classList.remove('highlight');
+                document.getElementById(`suffix-${i}`).classList.remove('highlight');
+            }
+            
+            const arrows = document.querySelectorAll('.arrow');
+            arrows.forEach(arrow => {
+                arrow.style.opacity = '0';
+            });
+            
+            const indicators = document.querySelectorAll('.suffix-sum-indicator');
+            indicators.forEach(indicator => {
+                indicator.style.opacity = '0';
+            });
+        }
+        
+        function showStep(step) {
+            resetHighlights();
+            
+            if (step === 0) {
+                // Introduction step
+                explanation.textContent = "Press 'Next' to start the animation and learn how suffix sums are calculated!";
+            } else {
+                const index = step - 1;
+                // Highlight relevant elements
+                document.getElementById(`suffix-${index}`).classList.add('highlight');
+                
+                // Show formula for current sum
+                let formula = `Suffix Sum[${index}] = `;
+                let terms = [];
+                
+                for (let j = index; j < 5; j++) {
+                    document.getElementById(`orig-${j}`).classList.add('highlight');
+                    document.getElementById(`arrow-${index}-${j}`).style.opacity = '1';
+                    terms.push(originalArray[j]);
+                }
+                
+                formula += terms.join(' + ') + ` = ${suffixSumArray[index]}`;
+                explanation.textContent = formula;
+                
+                // Show suffix sum indicator
+                const indicator = document.getElementById(`indicator-${index}`);
+                indicator.textContent = suffixSumArray[index];
+                indicator.style.opacity = '1';
+            }
+            
+            // Update button states
+            prevBtn.disabled = step === 0;
+            nextBtn.disabled = step === totalSteps - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+        
+        // Initialize with step 0
+        showStep(currentStep);
+    </script>
+</body>
+</html>
