@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            position: relative;
+            height: 120px;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFB8F9;
+            border-radius: 5px;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .array-element.active {
+            background-color: #FF4800;
+            color: white;
+            transform: scale(1.1);
+        }
+        .array-element.search-area {
+            background-color: #FD9F78;
+        }
+        .array-element.found {
+            background-color: #4CAF50;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        .array-element.not-in-range {
+            background-color: #e0e0e0;
+            color: #999;
+        }
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+            color: #666;
+        }
+        .pointers {
+            position: absolute;
+            top: 70px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .pointer {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .pointer-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #000000;
+        }
+        .pointer-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .left-pointer .pointer-arrow { border-bottom-color: blue; }
+        .right-pointer .pointer-arrow { border-bottom-color: red; }
+        .mid-pointer .pointer-arrow { border-bottom-color: #FF4800; }
+        
+        .left-pointer .pointer-label { color: blue; }
+        .right-pointer .pointer-label { color: red; }
+        .mid-pointer .pointer-label { color: #FF4800; }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 5px solid #FF4800;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .step-counter {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Search Visualization</h1>
+        
+        <div class="step-counter">Step <span id="currentStep">1</span> of <span id="totalSteps">4</span></div>
+        
+        <div class="array-container" id="arrayContainer">
+            <!-- Array elements will be added here -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <!-- Step explanation goes here -->
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const array = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+            const target = 30;
+            
+            // Binary search steps (pre-calculated for visualization)
+            const steps = [
+                {
+                    left: 0,
+                    right: 9,
+                    mid: 4,
+                    description: "Initialize left=0, right=9. Calculate mid=4. Compare array[mid]=25 with target=30. Since 25 < 30, search in the right half."
+                },
+                {
+                    left: 5,
+                    right: 9,
+                    mid: 7,
+                    description: "Update left=5. Calculate mid=7. Compare array[mid]=40 with target=30. Since 40 > 30, search in the left half."
+                },
+                {
+                    left: 5,
+                    right: 6,
+                    mid: 5,
+                    description: "Update right=6. Calculate mid=5. Compare array[mid]=30 with target=30. Found target at index 5!"
+                },
+                {
+                    left: 5,
+                    right: 6,
+                    mid: 5,
+                    found: true,
+                    description: "Binary search completed! Target value 30 found at index 5."
+                }
+            ];
+            
+            let currentStepIndex = 0;
+            const arrayContainer = document.getElementById('arrayContainer');
+            const explanation = document.getElementById('explanation');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const currentStepElement = document.getElementById('currentStep');
+            const totalStepsElement = document.getElementById('totalSteps');
+            
+            totalStepsElement.textContent = steps.length;
+            
+            // Initialize array visualization
+            function initializeArray() {
+                arrayContainer.innerHTML = '';
+                
+                // Calculate element positions
+                const elementWidth = 60; // element width + margin
+                
+                // Create array elements
+                array.forEach((value, index) => {
+                    const element = document.createElement('div');
+                    element.className = 'array-element';
+                    element.id = 'element-' + index;
+                    element.textContent = value;
+                    
+                    // Add index below element
+                    const indexElem = document.createElement('div');
+                    indexElem.className = 'array-index';
+                    indexElem.textContent = index;
+                    element.appendChild(indexElem);
+                    
+                    arrayContainer.appendChild(element);
+                });
+                
+                // Initialize pointers
+                const pointers = document.createElement('div');
+                pointers.className = 'pointers';
+                
+                // Left pointer
+                const leftPointer = document.createElement('div');
+                leftPointer.className = 'pointer left-pointer';
+                leftPointer.id = 'left-pointer';
+                
+                const leftArrow = document.createElement('div');
+                leftArrow.className = 'pointer-arrow';
+                
+                const leftLabel = document.createElement('div');
+                leftLabel.className = 'pointer-label';
+                leftLabel.textContent = 'left';
+                
+                leftPointer.appendChild(leftArrow);
+                leftPointer.appendChild(leftLabel);
+                
+                // Right pointer
+                const rightPointer = document.createElement('div');
+                rightPointer.className = 'pointer right-pointer';
+                rightPointer.id = 'right-pointer';
+                
+                const rightArrow = document.createElement('div');
+                rightArrow.className = 'pointer-arrow';
+                
+                const rightLabel = document.createElement('div');
+                rightLabel.className = 'pointer-label';
+                rightLabel.textContent = 'right';
+                
+                rightPointer.appendChild(rightArrow);
+                rightPointer.appendChild(rightLabel);
+                
+                // Mid pointer
+                const midPointer = document.createElement('div');
+                midPointer.className = 'pointer mid-pointer';
+                midPointer.id = 'mid-pointer';
+                
+                const midArrow = document.createElement('div');
+                midArrow.className = 'pointer-arrow';
+                
+                const midLabel = document.createElement('div');
+                midLabel.className = 'pointer-label';
+                midLabel.textContent = 'mid';
+                
+                midPointer.appendChild(midArrow);
+                midPointer.appendChild(midLabel);
+                
+                pointers.appendChild(leftPointer);
+                pointers.appendChild(rightPointer);
+                pointers.appendChild(midPointer);
+                
+                arrayContainer.appendChild(pointers);
+            }
+            
+            // Update visualization for current step
+            function showStep(stepIndex) {
+                const step = steps[stepIndex];
+                currentStepElement.textContent = stepIndex + 1;
+                
+                // Reset all elements
+                array.forEach((_, index) => {
+                    const element = document.getElementById('element-' + index);
+                    element.className = 'array-element';
+                    
+                    // Mark elements in current search range
+                    if (index >= step.left && index <= step.right) {
+                        element.classList.add('search-area');
+                    } else {
+                        element.classList.add('not-in-range');
+                    }
+                    
+                    // Mark mid element
+                    if (index === step.mid) {
+                        element.classList.add('active');
+                    }
+                    
+                    // Mark found element
+                    if (step.found && index === step.mid) {
+                        element.classList.add('found');
+                    }
+                });
+                
+                // Update pointers
+                const leftPointer = document.getElementById('left-pointer');
+                const rightPointer = document.getElementById('right-pointer');
+                const midPointer = document.getElementById('mid-pointer');
+                
+                // Calculate positions based on element's position
+                const leftElement = document.getElementById('element-' + step.left);
+                const rightElement = document.getElementById('element-' + step.right);
+                const midElement = document.getElementById('element-' + step.mid);
+                
+                leftPointer.style.left = leftElement.offsetLeft + (leftElement.offsetWidth / 2) - 8 + 'px';
+                rightPointer.style.left = rightElement.offsetLeft + (rightElement.offsetWidth / 2) - 8 + 'px';
+                midPointer.style.left = midElement.offsetLeft + (midElement.offsetWidth / 2) - 8 + 'px';
+                
+                // Update explanation
+                explanation.textContent = step.description;
+                
+                // Update button states
+                prevBtn.disabled = stepIndex === 0;
+                nextBtn.disabled = stepIndex === steps.length - 1;
+            }
+            
+            // Button event listeners
+            prevBtn.addEventListener('click', () => {
+                if (currentStepIndex > 0) {
+                    currentStepIndex--;
+                    showStep(currentStepIndex);
+                }
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStepIndex < steps.length - 1) {
+                    currentStepIndex++;
+                    showStep(currentStepIndex);
+                }
+            });
+            
+            // Initialize and show first step
+            initializeArray();
+            showStep(currentStepIndex);
+        });
+    </script>
+</body>
+</html>
