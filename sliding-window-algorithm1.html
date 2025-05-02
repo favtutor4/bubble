@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .window-highlight {
+            position: absolute;
+            height: calc(100% + 20px);
+            border: 3px solid #FF4800;
+            background-color: rgba(253, 159, 120, 0.3);
+            top: -10px;
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+        .highlighted {
+            background-color: #FD9F78;
+            color: #000000;
+            transform: translateY(-5px);
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #FF4800;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-count {
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sliding Window Visualization</h1>
+        
+        <div class="explanation" id="explanation">
+            The Sliding Window technique involves creating a "window" of a specific size that slides through an array, processing elements within that window.
+        </div>
+        
+        <div class="array-container" id="arrayContainer">
+            <div class="array-element" id="element0">1</div>
+            <div class="array-element" id="element1">2</div>
+            <div class="array-element" id="element2">3</div>
+            <div class="array-element" id="element3">4</div>
+            <div class="array-element" id="element4">5</div>
+            <div class="array-element" id="element5">6</div>
+            <div class="array-element" id="element6">7</div>
+            <div class="window-highlight" id="windowHighlight"></div>
+        </div>
+        
+        <div class="step-count" id="stepCount">Step 1 of 3</div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prevButton" disabled>Previous</button>
+            <button class="nav-button" id="nextButton">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                start: 1, // Window starts from index 1
+                end: 3,   // Window ends at index 3
+                explanation: "Initial window of size 3 [2,3,4] is formed, starting from the second element of the array."
+            },
+            {
+                start: 2, // Window starts from index 2
+                end: 4,   // Window ends at index 4
+                explanation: "Window slides one position to the right, now containing elements [3,4,5]."
+            },
+            {
+                start: 3, // Window starts from index 3
+                end: 5,   // Window ends at index 5
+                explanation: "Window slides one more position to the right, now containing elements [4,5,6]."
+            }
+        ];
+
+        let currentStep = 0;
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const explanation = document.getElementById('explanation');
+        const stepCount = document.getElementById('stepCount');
+        const arrayElements = document.querySelectorAll('.array-element');
+        const windowHighlight = document.getElementById('windowHighlight');
+
+        function updateVisualization() {
+            // Reset all elements
+            arrayElements.forEach(element => {
+                element.classList.remove('highlighted');
+            });
+            
+            // Update step counter
+            stepCount.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            
+            // Update explanation
+            explanation.textContent = steps[currentStep].explanation;
+            
+            // Highlight current window elements
+            const start = steps[currentStep].start;
+            const end = steps[currentStep].end;
+            
+            for (let i = start; i <= end; i++) {
+                arrayElements[i].classList.add('highlighted');
+            }
+            
+            // Position the window highlight
+            const windowStart = document.getElementById(`element${start}`);
+            const windowEnd = document.getElementById(`element${end}`);
+            const startPos = windowStart.offsetLeft - 5; // Adjust for margin and border
+            const endPos = windowEnd.offsetLeft + windowEnd.offsetWidth + 5;
+            
+            windowHighlight.style.left = `${startPos}px`;
+            windowHighlight.style.width = `${endPos - startPos}px`;
+            
+            // Update button states
+            prevButton.disabled = currentStep === 0;
+            nextButton.disabled = currentStep === steps.length - 1;
+        }
+
+        prevButton.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+
+        // Initialize the visualization
+        window.onload = function() {
+            updateVisualization();
+        };
+    </script>
+</body>
+</html>
