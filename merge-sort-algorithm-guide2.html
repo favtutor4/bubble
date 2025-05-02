@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Recursion Tree Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .visualization-container {
+            width: 100%;
+            height: 600px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .explanation {
+            background-color: #FFB8F9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .step-indicator {
+            text-align: center;
+            font-size: 18px;
+            color: #FF4800;
+            margin-top: 10px;
+        }
+
+        .array-element {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.5s ease;
+        }
+
+        .tree-node {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+
+        .tree-connection {
+            position: absolute;
+            background-color: #FFB8F9;
+            z-index: -1;
+            transform-origin: top left;
+            transition: all 0.5s ease;
+        }
+
+        .complexity-info {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background-color: rgba(255, 184, 249, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Merge Sort Recursion Tree Visualization</h1>
+        
+        <div class="explanation" id="explanation">
+            <h3>Merge Sort Recursion Tree</h3>
+            <p>Merge sort uses a divide-and-conquer approach. This visualization demonstrates how the array is recursively divided into smaller subarrays until we reach single elements, which are then merged back in sorted order.</p>
+        </div>
+        
+        <div class="visualization-container">
+            <canvas id="canvas"></canvas>
+            <div class="complexity-info">
+                <p><strong>Time Complexity: O(n log n)</strong></p>
+                <p>Levels in tree: log(n)</p>
+                <p>Work per level: O(n)</p>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator">
+            Step <span id="currentStep">1</span> of <span id="totalSteps">7</span>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentStepSpan = document.getElementById('currentStep');
+        const totalStepsSpan = document.getElementById('totalSteps');
+        const explanationDiv = document.getElementById('explanation');
+
+        // Set canvas dimensions
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Example array
+        const originalArray = [38, 27, 43, 3, 9, 82, 10];
+        
+        const explanations = [
+            `<h3>Initial Array</h3><p>We start with an unsorted array. Merge sort will recursively divide this array into smaller subarrays.</p>`,
+            
+            `<h3>Divide Step 1</h3><p>In the first level of recursion, we divide the array into two halves. This creates the first level of our recursion tree.</p>`,
+            
+            `<h3>Divide Step 2</h3><p>The second level of recursion further divides each subarray. Notice we now have 4 subarrays with approximately n/4 elements each.</p>`,
+            
+            `<h3>Divide Step 3</h3><p>In the third level, we reach individual elements in most cases. These are trivially sorted (an array of size 1 is already sorted).</p>`,
+            
+            `<h3>Merge Step 1</h3><p>Now we start merging back up the tree. We compare elements from each subarray and merge them in sorted order.</p>`,
+            
+            `<h3>Merge Step 2</h3><p>In the second merge step, we take our sorted subarrays and merge them into larger sorted subarrays.</p>`,
+            
+            `<h3>Final Merge</h3><p>In the final merge, we combine our two sorted halves to produce the fully sorted array.</p><br><p><strong>Complexity Analysis:</strong> The tree has log(n) levels, and at each level, we do O(n) work (comparing and merging elements). This results in an overall time complexity of O(n log n).</p>`
+        ];
+
+        // Visualization steps
+        let currentStep = 0;
+        const totalSteps = explanations.length;
+        totalStepsSpan.textContent = totalSteps;
+
+        // Tree visualization data
+        const steps = [
+            { // Step 0: Initial array
+                nodes: [{
+                    x: 0.5,
+                    y: 0.1,
+                    array: originalArray,
+                    highlight: false
+                }],
+                connections: []
+            },
+            { // Step 1: First division
+                nodes: [
+                    {
+                        x: 0.5,
+                        y: 0.1,
+                        array: originalArray,
+                        highlight: false
+                    },
+                    {
+                        x: 0.3,
+                        y: 0.3,
+                        array: originalArray.slice(0, Math.ceil(originalArray.length/2)),
+                        highlight: true
+                    },
+                    {
+                        x: 0.7,
+                        y: 0.3,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2)),
+                        highlight: true
+                    }
+                ],
+                connections: [
+                    {
+                        from: 0,
+                        to: 1
+                    },
+                    {
+                        from: 0,
+                        to: 2
+                    }
+                ]
+            },
+            { // Step 2: Second division
+                nodes: [
+                    {
+                        x: 0.5,
+                        y: 0.1,
+                        array: originalArray,
+                        highlight: false
+                    },
+                    {
+                        x: 0.3,
+                        y: 0.3,
+                        array: originalArray.slice(0, Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.7,
+                        y: 0.3,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.2,
+                        y: 0.5,
+                        array: originalArray.slice(0, Math.ceil(originalArray.length/4)),
+                        highlight: true
+                    },
+                    {
+                        x: 0.4,
+                        y: 0.5,
+                        array: originalArray.slice(Math.ceil(originalArray.length/4), Math.ceil(originalArray.length/2)),
+                        highlight: true
+                    },
+                    {
+                        x: 0.6,
+                        y: 0.5,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2), Math.ceil(originalArray.length/2) + Math.ceil(originalArray.length/4)),
+                        highlight: true
+                    },
+                    {
+                        x: 0.8,
+                        y: 0.5,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2) + Math.ceil(originalArray.length/4)),
+                        highlight: true
+                    }
+                ],
+                connections: [
+                    {
+                        from: 0,
+                        to: 1
+                    },
+                    {
+                        from: 0,
+                        to: 2
+                    },
+                    {
+                        from: 1,
+                        to: 3
+                    },
+                    {
+                        from: 1,
+                        to: 4
+                    },
+                    {
+                        from: 2,
+                        to: 5
+                    },
+                    {
+                        from: 2,
+                        to: 6
+                    }
+                ]
+            },
+            { // Step 3: Leaf nodes (individual elements)
+                nodes: [
+                    {
+                        x: 0.5,
+                        y: 0.1,
+                        array: originalArray,
+                        highlight: false
+                    },
+                    {
+                        x: 0.3,
+                        y: 0.3,
+                        array: originalArray.slice(0, Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.7,
+                        y: 0.3,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.2,
+                        y: 0.5,
+                        array: originalArray.slice(0, Math.ceil(originalArray.length/4)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.4,
+                        y: 0.5,
+                        array: originalArray.slice(Math.ceil(originalArray.length/4), Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.6,
+                        y: 0.5,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2), Math.ceil(originalArray.length/2) + Math.ceil(originalArray.length/4)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.8,
+                        y: 0.5,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2) + Math.ceil(originalArray.length/4)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.15,
+                        y: 0.7,
+                        array: [38],
+                        highlight: true
+                    },
+                    {
+                        x: 0.25,
+                        y: 0.7,
+                        array: [27],
+                        highlight: true
+                    },
+                    {
+                        x: 0.35,
+                        y: 0.7,
+                        array: [43],
+                        highlight: true
+                    },
+                    {
+                        x: 0.45,
+                        y: 0.7,
+                        array: [3],
+                        highlight: true
+                    },
+                    {
+                        x: 0.55,
+                        y: 0.7,
+                        array: [9],
+                        highlight: true
+                    },
+                    {
+                        x: 0.65,
+                        y: 0.7,
+                        array: [82],
+                        highlight: true
+                    },
+                    {
+                        x: 0.80,
+                        y: 0.7,
+                        array: [10],
+                        highlight: true
+                    }
+                ],
+                connections: [
+                    {
+                        from: 0,
+                        to: 1
+                    },
+                    {
+                        from: 0,
+                        to: 2
+                    },
+                    {
+                        from: 1,
+                        to: 3
+                    },
+                    {
+                        from: 1,
+                        to: 4
+                    },
+                    {
+                        from: 2,
+                        to: 5
+                    },
+                    {
+                        from: 2,
+                        to: 6
+                    },
+                    {
+                        from: 3,
+                        to: 7
+                    },
+                    {
+                        from: 3,
+                        to: 8
+                    },
+                    {
+                        from: 4,
+                        to: 9
+                    },
+                    {
+                        from: 4,
+                        to: 10
+                    },
+                    {
+                        from: 5,
+                        to: 11
+                    },
+                    {
+                        from: 5,
+                        to: 12
+                    },
+                    {
+                        from: 6,
+                        to: 13
+                    }
+                ]
+            },
+            { // Step 4: First merge
+                nodes: [
+                    {
+                        x: 0.5,
+                        y: 0.1,
+                        array: originalArray,
+                        highlight: false
+                    },
+                    {
+                        x: 0.3,
+                        y: 0.3,
+                        array: originalArray.slice(0, Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.7,
+                        y: 0.3,
+                        array: originalArray.slice(Math.ceil(originalArray.length/2)),
+                        highlight: false
+                    },
+                    {
+                        x: 0.2,
+                        y: 0.5,
+                        array: [27, 38],
+                        highlight: true
+                    },
+                    {
+                        x: 0.4,
+                        y: 0.5,
+                        array: [3, 43],
+                        highlight: true
+                    },
+                    {
+                        x: 0.6,
+                        y: 0.5,
+                        array: [9, 82],
+                        highlight: true
+                    },
+                    {
+                        x: 0.8,
+                        y: 0.5,
+                        array: [10],
+                        highlight: true
+                    },
+                    {
+                        x: 0.15,
+                        y: 0.7,
+                        array: [38],
+                        highlight: false
+                    },
+                    {
+                        x: 0.25,
+                        y: 0.7,
+                        array: [27],
+                        highlight: false
+                    },
+                    {
+                        x: 0.35,
+                        y: 0.7,
+                        array: [43],
+                        highlight: false
+                    },
+                    {
+                        x: 0.45,
+                        y: 0.7,
+                        array: [3],
+                        highlight: false
+                    },
+                    {
+                        x: 0.55,
+                        y: 0.7,
+                        array: [9],
+                        highlight: false
+                    },
+                    {
+                        x: 0.65,
+                        y: 0.7,
+                        array: [82],
+                        highlight: false
+                    },
+                    {
+                        x: 0.80,
+                        y: 0.7,
+                        array: [10],
+                        highlight: false
+                    }
+                ],
+                connections: [
+                    {
+                        from: 0,
+                        to: 1
+                    },
+                    {
+                        from: 0,
+                        to: 2
+                    },
+                    {
+                        from: 1,
+                        to: 3
+                    },
+                    {
+                        from: 1,
+                        to: 4
+                    },
+                    {
+                        from: 2,
+                        to: 5
+                    },
+                    {
+                        from: 2,
+                        to: 6
+                    },
+                    {
+                        from: 3,
+                        to: 7
+                    },
+                    {
+                        from: 3,
+                        to: 8
+                    },
+                    {
+                        from: 4,
+                        to: 9
+                    },
+                    {
+                        from: 4,
+                        to: 10
+                    },
+                    {
+                        from: 5,
+                        to: 11
+                    },
+                    {
+                        from: 5,
+                        to: 12
+                    },
+                    {
+                        from: 6,
+                        to: 13
+                    }
+                ]
+            },
+            { // Step 5: Second merge
+                nodes: [
+                    {
+                        x: 0.5,
+                        y: 0.1,
+                        array: originalArray,
+                        highlight: false
+                    },
+                    {
+                        x: 0.3,
+                        y: 0.3,
+                        array: [3, 27, 38, 43],
+                        highlight: true
+                    },
+                    {
+                        x: 0.7,
+                        y: 0.3,
+                        array: [9, 10, 82],
+                        highlight: true
+                    },
+                    {
+                        x: 0.2,
+                        y: 0.5,
+                        array: [27, 38],
+                        highlight: false
+                    },
+                    {
+                        x: 0.4,
+                        y: 0.5,
+                        array: [3, 43],
+                        highlight: false
+                    },
+                    {
+                        x: 0.6,
+                        y: 0.5,
+                        array: [9, 82],
+                        highlight: false
+                    },
+                    {
+                        x: 0.8,
+                        y: 0.5,
+                        array: [10],
+                        highlight: false
+                    }
+                ],
+                connections: [
+                    {
+                        from: 0,
+                        to: 1
+                    },
+                    {
+                        from: 0,
+                        to: 2
+                    },
+                    {
+                        from: 1,
+                        to: 3
+                    },
+                    {
+                        from: 1,
+                        to: 4
+                    },
+                    {
+                        from: 2,
+                        to: 5
+                    },
+                    {
+                        from: 2,
+                        to: 6
+                    }
+                ]
+            },
+            { // Step 6: Final merge
+                nodes: [
+                    {
+                        x: 0.5,
+                        y: 0.1,
+                        array: [3, 9, 10, 27, 38, 43, 82],
+                        highlight: true
+                    },
+                    {
+                        x: 0.3,
+                        y: 0.3,
+                        array: [3, 27, 38, 43],
+                        highlight: false
+                    },
+                    {
+                        x: 0.7,
+                        y: 0.3,
+                        array: [9, 10, 82],
+                        highlight: false
+                    }
+                ],
+                connections: [
+                    {
+                        from: 0,
+                        to: 1
+                    },
+                    {
+                        from: 0,
+                        to: 2
+                    }
+                ]
+            }
+        ];
+
+        function drawTree() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const step = steps[currentStep];
+            
+            // Draw connections first (they should be behind nodes)
+            step.connections.forEach(connection => {
+                const fromNode = step.nodes[connection.from];
+                const toNode = step.nodes[connection.to];
+                
+                const fromX = fromNode.x * canvas.width;
+                const fromY = fromNode.y * canvas.height;
+                const toX = toNode.x * canvas.width;
+                const toY = toNode.y * canvas.height;
+                
+                ctx.beginPath();
+                ctx.moveTo(fromX, fromY);
+                ctx.lineTo(toX, toY);
+                ctx.strokeStyle = '#FFB8F9';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            });
+            
+            // Draw nodes
+            step.nodes.forEach(node => {
+                const x = node.x * canvas.width;
+                const y = node.y * canvas.height;
+                const array = node.array;
+                
+                // Calculate node width based on array length
+                const elemWidth = 40;
+                const padding = 10;
+                const nodeWidth = array.length * elemWidth + (array.length - 1) * padding;
+                
+                // Draw each array element
+                array.forEach((num, index) => {
+                    const elemX = x - nodeWidth / 2 + index * (elemWidth + padding);
+                    const elemY = y - elemWidth / 2;
+                    
+                    // Draw rectangle
+                    ctx.fillStyle = node.highlight ? '#FF4800' : '#FD9F78';
+                    ctx.beginPath();
+                    ctx.roundRect(elemX, elemY, elemWidth, elemWidth, 5);
+                    ctx.fill();
+                    
+                    // Draw number
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(num.toString(), elemX + elemWidth / 2, elemY + elemWidth / 2);
+                });
+            });
+        }
+
+        function updateExplanation() {
+            explanationDiv.innerHTML = explanations[currentStep];
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+            currentStepSpan.textContent = currentStep + 1;
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                drawTree();
+                updateExplanation();
+                updateButtons();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                drawTree();
+                updateExplanation();
+                updateButtons();
+            }
+        }
+
+        prevBtn.addEventListener('click', prevStep);
+        nextBtn.addEventListener('click', nextStep);
+
+        // Initial draw
+        drawTree();
+        updateExplanation();
+        updateButtons();
+    </script>
+</body>
+</html>
