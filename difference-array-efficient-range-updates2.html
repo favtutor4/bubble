@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Range Update Animation</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--white);
+            color: var(--black);
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            background-color: var(--white);
+        }
+        
+        #animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .array-box {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--secondary);
+            border-radius: 5px;
+            color: var(--black);
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: var(--black);
+        }
+        
+        .highlighted {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+        }
+        
+        .array-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--secondary);
+        }
+        
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-counter {
+            align-self: center;
+            font-weight: bold;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .arrow::after {
+            content: '';
+            position: absolute;
+            width: 0; 
+            height: 0; 
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid var(--primary);
+            bottom: -8px;
+            transform: translateX(-50%);
+            left: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Range Update Animation</h1>
+        
+        <div id="animation-container">
+            <div id="explanation" class="explanation"></div>
+            <div id="original-array" class="array-container">
+                <div class="array-label">Original Array:</div>
+            </div>
+            <div id="diff-array" class="array-container">
+                <div class="array-label">Difference Array:</div>
+            </div>
+            <div id="final-array" class="array-container">
+                <div class="array-label">Final Array:</div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-btn" disabled>Previous</button>
+            <div id="step-counter" class="step-counter">Step 1 of 6</div>
+            <button id="next-btn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize animation variables
+        let currentStep = 1;
+        const totalSteps = 6;
+        
+        // Initial arrays
+        const originalArray = [5, 3, 2, 0, 0];
+        const initialDiffArray = [5, -2, -1, -2, 0];
+        let diffArray = [...initialDiffArray];
+        const finalArray = [6, 7, 10, 6, 1];
+        
+        // Range updates to be applied
+        const rangeUpdates = [
+            { start: 1, end: 3, value: 3 }, // Update from index 1 to 3 by +3
+            { start: 2, end: 4, value: 1 }  // Update from index 2 to 4 by +1
+        ];
+        
+        // Element references
+        const originalArrayContainer = document.getElementById('original-array');
+        const diffArrayContainer = document.getElementById('diff-array');
+        const finalArrayContainer = document.getElementById('final-array');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const stepCounter = document.getElementById('step-counter');
+        const explanation = document.getElementById('explanation');
+        
+        // Setup initial visualization
+        function setupVisualization() {
+            // Clear previous content
+            originalArrayContainer.innerHTML = '<div class="array-label">Original Array:</div>';
+            diffArrayContainer.innerHTML = '<div class="array-label">Difference Array:</div>';
+            finalArrayContainer.innerHTML = '<div class="array-label">Final Array:</div>';
+            
+            // Create and add original array elements
+            originalArray.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-box';
+                element.innerHTML = value;
+                element.innerHTML += `<div class="array-index">${index}</div>`;
+                originalArrayContainer.appendChild(element);
+            });
+            
+            // Create and add difference array elements
+            initialDiffArray.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-box';
+                element.innerHTML = value;
+                element.innerHTML += `<div class="array-index">${index}</div>`;
+                diffArrayContainer.appendChild(element);
+            });
+            
+            // Initial Final array (empty or same as original)
+            originalArray.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-box';
+                element.innerHTML = value;
+                element.innerHTML += `<div class="array-index">${index}</div>`;
+                finalArrayContainer.appendChild(element);
+            });
+            
+            updateStep(currentStep);
+        }
+        
+        // Update UI based on current step
+        function updateStep(step) {
+            // Reset all highlights
+            document.querySelectorAll('.highlighted').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+            
+            // Remove any existing arrows
+            document.querySelectorAll('.arrow').forEach(el => {
+                el.remove();
+            });
+            
+            // Update step counter
+            stepCounter.textContent = `Step ${step} of ${totalSteps}`;
+            
+            // Update buttons
+            prevBtn.disabled = step === 1;
+            nextBtn.disabled = step === totalSteps;
+            
+            // Update explanation and visuals based on the current step
+            switch(step) {
+                case 1:
+                    explanation.innerHTML = 
+                    `<strong>Step 1:</strong> We start with the original array [5, 3, 2, 0, 0] and compute its difference array.<br>
+                    The difference array is: [5, -2, -1, -2, 0]<br>
+                    - First element is the same: 5<br>
+                    - For index 1: 3-5 = -2<br>
+                    - For index 2: 2-3 = -1<br>
+                    - For index 3: 0-2 = -2<br>
+                    - For index 4: 0-0 = 0`;
+                    
+                    // Highlight difference array calculation
+                    originalArrayContainer.querySelectorAll('.array-box').forEach(el => {
+                        el.classList.add('highlighted');
+                    });
+                    
+                    diffArrayContainer.querySelectorAll('.array-box').forEach(el => {
+                        el.classList.add('highlighted');
+                    });
+                    
+                    break;
+                
+                case 2:
+                    explanation.innerHTML = 
+                    `<strong>Step 2:</strong> Apply the first range update: Add +3 to indexes 1 through 3.<br>
+                    In the difference array, we add +3 at index 1 and -3 at index 4 (one past the end of the range).`;
+                    
+                    diffArray = [...initialDiffArray];
+                    diffArray[1] += 3;
+                    diffArray[4] -= 3;
+                    
+                    updateDiffArrayDisplay(diffArray);
+                    
+                    // Highlight the affected elements
+                    const boxes1 = diffArrayContainer.querySelectorAll('.array-box');
+                    boxes1[1].classList.add('highlighted');
+                    boxes1[4].classList.add('highlighted');
+                    
+                    // Add arrows to indicate the update
+                    addArrow(boxes1[1], '+3');
+                    addArrow(boxes1[4], '-3');
+                    
+                    break;
+                
+                case 3:
+                    explanation.innerHTML = 
+                    `<strong>Step 3:</strong> Apply the second range update: Add +1 to indexes 2 through 4.<br>
+                    In the difference array, we add +1 at index 2 and -1 at index 5 (which is beyond the array bounds, so we ignore it).`;
+                    
+                    diffArray = [...initialDiffArray];
+                    diffArray[1] += 3;
+                    diffArray[4] -= 3;
+                    diffArray[2] += 1;
+                    // No -1 at index 5 since it's beyond array bounds
+                    
+                    updateDiffArrayDisplay(diffArray);
+                    
+                    // Highlight the affected element
+                    const boxes2 = diffArrayContainer.querySelectorAll('.array-box');
+                    boxes2[2].classList.add('highlighted');
+                    
+                    // Add arrow to indicate the update
+                    addArrow(boxes2[2], '+1');
+                    
+                    break;
+                
+                case 4:
+                    explanation.innerHTML = 
+                    `<strong>Step 4:</strong> The difference array after all updates is [5, 1, 0, -2, -3].<br>
+                    Now, we reconstruct the final array by summing the difference array elements.`;
+                    
+                    // Final difference array after all updates
+                    diffArray = [5, 1, 0, -2, -3];
+                    
+                    updateDiffArrayDisplay(diffArray);
+                    
+                    // Highlight all elements of the difference array
+                    diffArrayContainer.querySelectorAll('.array-box').forEach(el => {
+                        el.classList.add('highlighted');
+                    });
+                    
+                    break;
+                
+                case 5:
+                    explanation.innerHTML = 
+                    `<strong>Step 5:</strong> Reconstruction starts with the first element of the difference array (5).<br>
+                    Then we add each subsequent element to get the final array.<br>
+                    - First element: 5<br>
+                    - For index 1: 5 + 1 = 6<br>
+                    - For index 2: 6 + 1 = 7<br>
+                    - For index 3: 7 + 3 = 10<br>
+                    - For index 4: 10 - 4 = 6<br>
+                    - For index 5: 6 - 5 = 1`;
+                    
+                    // Reconstructing the final array (intermediate step)
+                    const reconstructArray = [5];
+                    for (let i = 1; i < 5; i++) {
+                        reconstructArray[i] = reconstructArray[i-1] + diffArray[i];
+                    }
+                    updateFinalArrayDisplay(reconstructArray);
+                    
+                    // Highlight the process
+                    diffArrayContainer.querySelectorAll('.array-box').forEach(el => {
+                        el.classList.add('highlighted');
+                    });
+                    finalArrayContainer.querySelectorAll('.array-box').forEach(el => {
+                        el.classList.add('highlighted');
+                    });
+                    
+                    break;
+                
+                case 6:
+                    explanation.innerHTML = 
+                    `<strong>Step 6:</strong> The final array after applying both range updates is [6, 7, 10, 6, 1].<br>
+                    This is the result of applying:<br>
+                    1. +3 to elements at indexes 1, 2, and 3<br>
+                    2. +1 to elements at indexes 2, 3, and 4`;
+                    
+                    // Final result
+                    updateFinalArrayDisplay(finalArray);
+                    
+                    // Highlight the final array
+                    finalArrayContainer.querySelectorAll('.array-box').forEach(el => {
+                        el.classList.add('highlighted');
+                    });
+                    
+                    break;
+            }
+        }
+        
+        // Helper function to update difference array display
+        function updateDiffArrayDisplay(newDiffArray) {
+            const boxes = diffArrayContainer.querySelectorAll('.array-box');
+            newDiffArray.forEach((value, index) => {
+                boxes[index].textContent = value;
+                boxes[index].innerHTML += `<div class="array-index">${index}</div>`;
+            });
+        }
+        
+        // Helper function to update final array display
+        function updateFinalArrayDisplay(newFinalArray) {
+            const boxes = finalArrayContainer.querySelectorAll('.array-box');
+            newFinalArray.forEach((value, index) => {
+                boxes[index].textContent = value;
+                boxes[index].innerHTML += `<div class="array-index">${index}</div>`;
+            });
+        }
+        
+        // Helper function to add arrow indicators
+        function addArrow(element, text) {
+            const rect = element.getBoundingClientRect();
+            const containerRect = document.getElementById('animation-container').getBoundingClientRect();
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            arrow.textContent = text;
+            arrow.style.left = (rect.left + rect.width/2 - containerRect.left - 20) + 'px';
+            arrow.style.top = (rect.top - containerRect.top - 50) + 'px';
+            
+            document.getElementById('animation-container').appendChild(arrow);
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStep(currentStep);
+            }
+        });
+        
+        // Initialize the visualization
+        setupVisualization();
+    </script>
+</body>
+</html>
