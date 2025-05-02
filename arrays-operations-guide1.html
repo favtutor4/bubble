@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Memory Address Calculation</title>
+    <style>
+        :root {
+            --pink: #FFB8F9;
+            --orange: #FF4800;
+            --light-orange: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--white);
+            color: var(--black);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: var(--orange);
+        }
+        .memory-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+        }
+        .memory-blocks {
+            display: flex;
+            margin: 20px 0;
+        }
+        .memory-block {
+            width: 80px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--black);
+            font-weight: bold;
+            position: relative;
+            background-color: var(--pink);
+            transition: all 0.3s ease;
+        }
+        .memory-block.highlight {
+            background-color: var(--light-orange);
+            transform: translateY(-10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .array-index {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+        }
+        .memory-address {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: var(--pink);
+        }
+        .formula-box {
+            background-color: var(--light-orange);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: var(--orange);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: var(--light-orange);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pointer {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: var(--orange);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--white);
+            font-weight: bold;
+            transition: all 0.5s ease;
+            left: 50%;
+            top: -50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Memory Address Calculation</h1>
+        
+        <div class="memory-container">
+            <div class="pointer" id="pointer">→</div>
+            <div class="memory-blocks" id="memory-blocks">
+                <div class="memory-block" data-index="0">
+                    <span class="array-index">Index 0</span>
+                    10
+                    <span class="memory-address" id="addr0">0x1000</span>
+                </div>
+                <div class="memory-block" data-index="1">
+                    <span class="array-index">Index 1</span>
+                    20
+                    <span class="memory-address" id="addr1">0x1004</span>
+                </div>
+                <div class="memory-block" data-index="2">
+                    <span class="array-index">Index 2</span>
+                    30
+                    <span class="memory-address" id="addr2">0x1008</span>
+                </div>
+                <div class="memory-block" data-index="3">
+                    <span class="array-index">Index 3</span>
+                    40
+                    <span class="memory-address" id="addr3">0x100C</span>
+                </div>
+                <div class="memory-block" data-index="4">
+                    <span class="array-index">Index 4</span>
+                    50
+                    <span class="memory-address" id="addr4">0x1010</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="formula-box">
+            <strong>Formula:</strong> address = base_address + (index × size_of_data_type)
+        </div>
+
+        <div class="explanation" id="explanation">
+            <p>Let's understand how array elements are stored in memory:</p>
+            <p>The base address of our array is 0x1000 (hexadecimal).</p>
+            <p>Each integer in this array takes 4 bytes of memory.</p>
+            <p>Click "Next" to see how each element's address is calculated!</p>
+        </div>
+
+        <div class="navigation">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const baseAddress = 0x1000;
+        const intSize = 4; // 4 bytes for an integer
+        let currentStep = 0;
+        const totalSteps = 5;
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const explanation = document.getElementById('explanation');
+        const memoryBlocks = document.querySelectorAll('.memory-block');
+        const pointer = document.getElementById('pointer');
+        
+        // Position the pointer initially
+        updatePointerPosition(0);
+        
+        // Update addresses
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`addr${i}`).textContent = '0x' + (baseAddress + i * intSize).toString(16).toUpperCase();
+        }
+        
+        const steps = [
+            {
+                text: `<p>Let's understand how array elements are stored in memory:</p>
+                      <p>The base address of our array is 0x1000 (hexadecimal).</p>
+                      <p>Each integer in this array takes 4 bytes of memory.</p>
+                      <p>Click "Next" to see how each element's address is calculated!</p>`,
+                highlightIndex: null
+            },
+            {
+                text: `<p><strong>For index 0:</strong></p>
+                      <p>address = 0x1000 + (0 × 4) = 0x1000</p>
+                      <p>This is the base address itself. The first element (10) is stored at 0x1000.</p>`,
+                highlightIndex: 0
+            },
+            {
+                text: `<p><strong>For index 1:</strong></p>
+                      <p>address = 0x1000 + (1 × 4) = 0x1004</p>
+                      <p>The second element (20) is stored 4 bytes after the base address, at 0x1004.</p>`,
+                highlightIndex: 1
+            },
+            {
+                text: `<p><strong>For index 2:</strong></p>
+                      <p>address = 0x1000 + (2 × 4) = 0x1008</p>
+                      <p>The third element (30) is stored 8 bytes after the base address, at 0x1008.</p>`,
+                highlightIndex: 2
+            },
+            {
+                text: `<p><strong>For index 3:</strong></p>
+                      <p>address = 0x1000 + (3 × 4) = 0x100C</p>
+                      <p>The fourth element (40) is stored 12 bytes after the base address, at 0x100C.</p>`,
+                highlightIndex: 3
+            },
+            {
+                text: `<p><strong>For index 4:</strong></p>
+                      <p>address = 0x1000 + (4 × 4) = 0x1010</p>
+                      <p>The fifth element (50) is stored 16 bytes after the base address, at 0x1010.</p>
+                      <p>This pattern continues for larger arrays, making it easy to calculate any element's address!</p>`,
+                highlightIndex: 4
+            }
+        ];
+        
+        function updateStep() {
+            // Reset all highlights
+            memoryBlocks.forEach(block => {
+                block.classList.remove('highlight');
+            });
+            
+            // Set current explanation
+            explanation.innerHTML = steps[currentStep].text;
+            
+            // Highlight current block if needed
+            if (steps[currentStep].highlightIndex !== null) {
+                memoryBlocks[steps[currentStep].highlightIndex].classList.add('highlight');
+                updatePointerPosition(steps[currentStep].highlightIndex);
+            } else {
+                // Hide pointer
+                pointer.style.opacity = '0';
+            }
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        function updatePointerPosition(index) {
+            const block = memoryBlocks[index];
+            if (block) {
+                const rect = block.getBoundingClientRect();
+                const containerRect = document.querySelector('.memory-container').getBoundingClientRect();
+                
+                pointer.style.opacity = '1';
+                pointer.style.left = `${rect.left + rect.width/2 - containerRect.left}px`;
+            }
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize
+        updateStep();
+    </script>
+</body>
+</html>
