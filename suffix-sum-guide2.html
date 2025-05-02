@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefix Sum vs Suffix Sum Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 80px 0;
+            position: relative;
+        }
+        
+        .array-label {
+            font-weight: bold;
+            margin-right: 15px;
+            color: #FF4800;
+            display: flex;
+            align-items: center;
+            width: 120px;
+            justify-content: flex-end;
+        }
+        
+        .array {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            font-weight: bold;
+            font-size: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .cell.highlighted {
+            background-color: #FD9F78;
+            transform: scale(1.1);
+        }
+        
+        .arrow {
+            position: absolute;
+            stroke: #FF4800;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .arrow.visible {
+            opacity: 1;
+        }
+        
+        .arrow-head {
+            fill: #FF4800;
+            stroke: none;
+        }
+        
+        .explanation {
+            margin-top: 40px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            min-height: 100px;
+            color: #000000;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            width: 100%;
+        }
+        
+        .nav-button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 0 5px;
+            background-color: #FD9F78;
+            transition: background-color 0.3s ease;
+        }
+        
+        .step-dot.active {
+            background-color: #FF4800;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>Prefix Sum vs Suffix Sum Comparison</h1>
+    
+    <div class="container">
+        <div class="array-container">
+            <div class="array-label">Prefix Sum:</div>
+            <div class="array" id="prefixSumArray">
+                <div class="cell">3</div>
+                <div class="cell">4</div>
+                <div class="cell">8</div>
+                <div class="cell">10</div>
+                <div class="cell">15</div>
+            </div>
+        </div>
+        
+        <div class="array-container">
+            <div class="array-label">Original Array:</div>
+            <div class="array" id="originalArray">
+                <div class="cell">3</div>
+                <div class="cell">1</div>
+                <div class="cell">4</div>
+                <div class="cell">2</div>
+                <div class="cell">5</div>
+            </div>
+        </div>
+        
+        <div class="array-container">
+            <div class="array-label">Suffix Sum:</div>
+            <div class="array" id="suffixSumArray">
+                <div class="cell">15</div>
+                <div class="cell">12</div>
+                <div class="cell">11</div>
+                <div class="cell">7</div>
+                <div class="cell">5</div>
+            </div>
+        </div>
+        
+        <svg width="800" height="500" style="position: absolute; top: 0; left: 0; z-index: -1;">
+            <!-- Prefix sum arrows will be added dynamically -->
+            <!-- Suffix sum arrows will be added dynamically -->
+        </svg>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Prefix Sum vs Suffix Sum comparison! Press "Next" to start the animation.
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" class="nav-button" disabled>Previous</button>
+            <button id="nextBtn" class="nav-button">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">
+            <!-- Step indicators will be added dynamically -->
+        </div>
+    </div>
+    
+    <script>
+        const steps = [
+            {
+                title: "Introduction",
+                text: "Welcome to the Prefix Sum vs Suffix Sum comparison! These are two important array transformations used in many algorithms.",
+                highlights: [],
+                arrows: []
+            },
+            {
+                title: "Original Array",
+                text: "This is our original array [3, 1, 4, 2, 5]. We'll transform it into prefix and suffix sums.",
+                highlights: ["orig-0", "orig-1", "orig-2", "orig-3", "orig-4"],
+                arrows: []
+            },
+            {
+                title: "Prefix Sum: First Element",
+                text: "The prefix sum starts with the first element of the original array. So prefix[0] = original[0] = 3.",
+                highlights: ["orig-0", "prefix-0"],
+                arrows: ["prefix-arrow-0"]
+            },
+            {
+                title: "Prefix Sum: Second Element",
+                text: "The second element of prefix sum is the sum of first and second elements of the original array: prefix[1] = prefix[0] + original[1] = 3 + 1 = 4.",
+                highlights: ["orig-0", "orig-1", "prefix-0", "prefix-1"],
+                arrows: ["prefix-arrow-0", "prefix-arrow-1"]
+            },
+            {
+                title: "Prefix Sum: Third Element",
+                text: "The third element: prefix[2] = prefix[1] + original[2] = 4 + 4 = 8.",
+                highlights: ["orig-0", "orig-1", "orig-2", "prefix-0", "prefix-1", "prefix-2"],
+                arrows: ["prefix-arrow-0", "prefix-arrow-1", "prefix-arrow-2"]
+            },
+            {
+                title: "Prefix Sum: Fourth Element",
+                text: "The fourth element: prefix[3] = prefix[2] + original[3] = 8 + 2 = 10.",
+                highlights: ["orig-0", "orig-1", "orig-2", "orig-3", "prefix-0", "prefix-1", "prefix-2", "prefix-3"],
+                arrows: ["prefix-arrow-0", "prefix-arrow-1", "prefix-arrow-2", "prefix-arrow-3"]
+            },
+            {
+                title: "Prefix Sum: Fifth Element",
+                text: "The fifth element: prefix[4] = prefix[3] + original[4] = 10 + 5 = 15.",
+                highlights: ["orig-0", "orig-1", "orig-2", "orig-3", "orig-4", "prefix-0", "prefix-1", "prefix-2", "prefix-3", "prefix-4"],
+                arrows: ["prefix-arrow-0", "prefix-arrow-1", "prefix-arrow-2", "prefix-arrow-3", "prefix-arrow-4"]
+            },
+            {
+                title: "Complete Prefix Sum",
+                text: "The complete prefix sum array is [3, 4, 8, 10, 15]. Each element represents the sum of all elements up to that position in the original array.",
+                highlights: ["prefix-0", "prefix-1", "prefix-2", "prefix-3", "prefix-4"],
+                arrows: ["prefix-arrow-0", "prefix-arrow-1", "prefix-arrow-2", "prefix-arrow-3", "prefix-arrow-4"]
+            },
+            {
+                title: "Suffix Sum: Last Element",
+                text: "The suffix sum starts with the last element of the original array. So suffix[4] = original[4] = 5.",
+                highlights: ["orig-4", "suffix-4"],
+                arrows: ["suffix-arrow-4"]
+            },
+            {
+                title: "Suffix Sum: Fourth Element",
+                text: "The second-to-last element of suffix sum is the sum of last and second-to-last elements of the original array: suffix[3] = suffix[4] + original[3] = 5 + 2 = 7.",
+                highlights: ["orig-3", "orig-4", "suffix-3", "suffix-4"],
+                arrows: ["suffix-arrow-3", "suffix-arrow-4"]
+            },
+            {
+                title: "Suffix Sum: Third Element",
+                text: "The third element from the end: suffix[2] = suffix[3] + original[2] = 7 + 4 = 11.",
+                highlights: ["orig-2", "orig-3", "orig-4", "suffix-2", "suffix-3", "suffix-4"],
+                arrows: ["suffix-arrow-2", "suffix-arrow-3", "suffix-arrow-4"]
+            },
+            {
+                title: "Suffix Sum: Second Element",
+                text: "The second element: suffix[1] = suffix[2] + original[1] = 11 + 1 = 12.",
+                highlights: ["orig-1", "orig-2", "orig-3", "orig-4", "suffix-1", "suffix-2", "suffix-3", "suffix-4"],
+                arrows: ["suffix-arrow-1", "suffix-arrow-2", "suffix-arrow-3", "suffix-arrow-4"]
+            },
+            {
+                title: "Suffix Sum: First Element",
+                text: "The first element: suffix[0] = suffix[1] + original[0] = 12 + 3 = 15.",
+                highlights: ["orig-0", "orig-1", "orig-2", "orig-3", "orig-4", "suffix-0", "suffix-1", "suffix-2", "suffix-3", "suffix-4"],
+                arrows: ["suffix-arrow-0", "suffix-arrow-1", "suffix-arrow-2", "suffix-arrow-3", "suffix-arrow-4"]
+            },
+            {
+                title: "Complete Suffix Sum",
+                text: "The complete suffix sum array is [15, 12, 11, 7, 5]. Each element represents the sum of all elements from that position to the end of the original array.",
+                highlights: ["suffix-0", "suffix-1", "suffix-2", "suffix-3", "suffix-4"],
+                arrows: ["suffix-arrow-0", "suffix-arrow-1", "suffix-arrow-2", "suffix-arrow-3", "suffix-arrow-4"]
+            },
+            {
+                title: "Comparison",
+                text: "Notice that prefix[4] = suffix[0] = 15, which is the sum of all elements in the original array. Prefix sums accumulate from left to right, while suffix sums accumulate from right to left.",
+                highlights: ["prefix-4", "suffix-0"],
+                arrows: ["prefix-arrow-0", "prefix-arrow-1", "prefix-arrow-2", "prefix-arrow-3", "prefix-arrow-4", "suffix-arrow-0", "suffix-arrow-1", "suffix-arrow-2", "suffix-arrow-3", "suffix-arrow-4"]
+            },
+            {
+                title: "Applications",
+                text: "Prefix and suffix sums are useful for quickly computing the sum of any subarray. They're commonly used in range query problems, dynamic programming, and many other algorithms.",
+                highlights: [],
+                arrows: []
+            }
+        ];
+        
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanation = document.getElementById('explanation');
+        const svg = document.querySelector('svg');
+        const stepIndicator = document.getElementById('stepIndicator');
+        
+        // Create step indicators
+        for (let i = 0; i < steps.length; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'step-dot';
+            if (i === 0) dot.classList.add('active');
+            stepIndicator.appendChild(dot);
+        }
+        
+        // Create cell IDs
+        const originalCells = document.querySelectorAll('#originalArray .cell');
+        const prefixCells = document.querySelectorAll('#prefixSumArray .cell');
+        const suffixCells = document.querySelectorAll('#suffixSumArray .cell');
+        
+        originalCells.forEach((cell, i) => {
+            cell.id = `orig-${i}`;
+        });
+        
+        prefixCells.forEach((cell, i) => {
+            cell.id = `prefix-${i}`;
+        });
+        
+        suffixCells.forEach((cell, i) => {
+            cell.id = `suffix-${i}`;
+        });
+        
+        // Create arrows for prefix sum
+        for (let i = 0; i < 5; i++) {
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrow.id = `prefix-arrow-${i}`;
+            arrow.classList.add('arrow');
+            
+            // Calculate positions based on element positions
+            const origCell = document.getElementById(`orig-${i}`);
+            const prefixCell = document.getElementById(`prefix-${i}`);
+            
+            const origRect = origCell.getBoundingClientRect();
+            const prefixRect = prefixCell.getBoundingClientRect();
+            const svgRect = svg.getBoundingClientRect();
+            
+            const startX = (origRect.left + origRect.right) / 2 - svgRect.left;
+            const startY = origRect.top - svgRect.top;
+            const endX = (prefixRect.left + prefixRect.right) / 2 - svgRect.left;
+            const endY = prefixRect.bottom - svgRect.top;
+            
+            // Create curved path
+            const curveX = (startX + endX) / 2;
+            const pathData = `M ${startX},${startY} C ${curveX},${startY - 20} ${curveX},${endY + 20} ${endX},${endY}`;
+            arrow.setAttribute('d', pathData);
+            
+            // Create arrow head
+            const arrowHead = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            arrowHead.classList.add('arrow-head');
+            
+            // Calculate arrow head position
+            const arrowHeadPoints = `${endX},${endY} ${endX-5},${endY-10} ${endX+5},${endY-10}`;
+            arrowHead.setAttribute('points', arrowHeadPoints);
+            
+            svg.appendChild(arrow);
+            svg.appendChild(arrowHead);
+        }
+        
+        // Create arrows for suffix sum
+        for (let i = 0; i < 5; i++) {
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrow.id = `suffix-arrow-${i}`;
+            arrow.classList.add('arrow');
+            
+            // Calculate positions
+            const origCell = document.getElementById(`orig-${i}`);
+            const suffixCell = document.getElementById(`suffix-${i}`);
+            
+            const origRect = origCell.getBoundingClientRect();
+            const suffixRect = suffixCell.getBoundingClientRect();
+            const svgRect = svg.getBoundingClientRect();
+            
+            const startX = (origRect.left + origRect.right) / 2 - svgRect.left;
+            const startY = origRect.bottom - svgRect.top;
+            const endX = (suffixRect.left + suffixRect.right) / 2 - svgRect.left;
+            const endY = suffixRect.top - svgRect.top;
+            
+            // Create curved path
+            const curveX = (startX + endX) / 2;
+            const pathData = `M ${startX},${startY} C ${curveX},${startY + 20} ${curveX},${endY - 20} ${endX},${endY}`;
+            arrow.setAttribute('d', pathData);
+            
+            // Create arrow head
+            const arrowHead = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            arrowHead.classList.add('arrow-head');
+            
+            // Calculate arrow head position
+            const arrowHeadPoints = `${endX},${endY} ${endX-5},${endY+10} ${endX+5},${endY+10}`;
+            arrowHead.setAttribute('points', arrowHeadPoints);
+            
+            svg.appendChild(arrow);
+            svg.appendChild(arrowHead);
+        }
+        
+        function updateStep() {
+            // Update explanation
+            explanation.textContent = steps[currentStep].text;
+            
+            // Remove all highlights
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('highlighted');
+            });
+            
+            // Apply new highlights
+            steps[currentStep].highlights.forEach(id => {
+                const cell = document.getElementById(id);
+                if (cell) {
+                    cell.classList.add('highlighted');
+                }
+            });
+            
+            // Hide all arrows
+            document.querySelectorAll('.arrow').forEach(arrow => {
+                arrow.classList.remove('visible');
+            });
+            
+            // Show relevant arrows
+            steps[currentStep].arrows.forEach(id => {
+                const arrow = document.getElementById(id);
+                if (arrow) {
+                    arrow.classList.add('visible');
+                }
+            });
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+            
+            // Update step indicators
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentStep);
+            });
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize
+        updateStep();
+    </script>
+</body>
+</html>
