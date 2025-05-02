@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .description {
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 18px;
+        }
+        .visualization {
+            position: relative;
+            height: 200px;
+            margin: 40px 0;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .array-box {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            position: relative;
+        }
+        .window {
+            position: absolute;
+            height: 70px;
+            border: 3px solid #FF4800;
+            background-color: rgba(253, 159, 120, 0.3);
+            top: -5px;
+            transition: left 0.8s ease;
+            z-index: -1;
+        }
+        .current-window {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            min-height: 40px;
+            color: #FF4800;
+        }
+        .navigation {
+            display: flex;
+            margin-top: 30px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sliding Window Visualization</h1>
+        
+        <div class="description">
+            The sliding window technique involves creating a window of fixed size 'k' and sliding it across an array to process or observe a subarray at each step.
+        </div>
+        
+        <div class="visualization">
+            <div class="array-container">
+                <div class="array-box">3</div>
+                <div class="array-box">1</div>
+                <div class="array-box">4</div>
+                <div class="array-box">2</div>
+                <div class="array-box">5</div>
+                <div class="array-box">7</div>
+                <div class="window"></div>
+            </div>
+            
+            <div class="current-window"></div>
+        </div>
+        
+        <div class="step-counter">Window 0 of 3</div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const array = [3, 1, 4, 2, 5, 7];
+            const windowSize = 3;
+            const totalWindows = array.length - windowSize + 1;
+            
+            const windowElement = document.querySelector('.window');
+            const currentWindowText = document.querySelector('.current-window');
+            const stepCounter = document.querySelector('.step-counter');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const arrayBoxes = document.querySelectorAll('.array-box');
+            
+            let currentStep = -1;
+            
+            // Set the initial width of the window based on the box size
+            const boxWidth = 70; // 60px box + 2px border on each side + 5px margin on each side
+            windowElement.style.width = (boxWidth * windowSize) + 'px';
+            
+            function updateVisualization() {
+                // Reset all boxes to default style
+                arrayBoxes.forEach(box => {
+                    box.style.backgroundColor = '#FFFFFF';
+                    box.style.color = '#000000';
+                });
+                
+                if (currentStep === -1) {
+                    // Initial state - no window shown
+                    windowElement.style.left = '-999px'; // Hide window
+                    currentWindowText.textContent = 'Click Next to start the sliding window visualization';
+                    stepCounter.textContent = 'Window 0 of ' + totalWindows;
+                } else {
+                    // Show the window at the current position
+                    windowElement.style.left = (currentStep * boxWidth) + 'px';
+                    
+                    // Highlight the current window elements
+                    for (let i = currentStep; i < currentStep + windowSize; i++) {
+                        arrayBoxes[i].style.backgroundColor = '#FD9F78';
+                        arrayBoxes[i].style.color = '#FF4800';
+                    }
+                    
+                    // Show the current window content
+                    const windowContent = array.slice(currentStep, currentStep + windowSize);
+                    currentWindowText.textContent = 'Current Window: [' + windowContent.join(', ') + ']';
+                    stepCounter.textContent = 'Window ' + (currentStep + 1) + ' of ' + totalWindows;
+                }
+                
+                // Update button states
+                prevBtn.disabled = currentStep <= -1;
+                nextBtn.disabled = currentStep >= totalWindows - 1;
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > -1) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < totalWindows - 1) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+            
+            // Initialize the visualization
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
