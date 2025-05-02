@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Insertion Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .array-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        .array-cell.highlight {
+            background-color: #FFB8F9;
+        }
+        .array-cell.shifting {
+            background-color: #FD9F78;
+        }
+        .array-cell.new-element {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .array-index {
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color: #000000;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .description {
+            text-align: center;
+            margin: 20px 0;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+        .title {
+            color: #FF4800;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .step-number {
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .step-counter {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Insertion Comparison</h1>
+        
+        <div class="step-counter">
+            Scenario <span id="scenarioNumber">1</span>/3: <span id="scenarioTitle">Insert at the End</span>
+        </div>
+        
+        <div class="visualization">
+            <div class="title" id="insertionTitle">Inserting 10 at the End of Array</div>
+            
+            <div class="array-container" id="arrayVisual"></div>
+            
+            <div class="description" id="description">
+                We'll insert the element 10 at three different positions of the array [5, 7, 9, 12].
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = [
+            {
+                title: "Insert at the End",
+                steps: [
+                    {
+                        description: "Starting with original array [5, 7, 9, 12]",
+                        array: [5, 7, 9, 12],
+                        highlights: []
+                    },
+                    {
+                        description: "Since we're inserting at the end, we don't need to shift any elements",
+                        array: [5, 7, 9, 12],
+                        highlights: []
+                    },
+                    {
+                        description: "We simply add the new element 10 at the end of the array",
+                        array: [5, 7, 9, 12, 10],
+                        highlights: [4],
+                        newElement: 4
+                    },
+                    {
+                        description: "Final array after insertion: [5, 7, 9, 12, 10]",
+                        array: [5, 7, 9, 12, 10],
+                        highlights: [4]
+                    }
+                ]
+            },
+            {
+                title: "Insert at the Beginning",
+                steps: [
+                    {
+                        description: "Starting with original array [5, 7, 9, 12]",
+                        array: [5, 7, 9, 12],
+                        highlights: []
+                    },
+                    {
+                        description: "To insert at the beginning, we need to shift all elements one position to the right",
+                        array: [5, 7, 9, 12],
+                        highlights: [0, 1, 2, 3],
+                        shifting: [0, 1, 2, 3]
+                    },
+                    {
+                        description: "We shift element 12 from index 3 to index 4",
+                        array: [5, 7, 9, 12, null],
+                        highlights: [3, 4],
+                        shifting: [3, 4]
+                    },
+                    {
+                        description: "We shift element 9 from index 2 to index 3",
+                        array: [5, 7, 9, 12, 12],
+                        highlights: [2, 3],
+                        shifting: [2, 3]
+                    },
+                    {
+                        description: "We shift element 7 from index 1 to index 2",
+                        array: [5, 7, 9, 9, 12],
+                        highlights: [1, 2],
+                        shifting: [1, 2]
+                    },
+                    {
+                        description: "We shift element 5 from index 0 to index 1",
+                        array: [5, 7, 7, 9, 12],
+                        highlights: [0, 1],
+                        shifting: [0, 1]
+                    },
+                    {
+                        description: "Insert the new element 10 at index 0",
+                        array: [10, 5, 7, 9, 12],
+                        highlights: [0],
+                        newElement: 0
+                    },
+                    {
+                        description: "Final array after insertion: [10, 5, 7, 9, 12]",
+                        array: [10, 5, 7, 9, 12],
+                        highlights: [0]
+                    }
+                ]
+            },
+            {
+                title: "Insert at Position 2",
+                steps: [
+                    {
+                        description: "Starting with original array [5, 7, 9, 12]",
+                        array: [5, 7, 9, 12],
+                        highlights: []
+                    },
+                    {
+                        description: "To insert at position 2 (index 2), we need to shift elements at and after index 2",
+                        array: [5, 7, 9, 12],
+                        highlights: [2, 3],
+                        shifting: [2, 3]
+                    },
+                    {
+                        description: "We shift element 12 from index 3 to index 4",
+                        array: [5, 7, 9, 12, null],
+                        highlights: [3, 4],
+                        shifting: [3, 4]
+                    },
+                    {
+                        description: "We shift element 9 from index 2 to index 3",
+                        array: [5, 7, 9, 9, 12],
+                        highlights: [2, 3],
+                        shifting: [2, 3]
+                    },
+                    {
+                        description: "Insert the new element 10 at index 2",
+                        array: [5, 7, 10, 9, 12],
+                        highlights: [2],
+                        newElement: 2
+                    },
+                    {
+                        description: "Final array after insertion: [5, 7, 10, 9, 12]",
+                        array: [5, 7, 10, 9, 12],
+                        highlights: [2]
+                    }
+                ]
+            }
+        ];
+
+        let currentScenario = 0;
+        let currentStep = 0;
+
+        const scenarioNumberEl = document.getElementById('scenarioNumber');
+        const scenarioTitleEl = document.getElementById('scenarioTitle');
+        const insertionTitleEl = document.getElementById('insertionTitle');
+        const arrayVisualEl = document.getElementById('arrayVisual');
+        const descriptionEl = document.getElementById('description');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function updateVisualization() {
+            const scenario = scenarios[currentScenario];
+            const step = scenario.steps[currentStep];
+            
+            scenarioNumberEl.textContent = currentScenario + 1;
+            scenarioTitleEl.textContent = scenario.title;
+            insertionTitleEl.textContent = `Inserting 10 at ${scenario.title.toLowerCase()} of Array`;
+            descriptionEl.textContent = step.description;
+            
+            // Update array visualization
+            arrayVisualEl.innerHTML = '';
+            
+            step.array.forEach((value, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'array-cell';
+                cell.innerHTML = value !== null ? value : '';
+                
+                // Add index numbers
+                const indexElem = document.createElement('div');
+                indexElem.className = 'array-index';
+                indexElem.textContent = index;
+                cell.appendChild(indexElem);
+                
+                if (step.highlights && step.highlights.includes(index)) {
+                    cell.classList.add('highlight');
+                }
+                
+                if (step.shifting && step.shifting.includes(index)) {
+                    cell.classList.add('shifting');
+                }
+                
+                if (step.newElement === index) {
+                    cell.classList.add('new-element');
+                }
+                
+                arrayVisualEl.appendChild(cell);
+            });
+            
+            // Update button states
+            prevBtn.disabled = currentScenario === 0 && currentStep === 0;
+            nextBtn.disabled = currentScenario === scenarios.length - 1 && currentStep === scenarios[currentScenario].steps.length - 1;
+        }
+
+        function nextStep() {
+            currentStep++;
+            
+            if (currentStep >= scenarios[currentScenario].steps.length) {
+                currentStep = 0;
+                currentScenario++;
+                
+                if (currentScenario >= scenarios.length) {
+                    currentScenario = scenarios.length - 1;
+                    currentStep = scenarios[currentScenario].steps.length - 1;
+                }
+            }
+            
+            updateVisualization();
+        }
+
+        function prevStep() {
+            currentStep--;
+            
+            if (currentStep < 0) {
+                currentScenario--;
+                
+                if (currentScenario < 0) {
+                    currentScenario = 0;
+                    currentStep = 0;
+                } else {
+                    currentStep = scenarios[currentScenario].steps.length - 1;
+                }
+            }
+            
+            updateVisualization();
+        }
+
+        nextBtn.addEventListener('click', nextStep);
+        prevBtn.addEventListener('click', prevStep);
+
+        // Initialize visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
