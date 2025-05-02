@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefix Sum Calculation Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .array-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            position: relative;
+        }
+
+        .array-index {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        .highlight {
+            background-color: #FD9F78;
+        }
+
+        .arrow-container {
+            position: absolute;
+            width: 100%;
+            height: 100px;
+            top: 60px;
+            left: 0;
+            overflow: hidden;
+        }
+
+        .arrow {
+            position: absolute;
+            background-color: transparent;
+            border-left: 2px dashed #FF4800;
+            display: none;
+        }
+
+        .operation {
+            position: absolute;
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF4800;
+            display: none;
+        }
+
+        .explanation {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #FD9F78;
+            color: #000000;
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .step-indicator {
+            margin-top: 15px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prefix Sum Calculation</h1>
+    
+    <div class="container">
+        <div class="array-title">Original Array:</div>
+        <div class="array-container" id="original-array">
+            <!-- Original array elements will be inserted here via JavaScript -->
+        </div>
+        
+        <div class="array-title">Prefix Sum Array:</div>
+        <div class="array-container" id="prefix-sum-array">
+            <!-- Prefix sum array elements will be inserted here via JavaScript -->
+            <div class="arrow-container" id="arrow-container">
+                <!-- Arrows will be dynamically added here -->
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Prefix Sum Calculation Animation!
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 0 of 7</div>
+    </div>
+
+    <script>
+        // Original array and prefix sum array
+        const originalArray = [3, 1, 4, 1, 5, 9, 2];
+        const prefixSumArray = [0];
+        
+        // Calculate the full prefix sum array for reference
+        for (let i = 0; i < originalArray.length; i++) {
+            prefixSumArray.push(prefixSumArray[i] + originalArray[i]);
+        }
+        
+        // Initialize DOM elements
+        const originalArrayContainer = document.getElementById('original-array');
+        const prefixSumArrayContainer = document.getElementById('prefix-sum-array');
+        const arrowContainer = document.getElementById('arrow-container');
+        const explanationElement = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const stepIndicator = document.getElementById('step-indicator');
+        
+        // Current step
+        let currentStep = 0;
+        const totalSteps = originalArray.length;
+        
+        // Explanation texts for each step
+        const explanations = [
+            "We start with a prefix sum of 0 at index 0. This is a convention that helps us calculate ranges easily later.",
+            "To calculate prefix[1], we add original[0] = 3 to the previous prefix sum (0). So prefix[1] = 0 + 3 = 3.",
+            "For prefix[2], we add original[1] = 1 to the previous prefix sum (3). So prefix[2] = 3 + 1 = 4.",
+            "For prefix[3], we add original[2] = 4 to the previous prefix sum (4). So prefix[3] = 4 + 4 = 8.",
+            "For prefix[4], we add original[3] = 1 to the previous prefix sum (8). So prefix[4] = 8 + 1 = 9.",
+            "For prefix[5], we add original[4] = 5 to the previous prefix sum (9). So prefix[5] = 9 + 5 = 14.",
+            "For prefix[6], we add original[5] = 9 to the previous prefix sum (14). So prefix[6] = 14 + 9 = 23.",
+            "For prefix[7], we add original[6] = 2 to the previous prefix sum (23). So prefix[7] = 23 + 2 = 25."
+        ];
+        
+        // Initialize arrays
+        function initializeArrays() {
+            // Create original array elements
+            originalArrayContainer.innerHTML = '';
+            for (let i = 0; i < originalArray.length; i++) {
+                const elementDiv = document.createElement('div');
+                elementDiv.className = 'array-element';
+                elementDiv.id = `original-${i}`;
+                elementDiv.textContent = originalArray[i];
+                
+                const indexDiv = document.createElement('div');
+                indexDiv.className = 'array-index';
+                indexDiv.textContent = i;
+                
+                elementDiv.appendChild(indexDiv);
+                originalArrayContainer.appendChild(elementDiv);
+            }
+            
+            // Create prefix sum array elements
+            prefixSumArrayContainer.innerHTML = '';
+            for (let i = 0; i <= originalArray.length; i++) {
+                const elementDiv = document.createElement('div');
+                elementDiv.className = 'array-element';
+                elementDiv.id = `prefix-${i}`;
+                
+                if (i === 0) {
+                    elementDiv.textContent = '0';
+                    elementDiv.classList.add('highlight');
+                } else {
+                    elementDiv.textContent = '?';
+                }
+                
+                const indexDiv = document.createElement('div');
+                indexDiv.className = 'array-index';
+                indexDiv.textContent = i;
+                
+                elementDiv.appendChild(indexDiv);
+                prefixSumArrayContainer.appendChild(elementDiv);
+            }
+            
+            // Recreate arrow container
+            arrowContainer.innerHTML = '';
+            prefixSumArrayContainer.appendChild(arrowContainer);
+            
+            // Create arrows and operation elements (initially hidden)
+            for (let i = 1; i <= originalArray.length; i++) {
+                // Arrow from previous prefix sum
+                const arrowPrevPrefix = document.createElement('div');
+                arrowPrevPrefix.className = 'arrow';
+                arrowPrevPrefix.id = `arrow-prev-prefix-${i}`;
+                arrowContainer.appendChild(arrowPrevPrefix);
+                
+                // Arrow from original array
+                const arrowOriginal = document.createElement('div');
+                arrowOriginal.className = 'arrow';
+                arrowOriginal.id = `arrow-original-${i}`;
+                arrowContainer.appendChild(arrowOriginal);
+                
+                // Operation element
+                const operation = document.createElement('div');
+                operation.className = 'operation';
+                operation.id = `operation-${i}`;
+                operation.textContent = '+';
+                arrowContainer.appendChild(operation);
+            }
+            
+            updateStepIndicator();
+        }
+        
+        // Update step indicator
+        function updateStepIndicator() {
+            stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+        
+        // Show step
+        function showStep(step) {
+            // Reset all highlights and arrows
+            document.querySelectorAll('.array-element').forEach(el => el.classList.remove('highlight'));
+            document.querySelectorAll('.arrow').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.operation').forEach(el => el.style.display = 'none');
+            
+            // Highlight starting element (prefix[0] = 0)
+            document.getElementById('prefix-0').classList.add('highlight');
+            
+            // Update explanation
+            explanationElement.textContent = explanations[step];
+            
+            // Show completed prefix sums
+            for (let i = 0; i <= step; i++) {
+                const prefixElement = document.getElementById(`prefix-${i}`);
+                prefixElement.textContent = prefixSumArray[i];
+                prefixElement.classList.add('highlight');
+                
+                if (i > 0) {
+                    const originalElement = document.getElementById(`original-${i-1}`);
+                    originalElement.classList.add('highlight');
+                }
+            }
+            
+            // Show current step calculation
+            if (step > 0) {
+                // Get positioned elements for animation
+                const prevPrefixElement = document.getElementById(`prefix-${step-1}`);
+                const currentPrefixElement = document.getElementById(`prefix-${step}`);
+                const originalElement = document.getElementById(`original-${step-1}`);
+                
+                // Get positions for arrows
+                const prevPrefixRect = prevPrefixElement.getBoundingClientRect();
+                const currentPrefixRect = currentPrefixElement.getBoundingClientRect();
+                const originalRect = originalElement.getBoundingClientRect();
+                const containerRect = arrowContainer.getBoundingClientRect();
+                
+                // Arrow from previous prefix sum to current
+                const arrowPrevPrefix = document.getElementById(`arrow-prev-prefix-${step}`);
+                arrowPrevPrefix.style.display = 'block';
+                arrowPrevPrefix.style.height = '40px';
+                arrowPrevPrefix.style.top = '0px';
+                arrowPrevPrefix.style.left = `${prevPrefixRect.left - containerRect.left + prevPrefixRect.width/2}px`;
+                arrowPrevPrefix.style.transform = 'rotate(30deg)';
+                
+                // Arrow from original array element to current prefix sum
+                const arrowOriginal = document.getElementById(`arrow-original-${step}`);
+                arrowOriginal.style.display = 'block';
+                arrowOriginal.style.height = '40px';
+                arrowOriginal.style.top = '-80px';
+                arrowOriginal.style.left = `${originalRect.left - containerRect.left + originalRect.width/2}px`;
+                arrowOriginal.style.transform = 'rotate(-30deg)';
+                
+                // Position operation symbol
+                const operation = document.getElementById(`operation-${step}`);
+                operation.style.display = 'block';
+                operation.style.left = `${(prevPrefixRect.left + originalRect.left) / 2 - containerRect.left}px`;
+                operation.style.top = '-20px';
+            }
+            
+            // Disable/enable buttons based on current step
+            prevBtn.disabled = step === 0;
+            nextBtn.disabled = step === totalSteps;
+            
+            // Update step indicator
+            updateStepIndicator();
+        }
+        
+        // Initialize the visualization
+        initializeArrays();
+        showStep(currentStep);
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+    </script>
+</body>
+</html>
