@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maximum Sum Subarray Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .array-element {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: translateY(-5px);
+        }
+        
+        .info-box {
+            background-color: #FD9F78;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+            color: #000000;
+        }
+        
+        .max-sum {
+            font-weight: bold;
+            font-size: 20px;
+            color: #FF4800;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .index-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .index {
+            width: 40px;
+            height: 20px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .explanation {
+            line-height: 1.6;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Maximum Sum Subarray Animation</h1>
+        
+        <div class="explanation">
+            This animation demonstrates the sliding window technique to find the maximum sum subarray of size k=3 from the given array.
+        </div>
+        
+        <div class="index-container" id="index-container"></div>
+        <div class="array-container" id="array-container"></div>
+        
+        <div class="info-box">
+            <div id="current-sum">Current Window Sum: 0</div>
+            <div id="max-sum" class="max-sum">Maximum Sum: 0</div>
+            <div id="step-info">Step: Initializing</div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [4, 2, 1, 7, 8, 1, 2, 8, 1, 0];
+        const k = 3;
+        
+        // Initialize the visualization components
+        const arrayContainer = document.getElementById('array-container');
+        const indexContainer = document.getElementById('index-container');
+        const currentSumElement = document.getElementById('current-sum');
+        const maxSumElement = document.getElementById('max-sum');
+        const stepInfoElement = document.getElementById('step-info');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        // Create steps for the animation
+        const steps = [];
+        
+        // Step 0: Initial state
+        steps.push({
+            highlighted: [],
+            currentSum: null,
+            maxSum: null,
+            description: "We'll find the maximum sum of a subarray of size k=3 using the sliding window technique."
+        });
+        
+        // Step 1: Calculate the sum of first window
+        let currentSum = 0;
+        for (let i = 0; i < k; i++) {
+            currentSum += array[i];
+        }
+        
+        let maxSum = currentSum;
+        
+        steps.push({
+            highlighted: [0, 1, 2],
+            currentSum: currentSum,
+            maxSum: maxSum,
+            description: `Calculate the sum of first window (index 0 to ${k-1}): ${array[0]} + ${array[1]} + ${array[2]} = ${currentSum}. This is our initial maximum sum.`
+        });
+        
+        // Slide the window and calculate sums
+        for (let i = 1; i <= array.length - k; i++) {
+            currentSum = currentSum - array[i - 1] + array[i + k - 1];
+            
+            steps.push({
+                highlighted: Array.from({length: k}, (_, j) => i + j),
+                currentSum: currentSum,
+                maxSum: maxSum,
+                description: `Slide window to index ${i} to ${i+k-1}: Remove ${array[i-1]} and add ${array[i+k-1]}, Window sum = ${currentSum}`
+            });
+            
+            if (currentSum > maxSum) {
+                maxSum = currentSum;
+                
+                steps.push({
+                    highlighted: Array.from({length: k}, (_, j) => i + j),
+                    currentSum: currentSum,
+                    maxSum: maxSum,
+                    description: `Found a new maximum sum: ${maxSum} at indices ${i} to ${i+k-1}`
+                });
+            }
+        }
+        
+        // Final step showing the result
+        steps.push({
+            highlighted: [],
+            currentSum: null,
+            maxSum: maxSum,
+            description: `Algorithm complete! The maximum sum of any subarray of size ${k} is ${maxSum}.`
+        });
+        
+        // Initialize the array display
+        function initializeArrayDisplay() {
+            // Clear existing elements
+            arrayContainer.innerHTML = '';
+            indexContainer.innerHTML = '';
+            
+            // Create index markers
+            for (let i = 0; i < array.length; i++) {
+                const indexElement = document.createElement('div');
+                indexElement.className = 'index';
+                indexElement.textContent = i;
+                indexContainer.appendChild(indexElement);
+            }
+            
+            // Create array elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = array[i];
+                arrayContainer.appendChild(element);
+            }
+        }
+        
+        let currentStep = 0;
+        
+        // Update the display for the current step
+        function updateDisplay() {
+            const step = steps[currentStep];
+            
+            // Reset highlights
+            const elements = document.querySelectorAll('.array-element');
+            elements.forEach((element, index) => {
+                if (step.highlighted.includes(index)) {
+                    element.classList.add('highlighted');
+                } else {
+                    element.classList.remove('highlighted');
+                }
+            });
+            
+            // Update information
+            if (step.currentSum !== null) {
+                currentSumElement.textContent = `Current Window Sum: ${step.currentSum}`;
+            } else {
+                currentSumElement.textContent = `Current Window Sum: -`;
+            }
+            
+            if (step.maxSum !== null) {
+                maxSumElement.textContent = `Maximum Sum: ${step.maxSum}`;
+            } else {
+                maxSumElement.textContent = `Maximum Sum: -`;
+            }
+            
+            stepInfoElement.textContent = `Step ${currentStep}/${steps.length-1}: ${step.description}`;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+        
+        // Initialize the visualization
+        initializeArrayDisplay();
+        updateDisplay();
+    </script>
+</body>
+</html>
