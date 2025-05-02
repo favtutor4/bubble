@@ -3,325 +3,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Sort Time Complexity</title>
+    <title>Merge Sort Animation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f5f5f5;
+            background-color: #FFFFFF;
+            color: #000000;
         }
         .container {
-            width: 90%;
-            max-width: 900px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
         }
         h1 {
-            color: #2c3e50;
             text-align: center;
+            margin-bottom: 30px;
         }
-        .slide {
-            display: none;
-            animation: fadeIn 0.8s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .active-slide {
-            display: block;
-        }
-        .chart-container {
-            position: relative;
-            height: 400px;
+        .visualization {
             margin: 20px 0;
         }
-        .axis {
-            position: absolute;
-            background-color: #333;
+        .array-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        .y-axis {
-            width: 2px;
-            height: 380px;
-            left: 50px;
-            top: 10px;
+        .array-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 5px 0;
+            min-height: 60px;
         }
-        .x-axis {
-            width: 800px;
-            height: 2px;
-            left: 50px;
-            top: 390px;
-        }
-        .bar {
-            position: absolute;
-            bottom: 10px;
-            background-color: #3498db;
-            width: 60px;
-            transition: height 1s ease-in-out;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-        }
-        .bar-label {
-            position: absolute;
-            text-align: center;
-            width: 60px;
-            bottom: -25px;
-        }
-        .value-label {
-            position: absolute;
-            text-align: center;
-            width: 60px;
-            color: white;
-            font-weight: bold;
-        }
-        .axis-label {
-            position: absolute;
-            font-weight: bold;
-        }
-        .x-label {
-            left: 400px;
-            top: 420px;
-        }
-        .y-label {
-            transform: rotate(-90deg);
-            left: -60px;
-            top: 200px;
-        }
-        .navigation {
+        .array-element {
+            width: 50px;
+            height: 50px;
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            align-items: center;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            background-color: #FFB8F9;
+            transition: transform 0.5s ease, background-color 0.5s ease;
+        }
+        .step-label {
+            position: absolute;
+            left: -120px;
+            top: 15px;
+            font-weight: bold;
+            width: 110px;
+            text-align: right;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
         }
         button {
             padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #3498db;
+            background-color: #FF4800;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #2980b9;
+            background-color: #FD9F78;
         }
         button:disabled {
-            background-color: #bdc3c7;
+            background-color: #cccccc;
             cursor: not-allowed;
         }
         .explanation {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        .highlight {
+            background-color: #FF4800;
+            transform: translateY(-5px);
+        }
+        .compare {
+            background-color: #FD9F78;
+        }
+        .sorted {
+            background-color: #FFB8F9;
+        }
+        .progress-container {
+            text-align: center;
             margin: 20px 0;
-            line-height: 1.6;
-        }
-        .quadratic-curve {
-            position: absolute;
-            border: 2px dashed #e74c3c;
-            border-top: none;
-            border-left: none;
-            border-bottom-right-radius: 100%;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-        .n-squared-label {
-            position: absolute;
-            color: #e74c3c;
             font-weight: bold;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
+            font-size: 16px;
+        }
+        .merging {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .merge-result {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            position: relative;
+        }
+        .merge-arrow {
+            position: absolute;
+            left: 50%;
+            top: -15px;
+            transform: translateX(-50%);
+            font-size: 20px;
+        }
+        .bracket {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .bracket-left {
+            left: -15px;
+        }
+        .bracket-right {
+            right: -15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bubble Sort Time Complexity Comparison</h1>
+        <h1>Merge Sort Animation</h1>
         
-        <div id="slide1" class="slide active-slide">
-            <h2>Bubble Sort: Introduction</h2>
-            <div class="explanation">
-                <p>Bubble Sort is one of the simplest sorting algorithms. It works by repeatedly stepping through the list, comparing adjacent elements and swapping them if they are in the wrong order.</p>
-                <p>The key thing to understand about Bubble Sort is how its performance scales with the input size. For an array of size n, the algorithm needs to make approximately n² comparisons in the worst case.</p>
-                <p>Let's visualize how the number of comparisons grows as the array size increases.</p>
-            </div>
-            <div class="chart-container">
-                <div class="axis y-axis"></div>
-                <div class="axis x-axis"></div>
-                <div class="axis-label x-label">Array Size (n)</div>
-                <div class="axis-label y-label">Number of Comparisons</div>
-                
-                <!-- Bars for different array sizes -->
-                <div class="bar" id="bar1" style="left: 120px; height: 0px;"></div>
-                <div class="bar-label" style="left: 120px;">n=5</div>
-                <div class="value-label" id="value1" style="left: 120px; bottom: 5px;"></div>
-                
-                <div class="bar" id="bar2" style="left: 280px; height: 0px;"></div>
-                <div class="bar-label" style="left: 280px;">n=10</div>
-                <div class="value-label" id="value2" style="left: 280px; bottom: 5px;"></div>
-                
-                <div class="bar" id="bar3" style="left: 440px; height: 0px;"></div>
-                <div class="bar-label" style="left: 440px;">n=20</div>
-                <div class="value-label" id="value3" style="left: 440px; bottom: 5px;"></div>
-                
-                <div class="bar" id="bar4" style="left: 600px; height: 0px;"></div>
-                <div class="bar-label" style="left: 600px;">n=50</div>
-                <div class="value-label" id="value4" style="left: 600px; bottom: 5px;"></div>
-                
-                <div id="quadratic-curve" class="quadratic-curve"></div>
-                <div id="n-squared-label" class="n-squared-label">O(n²)</div>
-            </div>
+        <div class="progress-container">
+            <span id="current-step">Step: 0/0</span>
         </div>
         
-        <div id="slide2" class="slide">
-            <h2>Understanding the O(n²) Complexity</h2>
-            <div class="explanation">
-                <p>For Bubble Sort, the number of comparisons is roughly n² where n is the size of the array. Here's why:</p>
-                <ul>
-                    <li>For n=5: We need about 5² = 25 comparisons</li>
-                    <li>For n=10: We need about 10² = 100 comparisons</li>
-                    <li>For n=20: We need about 20² = 400 comparisons</li>
-                    <li>For n=50: We need about 50² = 2,500 comparisons</li>
-                </ul>
-                <p>Notice how quickly the number of comparisons grows! This quadratic growth pattern is what makes Bubble Sort inefficient for large arrays.</p>
-            </div>
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous Step</button>
+            <button id="next-btn">Next Step</button>
+            <button id="reset-btn">Reset</button>
+            <button id="play-btn">Play Animation</button>
         </div>
         
-        <div id="slide3" class="slide">
-            <h2>Why O(n²) Matters</h2>
-            <div class="explanation">
-                <p>The O(n²) time complexity of Bubble Sort has important implications:</p>
-                <ul>
-                    <li><strong>Doubling the input size</strong> quadruples the running time</li>
-                    <li>While acceptable for small arrays (n ≤ 10), it becomes very inefficient for larger arrays</li>
-                    <li>Modern sorting algorithms like QuickSort, MergeSort, and HeapSort have better time complexities (typically O(n log n))</li>
-                    <li>For n=1,000 elements, Bubble Sort would need about 1,000,000 comparisons, while an O(n log n) algorithm would only need about 10,000</li>
-                </ul>
-                <p>This visualization helps us understand why algorithm efficiency matters and why we often prefer faster sorting algorithms in practice.</p>
-            </div>
+        <div id="visualization" class="visualization">
+            <div id="array-container" class="array-container"></div>
         </div>
         
-        <div class="navigation">
-            <button id="prevBtn" disabled>Previous</button>
-            <button id="nextBtn">Next</button>
+        <div class="explanation" id="explanation">
+            <h3>Merge Sort Explanation</h3>
+            <p>Merge sort is a divide-and-conquer algorithm that follows these steps:</p>
+            <ol>
+                <li>Divide the array into two halves</li>
+                <li>Recursively sort both halves</li>
+                <li>Merge the sorted halves to produce the final sorted array</li>
+            </ol>
+            <p>The animation will show each step of the merge sort algorithm applied to the array [38, 27, 43, 3, 9, 82, 10].</p>
         </div>
     </div>
 
     <script>
-        // Slide navigation handling
-        let currentSlide = 1;
-        const totalSlides = 3;
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
+        // Original array
+        const originalArray = [38, 27, 43, 3, 9, 82, 10];
         
-        function showSlide(slideNumber) {
-            // Hide all slides
-            document.querySelectorAll('.slide').forEach(slide => {
-                slide.classList.remove('active-slide');
+        // Animation control variables
+        let steps = [];
+        let currentStepIndex = 0;
+        let animationInterval = null;
+        let animationSpeed = 1500; // ms between steps
+        
+        // DOM elements
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const playBtn = document.getElementById('play-btn');
+        const arrayContainer = document.getElementById('array-container');
+        const stepCounter = document.getElementById('current-step');
+        
+        /**
+         * Helper function to create a deep copy of an array
+         */
+        function deepCopy(arr) {
+            return JSON.parse(JSON.stringify(arr));
+        }
+        
+        /**
+         * Create and add a visualization step
+         */
+        function addStep(description, arrays, highlights = {}) {
+            steps.push({
+                description,
+                arrays: deepCopy(arrays),
+                highlights: deepCopy(highlights)
+            });
+        }
+        
+        /**
+         * Perform merge sort and capture all steps
+         */
+        function performMergeSort() {
+            // Add the initial step
+            addStep("Original Array", {
+                main: [...originalArray]
             });
             
-            // Show the current slide
-            document.getElementById('slide' + slideNumber).classList.add('active-slide');
+            // Start the recursive merge sort
+            mergeSort(originalArray, 0, originalArray.length - 1);
             
-            // Update buttons
-            prevBtn.disabled = (slideNumber === 1);
-            nextBtn.disabled = (slideNumber === totalSlides);
-            
-            // If returning to slide 1, animate the bars again
-            if (slideNumber === 1) {
-                setTimeout(animateBars, 500);
-            }
+            // Add the final step
+            addStep("Final Sorted Array", {
+                main: [...originalArray]
+            }, {
+                main: originalArray.map(() => "sorted")
+            });
         }
         
-        prevBtn.addEventListener('click', () => {
-            if (currentSlide > 1) {
-                currentSlide--;
-                showSlide(currentSlide);
-            }
-        });
-        
-        nextBtn.addEventListener('click', () => {
-            if (currentSlide < totalSlides) {
-                currentSlide++;
-                showSlide(currentSlide);
-            }
-        });
-        
-        // Bar chart animation
-        function animateBars() {
-            // Reset bars
-            document.getElementById('bar1').style.height = '0px';
-            document.getElementById('bar2').style.height = '0px';
-            document.getElementById('bar3').style.height = '0px';
-            document.getElementById('bar4').style.height = '0px';
-            document.getElementById('value1').textContent = '';
-            document.getElementById('value2').textContent = '';
-            document.getElementById('value3').textContent = '';
-            document.getElementById('value4').textContent = '';
-            document.getElementById('quadratic-curve').style.opacity = '0';
-            document.getElementById('n-squared-label').style.opacity = '0';
-            
-            // Calculate comparison values (approximate n²)
-            const n1 = 5, n2 = 10, n3 = 20, n4 = 50;
-            const comparisons1 = n1 * n1;
-            const comparisons2 = n2 * n2;
-            const comparisons3 = n3 * n3;
-            const comparisons4 = n4 * n4;
-            
-            // Set max height for scaling (350px is the max bar height)
-            const maxComparisons = comparisons4;
-            const scale = 350 / maxComparisons;
-            
-            // Animate each bar with a delay
-            setTimeout(() => {
-                const height1 = comparisons1 * scale;
-                document.getElementById('bar1').style.height = height1 + 'px';
-                document.getElementById('value1').textContent = comparisons1;
-                document.getElementById('value1').style.bottom = (height1 + 5) + 'px';
-            }, 300);
-            
-            setTimeout(() => {
-                const height2 = comparisons2 * scale;
-                document.getElementById('bar2').style.height = height2 + 'px';
-                document.getElementById('value2').textContent = comparisons2;
-                document.getElementById('value2').style.bottom = (height2 + 5) + 'px';
-            }, 600);
-            
-            setTimeout(() => {
-                const height3 = comparisons3 * scale;
-                document.getElementById('bar3').style.height = height3 + 'px';
-                document.getElementById('value3').textContent = comparisons3;
-                document.getElementById('value3').style.bottom = (height3 + 5) + 'px';
-            }, 900);
-            
-            setTimeout(() => {
-                const height4 = comparisons4 * scale;
-                document.getElementById('bar4').style.height = height4 + 'px';
-                document.getElementById('value4').textContent = comparisons4;
-                document.getElementById('value4').style.bottom = (height4 + 5) + 'px';
+        /**
+         * Recursive merge sort algorithm
+         */
+        function mergeSort(arr, left, right) {
+            if (left < right) {
+                // Find the middle point
+                const mid = Math.floor((left + right) / 2);
                 
-                // After all bars are shown, display the quadratic curve
-                setTimeout(() => {
-                    const curve = document.getElementById('quadratic-curve');
-                    curve.style.width = '550px';
-                    curve.style.height = '350px';
-                    curve.style.left = '100px';
-                    curve.style.bottom = '10px';
-                    curve.style.opacity = '1';
-                    
-                    const label = document.getElementById('n-squared-label');
-                    label.style.left = '680px';
-                    label.style.bottom = '300px';
-                    label.style.opacity = '1';
-                }, 500);
-            }, 1200);
+                // Highlight the current subarray being divided
+                const divideHighlights = Array(arr.length).fill("");
+                for (let i = left; i <= right; i++) {
+                    divideHighlights[i] = "highlight";
+                }
+                
+                // Add step for this division
+                addStep(`Dividing [${arr.slice(left, right + 1).join(", ")}]`, {
+                    main: [...arr]
+                }, {
+                    main: divideHighlights
+                });
+                
+                // Recursively sort first and second halves
+                mergeSort(arr, left, mid);
+                mergeSort(arr, mid + 1, right);
+                
+                // Highlight subarrays before merging
+                const beforeMergeHighlights = Array(arr.length).fill("");
+                for (let i = left; i <= right; i++) {
+                    beforeMergeHighlights[i] = "compare";
+                }
+                
+                // Add step before merging
+                addStep(`Before Merging [${arr.slice(left, mid + 1).join(", ")}] and [${arr.slice(mid + 1, right + 1).join(", ")}]`, {
+                    main: [...arr],
+                    left: arr.slice(left, mid + 1),
+                    right: arr.slice(mid + 1, right + 1)
+                }, {
+                    main: beforeMergeHighlights,
+                    left: Array(mid - left + 1).fill("compare"),
+                    right: Array(right - mid).fill("compare")
+                });
+                
+                // Merge the sorted halves
+                merge(arr, left, mid, right);
+                
+                // Highlight the merged subarray
+                const afterMergeHighlights = Array(arr.length).fill("");
+                for (let i = left; i <= right; i++) {
+                    afterMergeHighlights[i] = "sorted";
+                }
+                
+                // Add step after merging
+                addStep(`After Merging: [${arr.slice(left, right + 1).join(", ")}]`, {
+                    main: [...arr],
+                    merged: arr.slice(left, right + 1)
+                }, {
+                    main: afterMergeHighlights,
+                    merged: Array(right - left + 1).fill("sorted")
+                });
+            }
         }
         
-        // Start the animation when the page loads
-        window.onload = animateBars;
+        /**
+         * Merge two subarrays
+         */
+        function merge(arr, left, mid, right) {
+            // Create temporary arrays
+            const n1 = mid - left + 1;
+            const n2 = right - mid;
+            const L = new Array(n1);
+            const R = new Array(n2);
+            
+            // Copy data to temporary arrays L[] and R[]
+            for (let i = 0; i < n1; i++) {
+                L[i] = arr[left + i];
+            }
+            for (let j = 0; j < n2; j++) {
+                R[j] = arr[mid + 1 + j];
+            }
+            
+            // Merge the temporary arrays back into arr[left..right]
+            let i = 0; // Initial index of first subarray
+            let j = 0; // Initial index of second subarray
+            let k = left; // Initial index of merged subarray
+            
+            while (i < n1 && j < n2) {
+                if (L[i] <= R[j]) {
+                    arr[k] = L[i];
+                    i++;
+                } else {
+                    arr[k] = R[j];
+                    j++;
+                }
+                k++;
+            }
+            
+            // Copy the remaining elements of L[], if any
+            while (i < n1) {
+                arr[k] = L[i];
+                i++;
+                k++;
+            }
+            
+            // Copy the remaining elements of R[], if any
+            while (j < n2) {
+                arr[k] = R[j];
+                j++;
+                k++;
+            }
+        }
+        
+        /**
+         * Render the current step
+         */
+        function renderCurrentStep() {
+            const step = steps[currentStepIndex];
+            arrayContainer.innerHTML = '';
+            
+            // Update step counter
+            stepCounter.textContent = `Step: ${currentStepIndex + 1}/${steps.length}`;
+            
+            // Update button states
+            prevBtn.disabled = currentStepIndex <= 0;
+            nextBtn.disabled = currentStepIndex >= steps.length - 1;
+            
+            // Render arrays for the current step
+            Object.keys(step.arrays).forEach(arrayKey => {
+                if (arrayKey === 'main') {
+                    // Render main array
+                    const arrayRow = document.createElement('div');
+                    arrayRow.className = 'array-row';
+                    
+                    const stepLabel = document.createElement('div');
+                    stepLabel.className = 'step-label';
+                    stepLabel.textContent = step.description;
+                    arrayRow.appendChild(stepLabel);
+                    
+                    step.arrays[arrayKey].forEach((value, index) => {
+                        const element = document.createElement('div');
+                        element.className = 'array-element';
+                        element.textContent = value;
+                        
+                        if (step.highlights && step.highlights[arrayKey] && step.highlights[arrayKey][index]) {
+                            element.classList.add(step.highlights[arrayKey][index]);
+                        }
+                        
+                        arrayRow.appendChild(element);
+                    });
+                    
+                    arrayContainer.appendChild(arrayRow);
+                } else if (arrayKey === 'left' || arrayKey === 'right' || arrayKey === 'merged') {
+                    // Render subarrays when merging
+                    if (step.arrays[arrayKey] && step.arrays[arrayKey].length > 0) {
+                        const mergeContainer = document.createElement('div');
+                        mergeContainer.className = 'merging';
+                        
+                        if (arrayKey === 'merged') {
+                            const label = document.createElement('div');
+                            label.textContent = 'Merged Result:';
+                            label.style.fontWeight = 'bold';
+                            label.style.marginBottom = '5px';
+                            mergeContainer.appendChild(label);
+                        }
+                        
+                        const subArrayRow = document.createElement('div');
+                        subArrayRow.className = 'array-row';
+                        
+                        // Add brackets
+                        const leftBracket = document.createElement('div');
+                        leftBracket.className = 'bracket bracket-left';
+                        leftBracket.textContent = '[';
+                        subArrayRow.appendChild(leftBracket);
+                        
+                        step.arrays[arrayKey].forEach((value, index) => {
+                            const element = document.createElement('div');
+                            element.className = 'array-element';
+                            element.textContent = value;
+                            
+                            if (step.highlights && step.highlights[arrayKey] && step.highlights[arrayKey][index]) {
+                                element.classList.add(step.highlights[arrayKey][index]);
+                            }
+                            
+                            subArrayRow.appendChild(element);
+                        });
+                        
+                        // Add brackets
+                        const rightBracket = document.createElement('div');
+                        rightBracket.className = 'bracket bracket-right';
+                        rightBracket.textContent = ']';
+                        subArrayRow.appendChild(rightBracket);
+                        
+                        mergeContainer.appendChild(subArrayRow);
+                        arrayContainer.appendChild(mergeContainer);
+                    }
+                }
+            });
+            
+            // Update explanation
+            updateExplanation(step);
+        }
+        
+        /**
+         * Update the explanation for the current step
+         */
+        function updateExplanation(step) {
+            const explanation = document.getElementById('explanation');
+            let explainText = "<h3>Merge Sort Explanation</h3>";
+            
+            if (step.description === "Original Array") {
+                explainText += `<p>Starting with the original unsorted array: [${step.arrays.main.join(', ')}]</p>
+                                <p>Merge sort will divide this array into smaller parts, sort them, and merge them back together.</p>`;
+            } else if (step.description.includes("Dividing")) {
+                explainText += `<p><strong>Divide Step:</strong> ${step.description}</p>
+                                <p>We split the array into smaller subarrays until we reach individual elements.</p>
+                                <p>The highlighted elements (orange) show the current subarray being divided.</p>`;
+            } else if (step.description.includes("Before Merging")) {
+                explainText += `<p><strong>Merge Preparation:</strong> ${step.description}</p>
+                                <p>We're about to merge two sorted subarrays into one larger sorted subarray.</p>
+                                <p>The light orange elements show the two subarrays that will be compared and merged.</p>`;
+            } else if (step.description.includes("After Merging")) {
+                explainText += `<p><strong>Merge Complete:</strong> ${step.description}</p>
+                                <p>The two subarrays have been merged into one sorted subarray.</p>
+                                <p>The pink elements show the newly sorted section of the array.</p>`;
+            } else if (step.description === "Final Sorted Array") {
+                explainText += `<p>The merge sort is complete! The array is now fully sorted: [${step.arrays.main.join(', ')}]</p>
+                                <p><strong>Merge Sort Performance:</strong></p>
+                                <ul>
+                                    <li>Time Complexity: O(n log n) for best, average, and worst cases</li>
+                                    <li>Space Complexity: O(n) for the auxiliary arrays used during merging</li>
+                                    <li>Stable Sort: Yes (maintains relative order of equal elements)</li>
+                                </ul>`;
+            }
+            
+            explanation.innerHTML = explainText;
+        }
+        
+        /**
+         * Navigate to the next step
+         */
+        function nextStep() {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                renderCurrentStep();
+            }
+        }
+        
+        /**
+         * Navigate to the previous step
+         */
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderCurrentStep();
+            }
+        }
+        
+        /**
+         * Reset to the first step
+         */
+        function resetAnimation() {
+            stopAnimation();
+            currentStepIndex = 0;
+            renderCurrentStep();
+        }
+        
+        /**
+         * Toggle play/pause animation
+         */
+        function toggleAnimation() {
+            if (animationInterval) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+        
+        /**
+         * Start the animation
+         */
+        function startAnimation() {
+            stopAnimation();
+            playBtn.textContent = 'Pause Animation';
+            
+            animationInterval = setInterval(() => {
+                if (currentStepIndex < steps.length - 1) {
+                    nextStep();
+                } else {
+                    stopAnimation();
+                }
+            }, animationSpeed);
+        }
+        
+        /**
+         * Stop the animation
+         */
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                playBtn.textContent = 'Play Animation';
+            }
+        }
+        
+        /**
+         * Initialize the visualization
+         */
+        function initVisualization() {
+            // Generate all merge sort steps
+            performMergeSort();
+            
+            // Set up event listeners
+            prevBtn.addEventListener('click', prevStep);
+            nextBtn.addEventListener('click', nextStep);
+            resetBtn.addEventListener('click', resetAnimation);
+            playBtn.addEventListener('click', toggleAnimation);
+            
+            // Render the first step
+            renderCurrentStep();
+        }
+        
+        // Initialize when the page loads
+        window.addEventListener('DOMContentLoaded', initVisualization);
     </script>
 </body>
 </html>
