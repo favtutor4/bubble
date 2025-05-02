@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #FFF;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .visualization {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .step {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.5s;
+        }
+        .step.active {
+            display: block;
+        }
+        .array-container {
+            margin: 15px 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .array-level {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #FD9F78;
+            margin: 5px auto;
+        }
+        .array-box {
+            display: inline-flex;
+            margin: 0 5px;
+        }
+        .element {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background-color: #FFB8F9;
+            color: #000000;
+            margin: 0 3px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .description {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            color: #FFFFFF;
+            font-size: 18px;
+        }
+        .nav-buttons {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+        }
+        .sorted {
+            background-color: #FD9F78;
+        }
+        .merge-animation {
+            animation: pulse 1s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #FFB8F9;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            background-color: #FF4800;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Merge Sort Visualization</h1>
+        
+        <div class="visualization">
+            <!-- Step 1: Initial Array -->
+            <div class="step" id="step1">
+                <div class="description">
+                    <p>Step 1: Start with the unsorted array</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                            <div class="element">27</div>
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: First Division -->
+            <div class="step" id="step2">
+                <div class="description">
+                    <p>Step 2: Divide the array into two halves</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                            <div class="element">27</div>
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">38</div>
+                            <div class="element highlight">27</div>
+                            <div class="element highlight">43</div>
+                            <div class="element highlight">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                            <div class="element highlight">82</div>
+                            <div class="element highlight">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Second Division (Left Side) -->
+            <div class="step" id="step3">
+                <div class="description">
+                    <p>Step 3: Divide the left half into two parts</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                            <div class="element">27</div>
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">38</div>
+                            <div class="element highlight">27</div>
+                            <div class="element highlight">43</div>
+                            <div class="element highlight">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">38</div>
+                            <div class="element highlight">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">43</div>
+                            <div class="element highlight">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Second Division (Right Side) -->
+            <div class="step" id="step4">
+                <div class="description">
+                    <p>Step 4: Divide the right half into two parts</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                            <div class="element">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                            <div class="element highlight">82</div>
+                            <div class="element highlight">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                            <div class="element">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                            <div class="element highlight">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Further Division of Left Subarrays -->
+            <div class="step" id="step5">
+                <div class="description">
+                    <p>Step 5: Divide left subarrays until we reach arrays of size 1</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">38</div>
+                            <div class="element highlight">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Further Division of Middle Subarray -->
+            <div class="step" id="step6">
+                <div class="description">
+                    <p>Step 6: Divide the second left subarray into single elements</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">43</div>
+                            <div class="element highlight">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 7: Further Division of Remaining Subarrays -->
+            <div class="step" id="step7">
+                <div class="description">
+                    <p>Step 7: Divide the right pair subarray into single elements</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                            <div class="element highlight">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 8: Complete Division -->
+            <div class="step" id="step8">
+                <div class="description">
+                    <p>Step 8: Now all elements are in their own arrays (size 1)</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element sorted">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 9: First Merge (38, 27) -->
+            <div class="step" id="step9">
+                <div class="description">
+                    <p>Step 9: Begin merging - compare and merge first pair (38, 27)</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">27</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element sorted">27</div>
+                            <div class="element sorted">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 10: Second Merge (43, 3) -->
+            <div class="step" id="step10">
+                <div class="description">
+                    <p>Step 10: Compare and merge second pair (43, 3)</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">27</div>
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">3</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">27</div>
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">3</div>
+                            <div class="element sorted">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 11: Third Merge (9, 82) -->
+            <div class="step" id="step11">
+                <div class="description">
+                    <p>Step 11: Compare and merge third pair (9, 82)</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">27</div>
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">3</div>
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">27</div>
+                            <div class="element">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">3</div>
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">9</div>
+                            <div class="element sorted">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 12: Merge Pairs - Left Side -->
+            <div class="step" id="step12">
+                <div class="description">
+                    <p>Step 12: Merge the first two sorted pairs (27,38) and (3,43)</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">27</div>
+                            <div class="element highlight">38</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">3</div>
+                            <div class="element highlight">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element sorted">3</div>
+                            <div class="element sorted">27</div>
+                            <div class="element sorted">38</div>
+                            <div class="element sorted">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">9</div>
+                            <div class="element">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element">10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 13: Merge Right Side -->
+            <div class="step" id="step13">
+                <div class="description">
+                    <p>Step 13: Merge the next pair (9,82) with single element (10)</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">3</div>
+                            <div class="element">27</div>
+                            <div class="element">38</div>
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                            <div class="element highlight">82</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">10</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element">3</div>
+                            <div class="element">27</div>
+                            <div class="element">38</div>
+                            <div class="element">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element sorted">9</div>
+                            <div class="element sorted">10</div>
+                            <div class="element sorted">82</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 14: Final Merge -->
+            <div class="step" id="step14">
+                <div class="description">
+                    <p>Step 14: Final merge - combine the two sorted subarrays</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element highlight">3</div>
+                            <div class="element highlight">27</div>
+                            <div class="element highlight">38</div>
+                            <div class="element highlight">43</div>
+                        </div>
+                        <div class="array-box" style="margin-left: 20px;">
+                            <div class="element highlight">9</div>
+                            <div class="element highlight">10</div>
+                            <div class="element highlight">82</div>
+                        </div>
+                    </div>
+                    <div class="arrow-down"></div>
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element sorted">3</div>
+                            <div class="element sorted">9</div>
+                            <div class="element sorted">10</div>
+                            <div class="element sorted">27</div>
+                            <div class="element sorted">38</div>
+                            <div class="element sorted">43</div>
+                            <div class="element sorted">82</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 15: Final Result -->
+            <div class="step" id="step15">
+                <div class="description">
+                    <p>Final Result: Array is now completely sorted!</p>
+                </div>
+                <div class="array-container">
+                    <div class="array-level">
+                        <div class="array-box">
+                            <div class="element sorted merge-animation">3</div>
+                            <div class="element sorted merge-animation">9</div>
+                            <div class="element sorted merge-animation">10</div>
+                            <div class="element sorted merge-animation">27</div>
+                            <div class="element sorted merge-animation">38</div>
+                            <div class="element sorted merge-animation">43</div>
+                            <div class="element sorted merge-animation">82</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-indicator">
+            <!-- Step indicators will be generated by JavaScript -->
+        </div>
+
+        <div class="nav-buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentStep = 1;
+            const totalSteps = document.querySelectorAll('.step').length;
+            
+            // Create step indicators
+            const stepIndicator = document.querySelector('.step-indicator');
+            for (let i = 1; i <= totalSteps; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('step-dot');
+                if (i === 1) dot.classList.add('active');
+                dot.setAttribute('data-step', i);
+                dot.addEventListener('click', function() {
+                    goToStep(parseInt(this.getAttribute('data-step')));
+                });
+                stepIndicator.appendChild(dot);
+            }
+            
+            // Show initial step
+            document.getElementById('step1').classList.add('active');
+            
+            // Set up navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            });
+            
+            function goToStep(stepNumber) {
+                // Hide current step
+                document.getElementById('step' + currentStep).classList.remove('active');
+                
+                // Show new step
+                document.getElementById('step' + stepNumber).classList.add('active');
+                
+                // Update current step
+                currentStep = stepNumber;
+                
+                // Update buttons
+                prevBtn.disabled = (currentStep === 1);
+                nextBtn.disabled = (currentStep === totalSteps);
+                
+                // Update step indicators
+                document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                    if (index + 1 === currentStep) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
