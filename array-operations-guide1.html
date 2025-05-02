@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Search Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .comparison-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .search-section {
+            width: 48%;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #FFFFFF;
+        }
+        .search-section h2 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #FFB8F9;
+            margin: 0 5px;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        .array-element.current {
+            background-color: #FD9F78;
+            border-color: #FF4800;
+            transform: translateY(-10px);
+        }
+        .array-element.found {
+            background-color: #FFB8F9;
+            border-color: #FF4800;
+            transform: scale(1.1);
+        }
+        .array-element.eliminated {
+            opacity: 0.3;
+        }
+        .array-element.range {
+            border-color: #FF4800;
+        }
+        .array-element.mid {
+            background-color: #FD9F78;
+            border-color: #FF4800;
+        }
+        .explanation {
+            min-height: 100px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #FFF;
+            border: 1px solid #FFB8F9;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FFB8F9;
+            cursor: not-allowed;
+        }
+        .target-value {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .step-counter {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Search Comparison</h1>
+        <div class="target-value">Target Value: 42</div>
+        
+        <div class="comparison-container">
+            <div class="search-section">
+                <h2>Linear Search</h2>
+                <div class="array-container" id="linear-array"></div>
+                <div class="explanation" id="linear-explanation">
+                    Linear search checks each element one by one from left to right until it finds the target value.
+                </div>
+                <div class="step-counter" id="linear-step">Step: 0</div>
+            </div>
+            
+            <div class="search-section">
+                <h2>Binary Search</h2>
+                <div class="array-container" id="binary-array"></div>
+                <div class="explanation" id="binary-explanation">
+                    Binary search requires a sorted array and works by repeatedly dividing the search interval in half.
+                </div>
+                <div class="step-counter" id="binary-step">Step: 0</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn">Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Data and state
+        const linearArray = [15, 23, 8, 42, 16, 4];
+        const binaryArray = [4, 8, 15, 16, 23, 42]; // Sorted array
+        const targetValue = 42;
+        
+        let currentStep = 0;
+        const totalSteps = 10; // Total number of steps in the animation
+        
+        // Initialize arrays
+        function initializeArrays() {
+            const linearArrayContainer = document.getElementById('linear-array');
+            const binaryArrayContainer = document.getElementById('binary-array');
+            
+            linearArrayContainer.innerHTML = '';
+            binaryArrayContainer.innerHTML = '';
+            
+            linearArray.forEach(value => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = value;
+                linearArrayContainer.appendChild(element);
+            });
+            
+            binaryArray.forEach(value => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = value;
+                binaryArrayContainer.appendChild(element);
+            });
+        }
+        
+        // Update display based on current step
+        function updateDisplay() {
+            document.getElementById('linear-step').textContent = `Step: ${currentStep}`;
+            document.getElementById('binary-step').textContent = `Step: ${currentStep}`;
+            
+            const linearElements = document.querySelectorAll('#linear-array .array-element');
+            const binaryElements = document.querySelectorAll('#binary-array .array-element');
+            
+            // Reset all elements
+            linearElements.forEach(el => {
+                el.className = 'array-element';
+            });
+            
+            binaryElements.forEach(el => {
+                el.className = 'array-element';
+            });
+            
+            const linearExplanation = document.getElementById('linear-explanation');
+            const binaryExplanation = document.getElementById('binary-explanation');
+            
+            // Update based on step
+            switch(currentStep) {
+                case 0:
+                    linearExplanation.textContent = "Linear search checks each element one by one from left to right until it finds the target value.";
+                    binaryExplanation.textContent = "Binary search requires a sorted array and works by repeatedly dividing the search interval in half.";
+                    break;
+                case 1:
+                    linearElements[0].classList.add('current');
+                    linearExplanation.textContent = "Step 1: Check the first element (15). Is 15 equal to 42? No, move to the next element.";
+                    
+                    // For binary search: set initial range and find middle
+                    binaryElements.forEach((el, i) => {
+                        binaryElements[i].classList.add('range');
+                    });
+                    binaryElements[2].classList.add('mid');
+                    binaryExplanation.textContent = "Step 1: Start with the entire array. Find the middle element (index 2, value 15). Is 15 equal to 42? No, 15 < 42, so search the right half.";
+                    break;
+                case 2:
+                    linearElements[1].classList.add('current');
+                    linearExplanation.textContent = "Step 2: Check the second element (23). Is 23 equal to 42? No, move to the next element.";
+                    
+                    // Binary search: narrow down to right half
+                    binaryElements.forEach((el, i) => {
+                        if (i < 3) binaryElements[i].classList.add('eliminated');
+                        if (i >= 3) binaryElements[i].classList.add('range');
+                    });
+                    binaryElements[4].classList.add('mid');
+                    binaryExplanation.textContent = "Step 2: Search the right half (indexes 3-5). The middle element of this range is (index 4, value 23). Is 23 equal to 42? No, 23 < 42, so search the right half again.";
+                    break;
+                case 3:
+                    linearElements[2].classList.add('current');
+                    linearExplanation.textContent = "Step 3: Check the third element (8). Is 8 equal to 42? No, move to the next element.";
+                    
+                    // Binary search: narrow down to right half again
+                    binaryElements.forEach((el, i) => {
+                        if (i < 5) binaryElements[i].classList.add('eliminated');
+                        if (i >= 5) binaryElements[i].classList.add('range');
+                    });
+                    binaryElements[5].classList.add('mid');
+                    binaryExplanation.textContent = "Step 3: Search the right half again (only index 5 remains). The middle element is (index 5, value 42). Is 42 equal to 42? Yes! Target found at index 5.";
+                    break;
+                case 4:
+                    linearElements[3].classList.add('current');
+                    linearExplanation.textContent = "Step 4: Check the fourth element (42). Is 42 equal to 42? Yes! Target found at index 3.";
+                    
+                    // Binary search: found
+                    binaryElements[5].classList.add('found');
+                    binaryExplanation.textContent = "Binary search found the target value 42 in just 3 steps by efficiently eliminating half of the remaining elements in each step.";
+                    break;
+                case 5:
+                    linearElements[3].classList.add('found');
+                    linearExplanation.textContent = "Linear search found the target value 42 in 4 steps by sequentially checking each element.";
+                    
+                    binaryElements[5].classList.add('found');
+                    binaryExplanation.textContent = "Binary search found the target value 42 in just 3 steps by efficiently eliminating half of the remaining elements in each step.";
+                    break;
+                case 6:
+                    linearElements[3].classList.add('found');
+                    binaryElements[5].classList.add('found');
+                    linearExplanation.textContent = "Comparison: Linear search required checking 4 elements to find the target.";
+                    binaryExplanation.textContent = "Comparison: Binary search required only 3 steps to find the target.";
+                    break;
+                case 7:
+                    linearElements[3].classList.add('found');
+                    binaryElements[5].classList.add('found');
+                    linearExplanation.textContent = "Linear search has a time complexity of O(n) where n is the number of elements.";
+                    binaryExplanation.textContent = "Binary search has a time complexity of O(log n), which is much more efficient for large arrays.";
+                    break;
+                case 8:
+                    linearElements[3].classList.add('found');
+                    binaryElements[5].classList.add('found');
+                    linearExplanation.textContent = "Linear search works on both sorted and unsorted arrays.";
+                    binaryExplanation.textContent = "Binary search requires a sorted array to work correctly.";
+                    break;
+                case 9:
+                    linearElements[3].classList.add('found');
+                    binaryElements[5].classList.add('found');
+                    linearExplanation.textContent = "Conclusion: Linear search is simpler but less efficient for large arrays.";
+                    binaryExplanation.textContent = "Conclusion: Binary search is more complex but significantly more efficient for large sorted arrays.";
+                    break;
+            }
+            
+            // Update button state
+            document.getElementById('prev-btn').disabled = (currentStep === 0);
+            document.getElementById('next-btn').disabled = (currentStep === totalSteps - 1);
+        }
+        
+        // Event listeners
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+        
+        // Initialize
+        initializeArrays();
+        updateDisplay();
+    </script>
+</body>
+</html>
