@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min-Heap Operation for Kth Largest Sum</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .description {
+            margin-bottom: 20px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        .visualization {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .step-counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4800;
+            margin: 0 20px;
+            align-self: center;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .array-element {
+            width: 40px;
+            height: 40px;
+            background-color: #FD9F78;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        
+        .heap-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .heap-element {
+            width: 50px;
+            height: 50px;
+            background-color: #FD9F78;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            position: relative;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        
+        .heap-row {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+            height: 60px;
+        }
+        
+        .subarray {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .subarray-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        
+        .fade-out {
+            animation: fadeOut 0.5s;
+        }
+        
+        .bounce {
+            animation: bounce 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Min-Heap Operation for Kth Largest Sum</h1>
+        <div class="description">
+            This visualization demonstrates how a min-heap is used to find the Kth largest sum of subarrays in an array [1, 2, 3, 4] with k=2.
+        </div>
+        
+        <div class="visualization">
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="subarray">
+                <span class="subarray-label">Current Subarray:</span>
+                <div id="current-subarray"></div>
+            </div>
+            
+            <div class="subarray">
+                <span class="subarray-label">Current Sum:</span>
+                <div id="current-sum"></div>
+            </div>
+            
+            <div class="heap-container" id="heap-container">
+                <!-- Heap elements will be generated by JS -->
+            </div>
+            
+            <div class="explanation" id="explanation">
+                <!-- Explanation will be updated by JS -->
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-button" disabled>Previous</button>
+            <span class="step-counter" id="step-counter">Step 1 of 10</span>
+            <button id="next-btn" class="nav-button">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        // Define the steps of the animation
+        const steps = [
+            {
+                subarray: "[]",
+                sum: "N/A",
+                heap: [],
+                explanation: "We start with an empty min-heap. We'll process all subarrays of [1, 2, 3, 4] and keep track of the 2 (k=2) largest sums."
+            },
+            {
+                subarray: "[1]",
+                sum: "1",
+                heap: [1],
+                explanation: "Process subarray [1]: Sum = 1. Add to heap since heap size < k (2)."
+            },
+            {
+                subarray: "[2]",
+                sum: "2",
+                heap: [1, 2],
+                explanation: "Process subarray [2]: Sum = 2. Add to heap since heap size < k (2)."
+            },
+            {
+                subarray: "[3]",
+                sum: "3",
+                heap: [1, 3],
+                explanation: "Process subarray [3]: Sum = 3. Heap is full, compare with min (1). 3 > 1, so replace 1 with 3."
+            },
+            {
+                subarray: "[4]",
+                sum: "4",
+                heap: [3, 4],
+                explanation: "Process subarray [4]: Sum = 4. Heap is full, compare with min (3). 4 > 3, so replace 3 with 4."
+            },
+            {
+                subarray: "[1, 2]",
+                sum: "3",
+                heap: [3, 4],
+                explanation: "Process subarray [1, 2]: Sum = 3. Heap is full, compare with min (3). 3 = 3, so no change."
+            },
+            {
+                subarray: "[2, 3]",
+                sum: "5",
+                heap: [4, 5],
+                explanation: "Process subarray [2, 3]: Sum = 5. Heap is full, compare with min (3). 5 > 3, so replace 3 with 5."
+            },
+            {
+                subarray: "[3, 4]",
+                sum: "7",
+                heap: [5, 7],
+                explanation: "Process subarray [3, 4]: Sum = 7. Heap is full, compare with min (4). 7 > 4, so replace 4 with 7."
+            },
+            {
+                subarray: "[1, 2, 3]",
+                sum: "6",
+                heap: [5, 7],
+                explanation: "Process subarray [1, 2, 3]: Sum = 6. Heap is full, compare with min (5). 6 > 5, so replace 5 with 6."
+            },
+            {
+                subarray: "[2, 3, 4]",
+                sum: "9",
+                heap: [6, 9],
+                explanation: "Process subarray [2, 3, 4]: Sum = 9. Heap is full, compare with min (6). 9 > 6, so replace 6 with 9."
+            },
+            {
+                subarray: "[1, 2, 3, 4]",
+                sum: "10",
+                heap: [9, 10],
+                explanation: "Process subarray [1, 2, 3, 4]: Sum = 10. Heap is full, compare with min (6). 10 > 6, so replace 6 with 10."
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        // DOM elements
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const stepCounter = document.getElementById('step-counter');
+        const currentSubarray = document.getElementById('current-subarray');
+        const currentSum = document.getElementById('current-sum');
+        const heapContainer = document.getElementById('heap-container');
+        const explanation = document.getElementById('explanation');
+        
+        // Update the UI based on the current step
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            // Update step counter
+            stepCounter.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+            
+            // Update current subarray and sum
+            currentSubarray.textContent = step.subarray;
+            currentSum.textContent = step.sum;
+            
+            // Update explanation
+            explanation.textContent = step.explanation;
+            
+            // Update heap visualization
+            updateHeapVisualization(step.heap);
+        }
+        
+        // Create and update the heap visualization
+        function updateHeapVisualization(heap) {
+            heapContainer.innerHTML = '';
+            
+            if (heap.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.textContent = 'Empty Heap';
+                emptyMessage.style.marginTop = '50px';
+                emptyMessage.style.fontStyle = 'italic';
+                heapContainer.appendChild(emptyMessage);
+                return;
+            }
+            
+            // For simplicity, we'll just display the heap as a row for k=2
+            const heapRow = document.createElement('div');
+            heapRow.className = 'heap-row';
+            
+            heap.forEach((value, index) => {
+                const heapElement = document.createElement('div');
+                heapElement.className = 'heap-element fade-in';
+                heapElement.textContent = value;
+                
+                if (index === 0) {
+                    heapElement.style.backgroundColor = '#FF4800'; // Highlight the min element
+                    heapElement.style.color = '#FFFFFF';
+                }
+                
+                heapRow.appendChild(heapElement);
+            });
+            
+            heapContainer.appendChild(heapRow);
+        }
+        
+        // Event listeners for navigation buttons
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+        
+        // Initialize the UI
+        updateUI();
+    </script>
+</body>
+</html>
