@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Rotation Visualization</title>
+    <style>
+        :root {
+            --primary-color: #FF4800;
+            --secondary-color: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--white);
+            color: var(--black);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        
+        .animation-container {
+            background-color: var(--white);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 320px;
+            position: relative;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--secondary-color);
+            color: var(--black);
+            border-radius: 5px;
+            margin: 0 5px;
+            font-size: 20px;
+            font-weight: bold;
+            position: relative;
+            transition: transform 1s, background-color 0.5s;
+        }
+        
+        .original-array {
+            margin-top: 20px;
+        }
+        
+        .array-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid var(--primary-color);
+            opacity: 0;
+        }
+        
+        .steps-container {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            min-height: 60px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .highlighted {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Rotation Visualization</h1>
+        <div class="description">
+            Visualizing the rotation of array [1, 2, 3, 4, 5, 6, 7] with k=3, resulting in [5, 6, 7, 1, 2, 3, 4]
+        </div>
+        
+        <div class="animation-container">
+            <div class="array-label">Original Array</div>
+            <div class="array-container original-array" id="originalArray">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+                <div class="array-element">5</div>
+                <div class="array-element">6</div>
+                <div class="array-element">7</div>
+            </div>
+            
+            <div class="array-label">Rotated Array</div>
+            <div class="array-container" id="rotatedArray">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+                <div class="array-element">5</div>
+                <div class="array-element">6</div>
+                <div class="array-element">7</div>
+            </div>
+            
+            <div class="steps-container" id="stepsDescription">
+                Ready to start the rotation visualization. Click "Next" to begin.
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const originalArray = [1, 2, 3, 4, 5, 6, 7];
+        const k = 3;
+        const rotatedArray = [5, 6, 7, 1, 2, 3, 4];
+        
+        let currentStep = 0;
+        const totalSteps = 6;
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepsDescription = document.getElementById('stepsDescription');
+        const originalArrayElements = document.querySelectorAll('#originalArray .array-element');
+        const rotatedArrayElements = document.querySelectorAll('#rotatedArray .array-element');
+        
+        // Initialize rotatedArray with the same values as originalArray
+        rotatedArrayElements.forEach((element, index) => {
+            element.textContent = originalArray[index];
+        });
+        
+        const steps = [
+            "Ready to start the rotation visualization. Click 'Next' to begin.",
+            "For a right rotation with k=3, the last 3 elements (5, 6, 7) will move to the beginning.",
+            "The first 4 elements (1, 2, 3, 4) will shift to the right side of the array.",
+            "Elements 5, 6, 7 are now moving to the beginning of the rotated array.",
+            "Elements 1, 2, 3, 4 are now moving to the end of the rotated array.",
+            "The rotation is complete! Original array [1, 2, 3, 4, 5, 6, 7] is now rotated to [5, 6, 7, 1, 2, 3, 4].",
+            "The array has been rotated right by k=3 positions."
+        ];
+        
+        function highlightElements(from, to) {
+            originalArrayElements.forEach((element, index) => {
+                if (index >= from && index <= to) {
+                    element.classList.add('highlighted');
+                } else {
+                    element.classList.remove('highlighted');
+                }
+            });
+        }
+        
+        function resetHighlights() {
+            originalArrayElements.forEach(element => {
+                element.classList.remove('highlighted');
+            });
+            rotatedArrayElements.forEach(element => {
+                element.classList.remove('highlighted');
+            });
+        }
+        
+        function updateButtonState() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+        
+        function performStep(step) {
+            resetHighlights();
+            stepsDescription.textContent = steps[step];
+            
+            switch(step) {
+                case 0:
+                    // Initial state
+                    rotatedArrayElements.forEach((element, index) => {
+                        element.textContent = originalArray[index];
+                        element.style.transform = 'none';
+                    });
+                    break;
+                    
+                case 1:
+                    // Highlight the last k elements in original array
+                    highlightElements(originalArray.length - k, originalArray.length - 1);
+                    break;
+                    
+                case 2:
+                    // Highlight the first (n-k) elements in original array
+                    highlightElements(0, originalArray.length - k - 1);
+                    break;
+                    
+                case 3:
+                    // Move the last k elements to the beginning of rotated array
+                    rotatedArrayElements.forEach((element, index) => {
+                        if (index < k) {
+                            element.classList.add('highlighted');
+                            element.textContent = originalArray[originalArray.length - k + index];
+                            element.style.transform = 'translateY(-15px)';
+                        }
+                    });
+                    
+                    // Highlight the last k elements in original array
+                    highlightElements(originalArray.length - k, originalArray.length - 1);
+                    break;
+                    
+                case 4:
+                    // Move the first (n-k) elements to the end of rotated array
+                    rotatedArrayElements.forEach((element, index) => {
+                        if (index < k) {
+                            element.classList.add('highlighted');
+                            element.textContent = originalArray[originalArray.length - k + index];
+                        } else {
+                            element.classList.add('highlighted');
+                            element.textContent = originalArray[index - k];
+                            element.style.transform = 'translateY(15px)';
+                        }
+                    });
+                    break;
+                    
+                case 5:
+                    // Show the final rotated array
+                    rotatedArrayElements.forEach((element, index) => {
+                        element.classList.add('highlighted');
+                        element.textContent = rotatedArray[index];
+                        element.style.transform = 'none';
+                    });
+                    break;
+                    
+                case 6:
+                    rotatedArrayElements.forEach((element, index) => {
+                        element.classList.add('highlighted');
+                        element.textContent = rotatedArray[index];
+                    });
+                    break;
+            }
+            
+            updateButtonState();
+        }
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                performStep(currentStep);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                performStep(currentStep);
+            }
+        });
+        
+        // Initialize the visualization
+        performStep(currentStep);
+    </script>
+</body>
+</html>
