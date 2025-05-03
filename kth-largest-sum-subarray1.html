@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subarray Sums Calculation</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--white);
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--white);
+            border: 2px solid var(--black);
+            margin: 0 5px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .subarray-info {
+            margin-top: 20px;
+            min-height: 200px;
+        }
+        
+        .subarray-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .subarray-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--secondary);
+            border: 2px solid var(--primary);
+            margin: 0 5px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .empty-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            border: 2px dashed #ccc;
+            opacity: 0.3;
+        }
+        
+        .sum-container {
+            font-size: 20px;
+            margin: 15px 0 30px;
+            font-weight: bold;
+            color: var(--black);
+        }
+        
+        .sum-value {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--secondary);
+        }
+        
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            text-align: left;
+            line-height: 1.6;
+            color: var(--black);
+        }
+        
+        .step-indicator {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subarray Sums Calculation</h1>
+        
+        <div class="array-container" id="main-array">
+            <div class="array-element">1</div>
+            <div class="array-element">2</div>
+            <div class="array-element">3</div>
+            <div class="array-element">4</div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            A subarray is a contiguous part of an array. For the array [1, 2, 3, 4], we'll explore all possible subarrays and calculate their sums.
+        </div>
+        
+        <div class="subarray-info" id="subarray-info">
+            <div class="subarray-container" id="subarray-elements">
+                <!-- Subarray elements will be displayed here -->
+            </div>
+            <div class="sum-container">
+                Sum: <span class="sum-value" id="sum-value">0</span>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 1 of 10</div>
+    </div>
+    
+    <script>
+        const array = [1, 2, 3, 4];
+        const subarrays = [];
+        
+        // Generate all possible subarrays
+        for (let start = 0; start < array.length; start++) {
+            for (let end = start; end < array.length; end++) {
+                const subarray = array.slice(start, end + 1);
+                const sum = subarray.reduce((acc, val) => acc + val, 0);
+                subarrays.push({
+                    start: start,
+                    end: end,
+                    elements: subarray,
+                    sum: sum
+                });
+            }
+        }
+        
+        let currentIndex = 0;
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const stepIndicator = document.getElementById('step-indicator');
+        
+        function updateSubarray() {
+            const subarrayElements = document.getElementById('subarray-elements');
+            subarrayElements.innerHTML = '';
+            
+            const current = subarrays[currentIndex];
+            const sumValue = document.getElementById('sum-value');
+            const explanation = document.getElementById('explanation');
+            
+            // Create subarray visualization with highlighted elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                
+                if (i >= current.start && i <= current.end) {
+                    element.className = 'subarray-element';
+                    element.textContent = array[i];
+                } else {
+                    element.className = 'empty-element';
+                }
+                
+                subarrayElements.appendChild(element);
+            }
+            
+            // Update sum and explanation
+            sumValue.textContent = current.sum;
+            
+            // Update explanation
+            explanation.innerHTML = `
+                <p>Subarray: [${current.elements.join(', ')}]</p>
+                <p>This subarray starts at index ${current.start} and ends at index ${current.end}.</p>
+                <p>To calculate the sum, we add all elements: ${current.elements.join(' + ')} = ${current.sum}</p>
+            `;
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentIndex + 1} of ${subarrays.length}`;
+            
+            // Update button states
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === subarrays.length - 1;
+        }
+        
+        // Add event listeners to navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateSubarray();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < subarrays.length - 1) {
+                currentIndex++;
+                updateSubarray();
+            }
+        });
+        
+        // Initialize the first subarray display
+        updateSubarray();
+    </script>
+</body>
+</html>
