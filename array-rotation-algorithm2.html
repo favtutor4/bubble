@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reversal Algorithm Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            background-color: #FFFFFF;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+            transition: opacity 0.5s;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+        }
+        .highlighted {
+            background-color: #FF4800;
+            transform: scale(1.1);
+        }
+        .description {
+            margin: 20px 0;
+            font-size: 18px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #FF4800;
+            text-align: left;
+            min-height: 80px;
+        }
+        .step-indicator {
+            margin: 20px 0;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .arrow {
+            width: 100%;
+            height: 30px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #FF4800;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reversal Algorithm Animation</h1>
+        
+        <div class="step-indicator" id="stepIndicator">Step 0: Initial Array</div>
+        
+        <div class="animation-container">
+            <div class="array-container" id="arrayContainer"></div>
+            <div class="arrow" id="arrow">↓</div>
+            <div class="array-container" id="resultContainer" style="opacity: 0;"></div>
+            <div class="description" id="description">
+                We start with the initial array [1, 2, 3, 4, 5, 6, 7] and we want to rotate it by k=3 positions.
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" disabled>Previous</button>
+            <button class="nav-button" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array and k value
+        const initialArray = [1, 2, 3, 4, 5, 6, 7];
+        const k = 3;
+        
+        // Step definitions
+        const steps = [
+            {
+                title: "Initial Array",
+                description: "We start with the initial array [1, 2, 3, 4, 5, 6, 7] and we want to rotate it by k=3 positions.",
+                arrayBefore: [1, 2, 3, 4, 5, 6, 7],
+                arrayAfter: null,
+                highlight: []
+            },
+            {
+                title: "Step 1: Reverse Entire Array",
+                description: "First, we reverse the entire array. This transforms [1, 2, 3, 4, 5, 6, 7] into [7, 6, 5, 4, 3, 2, 1].",
+                arrayBefore: [1, 2, 3, 4, 5, 6, 7],
+                arrayAfter: [7, 6, 5, 4, 3, 2, 1],
+                highlight: [0, 1, 2, 3, 4, 5, 6]
+            },
+            {
+                title: "Step 2: Reverse First K Elements",
+                description: "Next, we reverse the first k (k=3) elements. This transforms [7, 6, 5, 4, 3, 2, 1] into [5, 6, 7, 4, 3, 2, 1].",
+                arrayBefore: [7, 6, 5, 4, 3, 2, 1],
+                arrayAfter: [5, 6, 7, 4, 3, 2, 1],
+                highlight: [0, 1, 2]
+            },
+            {
+                title: "Step 3: Reverse Remaining Elements",
+                description: "Finally, we reverse the remaining (n-k) elements. This transforms [5, 6, 7, 4, 3, 2, 1] into [5, 6, 7, 1, 2, 3, 4].",
+                arrayBefore: [5, 6, 7, 4, 3, 2, 1],
+                arrayAfter: [5, 6, 7, 1, 2, 3, 4],
+                highlight: [3, 4, 5, 6]
+            },
+            {
+                title: "Final Result",
+                description: "The array is now rotated by k=3 positions! Compare the original [1, 2, 3, 4, 5, 6, 7] with the rotated [5, 6, 7, 1, 2, 3, 4].",
+                arrayBefore: [1, 2, 3, 4, 5, 6, 7],
+                arrayAfter: [5, 6, 7, 1, 2, 3, 4],
+                highlight: []
+            }
+        ];
+        
+        // Current step index
+        let currentStep = 0;
+        
+        // DOM elements
+        const stepIndicator = document.getElementById('stepIndicator');
+        const description = document.getElementById('description');
+        const arrayContainer = document.getElementById('arrayContainer');
+        const resultContainer = document.getElementById('resultContainer');
+        const arrow = document.getElementById('arrow');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Initialize the animation
+        function init() {
+            renderStep(currentStep);
+        }
+        
+        // Render a specific step
+        function renderStep(stepIndex) {
+            const step = steps[stepIndex];
+            
+            // Update step indicator and description
+            stepIndicator.textContent = step.title;
+            description.textContent = step.description;
+            
+            // Clear containers
+            arrayContainer.innerHTML = '';
+            resultContainer.innerHTML = '';
+            
+            // Render the "before" array
+            step.arrayBefore.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = value;
+                arrayContainer.appendChild(element);
+            });
+            
+            // Show/hide the result container and arrow based on whether there's an "after" array
+            if (step.arrayAfter) {
+                arrow.style.opacity = 1;
+                setTimeout(() => {
+                    resultContainer.style.opacity = 1;
+                    
+                    // Render the "after" array
+                    step.arrayAfter.forEach((value, index) => {
+                        const element = document.createElement('div');
+                        element.className = 'array-element';
+                        element.textContent = value;
+                        if (step.highlight.includes(index)) {
+                            element.classList.add('highlighted');
+                        }
+                        resultContainer.appendChild(element);
+                    });
+                }, 500);
+            } else {
+                arrow.style.opacity = 0;
+                resultContainer.style.opacity = 0;
+            }
+            
+            // Update button states
+            prevBtn.disabled = stepIndex === 0;
+            nextBtn.disabled = stepIndex === steps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(currentStep);
+            }
+        });
+        
+        // Initialize the animation
+        init();
+    </script>
+</body>
+</html>
