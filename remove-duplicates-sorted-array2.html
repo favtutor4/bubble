@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Pointer Technique Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .description {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .slow-pointer {
+            border-bottom: 4px solid #FF4800;
+            position: relative;
+        }
+        .slow-pointer::after {
+            content: "slow";
+            position: absolute;
+            bottom: -25px;
+            color: #FF4800;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .fast-pointer {
+            border-bottom: 4px solid #FD9F78;
+            position: relative;
+        }
+        .fast-pointer::after {
+            content: "fast";
+            position: absolute;
+            bottom: -25px;
+            color: #FD9F78;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .highlighted {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            transform: scale(1.05);
+        }
+        .swapped {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            animation: pulse 0.5s;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #FF4800;
+            margin: 20px 0;
+            max-width: 800px;
+        }
+        .step-counter {
+            font-weight: bold;
+            color: #FF4800;
+            margin-bottom: 10px;
+        }
+        .indexes {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .index {
+            width: 60px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .result-array {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .result-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .actions {
+            color: #FF4800;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Two-Pointer Technique Visualization</h1>
+    <p class="description">Removing duplicates from a sorted array using two pointers</p>
+    
+    <div class="container">
+        <div class="indexes" id="indexes"></div>
+        <div class="array-container" id="array-container"></div>
+        
+        <div class="explanation" id="explanation">
+            <div class="step-counter" id="step-counter">Step 0</div>
+            <div class="actions" id="actions">Initialization</div>
+            <p id="explanation-text">We start with a sorted array and initialize two pointers: slow at index 0 and fast at index 1. The slow pointer keeps track of the position where the next unique element should be placed.</p>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div class="result-array" id="result-array" style="display: none;">
+            <h3 style="color: #FF4800; margin-bottom: 10px;">Final Result</h3>
+            <p>The first <span id="unique-count"></span> elements contain the unique values:</p>
+            <div class="result-container" id="result-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const originalArray = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
+        let currentStep = 0;
+        const steps = [];
+        
+        // Generate all steps of the algorithm
+        function generateSteps() {
+            const array = [...originalArray];
+            let slow = 0;
+            let fast = 1;
+            
+            // Initial state
+            steps.push({
+                array: [...array],
+                slow,
+                fast,
+                action: "Initialization",
+                explanation: "We start with a sorted array and initialize two pointers: slow at index 0 and fast at index 1. The slow pointer keeps track of the position where the next unique element should be placed.",
+                highlighted: [],
+                swapped: []
+            });
+            
+            while (fast < array.length) {
+                steps.push({
+                    array: [...array],
+                    slow,
+                    fast,
+                    action: "Comparing elements",
+                    explanation: `Comparing array[slow] = ${array[slow]} with array[fast] = ${array[fast]}`,
+                    highlighted: [slow, fast],
+                    swapped: []
+                });
+                
+                if (array[slow] !== array[fast]) {
+                    slow++;
+                    
+                    steps.push({
+                        array: [...array],
+                        slow,
+                        fast,
+                        action: "Found a new unique element",
+                        explanation: `Found a new unique element ${array[fast]}. Moving slow pointer to index ${slow}.`,
+                        highlighted: [slow, fast],
+                        swapped: []
+                    });
+                    
+                    if (slow !== fast) {
+                        array[slow] = array[fast];
+                        
+                        steps.push({
+                            array: [...array],
+                            slow,
+                            fast,
+                            action: "Placing unique element",
+                            explanation: `Placing the unique element ${array[fast]} at position ${slow}.`,
+                            highlighted: [fast],
+                            swapped: [slow]
+                        });
+                    }
+                }
+                
+                fast++;
+                
+                if (fast < array.length) {
+                    steps.push({
+                        array: [...array],
+                        slow,
+                        fast,
+                        action: "Moving fast pointer",
+                        explanation: `Moving fast pointer to index ${fast}.`,
+                        highlighted: [fast],
+                        swapped: []
+                    });
+                }
+            }
+            
+            // Final state - show the result
+            steps.push({
+                array: [...array],
+                slow,
+                fast,
+                action: "Algorithm completed",
+                explanation: `All done! We found ${slow + 1} unique elements in the array.`,
+                highlighted: [],
+                swapped: [],
+                showResult: true,
+                uniqueCount: slow + 1
+            });
+        }
+        
+        function updateVisualization() {
+            const step = steps[currentStep];
+            const arrayContainer = document.getElementById('array-container');
+            const indexes = document.getElementById('indexes');
+            
+            // Clear previous content
+            arrayContainer.innerHTML = '';
+            indexes.innerHTML = '';
+            
+            // Update step counter and explanation
+            document.getElementById('step-counter').textContent = `Step ${currentStep}`;
+            document.getElementById('actions').textContent = step.action;
+            document.getElementById('explanation-text').textContent = step.explanation;
+            
+            // Create index labels
+            for (let i = 0; i < step.array.length; i++) {
+                const indexElement = document.createElement('div');
+                indexElement.className = 'index';
+                indexElement.textContent = i;
+                indexes.appendChild(indexElement);
+            }
+            
+            // Create array cells
+            step.array.forEach((value, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = value;
+                
+                if (index === step.slow) {
+                    cell.classList.add('slow-pointer');
+                }
+                
+                if (index === step.fast && step.fast < step.array.length) {
+                    cell.classList.add('fast-pointer');
+                }
+                
+                if (step.highlighted.includes(index)) {
+                    cell.classList.add('highlighted');
+                }
+                
+                if (step.swapped.includes(index)) {
+                    cell.classList.add('swapped');
+                }
+                
+                arrayContainer.appendChild(cell);
+            });
+            
+            // Show result array if we're at the final step
+            const resultArray = document.getElementById('result-array');
+            if (step.showResult) {
+                resultArray.style.display = 'block';
+                document.getElementById('unique-count').textContent = step.uniqueCount;
+                
+                const resultContainer = document.getElementById('result-container');
+                resultContainer.innerHTML = '';
+                
+                for (let i = 0; i < step.uniqueCount; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = step.array[i];
+                    resultContainer.appendChild(cell);
+                }
+            } else {
+                resultArray.style.display = 'none';
+            }
+            
+            // Update buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+        
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        }
+        
+        // Initialize
+        generateSteps();
+        updateVisualization();
+        
+        // Event listeners
+        document.getElementById('next-btn').addEventListener('click', nextStep);
+        document.getElementById('prev-btn').addEventListener('click', prevStep);
+    </script>
+</body>
+</html>
