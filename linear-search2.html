@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Pointer Linear Search Visualization</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--white);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .description {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: var(--black);
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            perspective: 1000px;
+        }
+        
+        .array-element {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--white);
+            border: 2px solid var(--black);
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .array-element.target {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        
+        .array-element.checked {
+            background-color: var(--secondary);
+        }
+        
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: var(--black);
+        }
+        
+        .pointer {
+            position: absolute;
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        
+        .pointer.left {
+            top: -30px;
+        }
+        
+        .pointer.right {
+            bottom: -30px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .step-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--secondary);
+            border-radius: 8px;
+            text-align: center;
+            min-height: 60px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Two-Pointer Linear Search</h1>
+        
+        <div class="description">
+            <p>Two-Pointer Linear Search is a technique where we start searching from both ends of an array simultaneously, moving inward until we find the target or the pointers meet. This can be more efficient than traditional linear search in some scenarios.</p>
+        </div>
+        
+        <div class="array-container" id="arrayContainer">
+            <!-- Array elements will be generated here -->
+        </div>
+        
+        <div class="step-info" id="stepInfo">
+            Welcome to Two-Pointer Linear Search visualization. Click "Start" to begin the search for target value 9.
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">Start</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous Step</button>
+            <button id="nextBtn" disabled>Next Step</button>
+        </div>
+    </div>
+    
+    <script>
+        // Array and search configuration
+        const array = [5, 2, 9, 1, 7];
+        const target = 9;
+        
+        // State tracking
+        let currentStep = 0;
+        let animationHistory = [];
+        let isRunning = false;
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const stepInfo = document.getElementById('stepInfo');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Initialize the visualization
+        function initialize() {
+            // Clear the array container
+            arrayContainer.innerHTML = '';
+            
+            // Create array elements
+            array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${index}`;
+                element.textContent = value;
+                
+                const indexLabel = document.createElement('div');
+                indexLabel.className = 'array-index';
+                indexLabel.textContent = index;
+                
+                element.appendChild(indexLabel);
+                arrayContainer.appendChild(element);
+            });
+            
+            // Create pointers
+            const leftPointer = document.createElement('div');
+            leftPointer.className = 'pointer left';
+            leftPointer.id = 'leftPointer';
+            leftPointer.textContent = '👇';
+            leftPointer.style.left = `${getElementPosition(0)}px`;
+            
+            const rightPointer = document.createElement('div');
+            rightPointer.className = 'pointer right';
+            rightPointer.id = 'rightPointer';
+            rightPointer.textContent = '👆';
+            rightPointer.style.left = `${getElementPosition(array.length - 1)}px`;
+            
+            arrayContainer.appendChild(leftPointer);
+            arrayContainer.appendChild(rightPointer);
+            
+            // Reset step info
+            stepInfo.textContent = 'Welcome to Two-Pointer Linear Search visualization. Click "Start" to begin the search for target value 9.';
+            
+            // Reset state
+            currentStep = 0;
+            animationHistory = [];
+            isRunning = false;
+            
+            // Generate search steps
+            generateSearchSteps();
+            
+            // Update button states
+            updateButtonStates();
+        }
+        
+        // Helper function to get element position
+        function getElementPosition(index) {
+            const elementWidth = 70; // Element width + margin
+            const containerCenter = arrayContainer.offsetWidth / 2;
+            const arrayWidth = array.length * elementWidth;
+            const startPosition = containerCenter - (arrayWidth / 2) + 30;
+            
+            return startPosition + (index * elementWidth);
+        }
+        
+        // Generate search steps
+        function generateSearchSteps() {
+            animationHistory = [];
+            
+            // Initial state
+            animationHistory.push({
+                left: 0,
+                right: array.length - 1,
+                message: "Starting two-pointer search for target value 9. Left pointer at index 0, right pointer at index 4.",
+                checked: [],
+                found: null
+            });
+            
+            let left = 0;
+            let right = array.length - 1;
+            let found = false;
+            let steps = 0;
+            
+            while (left <= right && !found) {
+                steps++;
+                
+                // Check left pointer
+                if (array[left] === target) {
+                    animationHistory.push({
+                        left,
+                        right,
+                        message: `Step ${steps}: Found target ${target} at left pointer position (index ${left})!`,
+                        checked: [...animationHistory[animationHistory.length - 1].checked, left],
+                        found: left
+                    });
+                    found = true;
+                    break;
+                }
+                
+                // Check right pointer
+                if (array[right] === target) {
+                    animationHistory.push({
+                        left,
+                        right,
+                        message: `Step ${steps}: Found target ${target} at right pointer position (index ${right})!`,
+                        checked: [...animationHistory[animationHistory.length - 1].checked, right],
+                        found: right
+                    });
+                    found = true;
+                    break;
+                }
+                
+                // If not found at either pointer
+                animationHistory.push({
+                    left,
+                    right,
+                    message: `Step ${steps}: Checked indices ${left} and ${right}, target not found. Moving pointers inward.`,
+                    checked: [...animationHistory[animationHistory.length - 1].checked, left, right],
+                    found: null
+                });
+                
+                // Move pointers
+                left++;
+                right--;
+            }
+            
+            // If target wasn't found
+            if (!found) {
+                animationHistory.push({
+                    left,
+                    right,
+                    message: `Search complete. Target ${target} not found in the array.`,
+                    checked: [...animationHistory[animationHistory.length - 1].checked],
+                    found: null
+                });
+            }
+        }
+        
+        // Render the current step
+        function renderStep(step) {
+            const state = animationHistory[step];
+            
+            // Update pointers
+            const leftPointer = document.getElementById('leftPointer');
+            const rightPointer = document.getElementById('rightPointer');
+            
+            leftPointer.style.left = `${getElementPosition(state.left)}px`;
+            rightPointer.style.left = `${getElementPosition(state.right)}px`;
+            
+            // Reset all elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.getElementById(`element-${i}`);
+                element.className = 'array-element';
+            }
+            
+            // Mark checked elements
+            state.checked.forEach(index => {
+                const element = document.getElementById(`element-${index}`);
+                element.classList.add('checked');
+            });
+            
+            // Mark found element
+            if (state.found !== null) {
+                const foundElement = document.getElementById(`element-${state.found}`);
+                foundElement.classList.add('target');
+            }
+            
+            // Update step info
+            stepInfo.textContent = state.message;
+            
+            // Update button states
+            updateButtonStates();
+        }
+        
+        // Update button states based on current step
+        function updateButtonStates() {
+            prevBtn.disabled = currentStep <= 0;
+            nextBtn.disabled = currentStep >= animationHistory.length - 1;
+            startBtn.disabled = isRunning;
+        }
+        
+        // Event handlers
+        startBtn.addEventListener('click', () => {
+            if (animationHistory.length > 0) {
+                isRunning = true;
+                currentStep = 0;
+                renderStep(currentStep);
+                startBtn.disabled = true;
+            }
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            initialize();
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < animationHistory.length - 1) {
+                currentStep++;
+                renderStep(currentStep);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+            }
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>
