@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Leaders Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            position: relative;
+            height: 180px;
+        }
+        .array-element {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .leader {
+            background-color: #FF4800;
+            color: white;
+        }
+        .highlighted {
+            border: 2px solid #FD9F78;
+            box-shadow: 0 0 10px #FD9F78;
+        }
+        .index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .bar {
+            position: absolute;
+            bottom: 80px;
+            width: 60px;
+            background-color: #FD9F78;
+            transition: height 0.5s ease;
+        }
+        .explanation {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            width: 100%;
+            min-height: 80px;
+            font-size: 18px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .comparison-arrow {
+            position: absolute;
+            top: 70px;
+            font-size: 24px;
+            color: #000000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Leaders Visualization</h1>
+        
+        <div class="array-container" id="arrayContainer">
+            <!-- Array elements will be generated here -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Let's understand what an array leader is and how to find them.
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array data
+        const array = [16, 17, 4, 3, 5, 2];
+        const leaders = [17, 5, 2];
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const explanation = document.getElementById('explanation');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        
+        // Animation state
+        let currentStep = 0;
+        const totalSteps = 8;
+        
+        // Create array elements
+        function createArrayElements() {
+            arrayContainer.innerHTML = '';
+            
+            // Create elements with bars
+            for (let i = 0; i < array.length; i++) {
+                // Create container
+                const elementContainer = document.createElement('div');
+                elementContainer.style.position = 'relative';
+                
+                // Create bar representing value
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${array[i] * 3}px`;
+                
+                // Create element
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = array[i];
+                element.id = `element-${i}`;
+                
+                // Create index
+                const index = document.createElement('div');
+                index.className = 'index';
+                index.textContent = i;
+                
+                elementContainer.appendChild(bar);
+                elementContainer.appendChild(element);
+                element.appendChild(index);
+                arrayContainer.appendChild(elementContainer);
+            }
+            
+            // Create comparison arrows
+            for (let i = 0; i < array.length - 1; i++) {
+                const arrow = document.createElement('div');
+                arrow.className = 'comparison-arrow';
+                arrow.id = `arrow-${i}`;
+                arrow.textContent = '→';
+                arrow.style.left = `${(i * 70) + 62}px`;
+                arrayContainer.appendChild(arrow);
+            }
+        }
+        
+        // Update visualization based on current step
+        function updateVisualization() {
+            // Reset all elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.getElementById(`element-${i}`);
+                element.className = 'array-element';
+            }
+            
+            // Hide all arrows
+            for (let i = 0; i < array.length - 1; i++) {
+                const arrow = document.getElementById(`arrow-${i}`);
+                if (arrow) arrow.style.opacity = '0';
+            }
+            
+            // Update based on current step
+            switch (currentStep) {
+                case 0:
+                    explanation.textContent = "Let's understand what an array leader is and how to find them.";
+                    break;
+                    
+                case 1:
+                    explanation.textContent = "A leader in an array is an element that is greater than all elements to its right.";
+                    break;
+                    
+                case 2:
+                    explanation.textContent = "Let's start from the rightmost element. The last element (2) is always a leader since there are no elements to its right.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    break;
+                    
+                case 3:
+                    explanation.textContent = "Now we move left. Is 5 greater than 2? Yes! So 5 is a leader.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    document.getElementById(`element-4`).className = 'array-element leader';
+                    document.getElementById(`arrow-4`).style.opacity = '1';
+                    break;
+                    
+                case 4:
+                    explanation.textContent = "Next, is 3 greater than the maximum element to its right (which is 5)? No, 3 < 5, so 3 is not a leader.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    document.getElementById(`element-4`).className = 'array-element leader';
+                    document.getElementById(`element-3`).className = 'array-element highlighted';
+                    document.getElementById(`arrow-3`).style.opacity = '1';
+                    break;
+                    
+                case 5:
+                    explanation.textContent = "Next, is 4 greater than the maximum element to its right (which is 5)? No, 4 < 5, so 4 is not a leader.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    document.getElementById(`element-4`).className = 'array-element leader';
+                    document.getElementById(`element-2`).className = 'array-element highlighted';
+                    document.getElementById(`arrow-2`).style.opacity = '1';
+                    break;
+                    
+                case 6:
+                    explanation.textContent = "Now, is 17 greater than the maximum element to its right (which is 5)? Yes! So 17 is a leader.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    document.getElementById(`element-4`).className = 'array-element leader';
+                    document.getElementById(`element-1`).className = 'array-element leader';
+                    document.getElementById(`arrow-1`).style.opacity = '1';
+                    break;
+                    
+                case 7:
+                    explanation.textContent = "Finally, is 16 greater than the maximum element to its right (which is 17)? No, 16 < 17, so 16 is not a leader.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    document.getElementById(`element-4`).className = 'array-element leader';
+                    document.getElementById(`element-1`).className = 'array-element leader';
+                    document.getElementById(`element-0`).className = 'array-element highlighted';
+                    document.getElementById(`arrow-0`).style.opacity = '1';
+                    break;
+                    
+                case 8:
+                    explanation.textContent = "In our array [16, 17, 4, 3, 5, 2], the leaders are 17, 5, and 2. These elements are greater than all elements to their right.";
+                    document.getElementById(`element-5`).className = 'array-element leader';
+                    document.getElementById(`element-4`).className = 'array-element leader';
+                    document.getElementById(`element-1`).className = 'array-element leader';
+                    break;
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+        
+        // Event listeners
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize
+        createArrayElements();
+        updateVisualization();
+    </script>
+</body>
+</html>
