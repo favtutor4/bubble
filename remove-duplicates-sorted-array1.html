@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In-place Removal Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .visualization {
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            height: 180px;
+        }
+
+        .array-cell {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid #000000;
+            background-color: #FFFFFF;
+            position: relative;
+            transition: all 0.5s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .array-cell.highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+
+        .array-cell.current {
+            border-color: #FF4800;
+            border-width: 3px;
+        }
+
+        .array-cell.write {
+            background-color: #FD9F78;
+        }
+
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        .explanation {
+            margin: 30px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #FF4800;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -40px;
+            transition: left 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pointer-label {
+            background-color: #FF4800;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .pointer-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid #FF4800;
+        }
+
+        .pointer.k {
+            color: #FF4800;
+        }
+
+        .step-counter {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+
+        .final-result {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            text-align: center;
+            border: 2px solid #FF4800;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>In-place Removal of Duplicates</h1>
+        
+        <div class="step-counter">Step <span id="currentStep">0</span> of <span id="totalSteps">0</span></div>
+        
+        <div class="visualization">
+            <div class="array-container" id="arrayContainer">
+                <!-- Array cells will be generated here -->
+            </div>
+            
+            <div class="explanation" id="explanation">
+                Click "Next" to start the visualization.
+            </div>
+            
+            <div class="final-result" id="finalResult">
+                <h3>Final Result:</h3>
+                <p>Array after removing duplicates: [0, 1, 2, 3, 4, _, _, _, _, _]</p>
+                <p>Returned length: 5</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial array
+            const initialArray = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
+            let currentArray = [...initialArray];
+            
+            // Steps for the animation
+            const steps = [
+                {
+                    description: "We start with the array [0, 0, 1, 1, 1, 2, 2, 3, 3, 4] and need to remove duplicates in-place.",
+                    array: [...initialArray],
+                    i: -1,
+                    k: -1,
+                    highlight: []
+                },
+                {
+                    description: "We'll use two pointers: 'k' to track the position for unique elements and 'i' to iterate through the array.",
+                    array: [...initialArray],
+                    i: -1,
+                    k: 0,
+                    highlight: []
+                },
+                {
+                    description: "Initialize k = 0 and start iterating from i = 1. The first element is always unique.",
+                    array: [...initialArray],
+                    i: 1,
+                    k: 0,
+                    highlight: [0]
+                },
+                {
+                    description: "Compare nums[i]=0 with nums[k]=0. They are equal, so we skip this duplicate.",
+                    array: [...initialArray],
+                    i: 1,
+                    k: 0,
+                    highlight: [0, 1],
+                    current: 1
+                },
+                {
+                    description: "Move to the next element (i = 2). Compare nums[i]=1 with nums[k]=0. They are different!",
+                    array: [...initialArray],
+                    i: 2,
+                    k: 0,
+                    highlight: [0, 2],
+                    current: 2
+                },
+                {
+                    description: "Since nums[i] != nums[k], we increment k to 1 and set nums[k] = nums[i]. So, nums[1] = 1",
+                    array: [0, 1, 1, 1, 1, 2, 2, 3, 3, 4],
+                    i: 2,
+                    k: 1,
+                    highlight: [0, 1],
+                    current: 2,
+                    write: 1
+                },
+                {
+                    description: "Move to i = 3. Compare nums[i]=1 with nums[k]=1. They are equal, so we skip.",
+                    array: [0, 1, 1, 1, 1, 2, 2, 3, 3, 4],
+                    i: 3,
+                    k: 1,
+                    highlight: [1, 3],
+                    current: 3
+                },
+                {
+                    description: "Move to i = 4. Compare nums[i]=1 with nums[k]=1. Equal again, we skip.",
+                    array: [0, 1, 1, 1, 1, 2, 2, 3, 3, 4],
+                    i: 4,
+                    k: 1,
+                    highlight: [1, 4],
+                    current: 4
+                },
+                {
+                    description: "Move to i = 5. Compare nums[i]=2 with nums[k]=1. Different!",
+                    array: [0, 1, 1, 1, 1, 2, 2, 3, 3, 4],
+                    i: 5,
+                    k: 1,
+                    highlight: [1, 5],
+                    current: 5
+                },
+                {
+                    description: "Increment k to 2 and set nums[k] = nums[i]. So, nums[2] = 2",
+                    array: [0, 1, 2, 1, 1, 2, 2, 3, 3, 4],
+                    i: 5,
+                    k: 2,
+                    highlight: [1, 2],
+                    current: 5,
+                    write: 2
+                },
+                {
+                    description: "Move to i = 6. Compare nums[i]=2 with nums[k]=2. Equal, so we skip.",
+                    array: [0, 1, 2, 1, 1, 2, 2, 3, 3, 4],
+                    i: 6,
+                    k: 2,
+                    highlight: [2, 6],
+                    current: 6
+                },
+                {
+                    description: "Move to i = 7. Compare nums[i]=3 with nums[k]=2. Different!",
+                    array: [0, 1, 2, 1, 1, 2, 2, 3, 3, 4],
+                    i: 7,
+                    k: 2,
+                    highlight: [2, 7],
+                    current: 7
+                },
+                {
+                    description: "Increment k to 3 and set nums[k] = nums[i]. So, nums[3] = 3",
+                    array: [0, 1, 2, 3, 1, 2, 2, 3, 3, 4],
+                    i: 7,
+                    k: 3,
+                    highlight: [2, 3],
+                    current: 7,
+                    write: 3
+                },
+                {
+                    description: "Move to i = 8. Compare nums[i]=3 with nums[k]=3. Equal, so we skip.",
+                    array: [0, 1, 2, 3, 1, 2, 2, 3, 3, 4],
+                    i: 8,
+                    k: 3,
+                    highlight: [3, 8],
+                    current: 8
+                },
+                {
+                    description: "Move to i = 9. Compare nums[i]=4 with nums[k]=3. Different!",
+                    array: [0, 1, 2, 3, 1, 2, 2, 3, 3, 4],
+                    i: 9,
+                    k: 3,
+                    highlight: [3, 9],
+                    current: 9
+                },
+                {
+                    description: "Increment k to 4 and set nums[k] = nums[i]. So, nums[4] = 4",
+                    array: [0, 1, 2, 3, 4, 2, 2, 3, 3, 4],
+                    i: 9,
+                    k: 4,
+                    highlight: [3, 4],
+                    current: 9,
+                    write: 4
+                },
+                {
+                    description: "We've reached the end of the array. The unique elements are now at the beginning up to index k.",
+                    array: [0, 1, 2, 3, 4, '_', '_', '_', '_', '_'],
+                    i: 9,
+                    k: 4,
+                    highlight: [0, 1, 2, 3, 4]
+                },
+                {
+                    description: "The final array has all unique elements at the beginning: [0, 1, 2, 3, 4, _, _, _, _, _]",
+                    array: [0, 1, 2, 3, 4, '_', '_', '_', '_', '_'],
+                    i: 9,
+                    k: 4,
+                    highlight: [0, 1, 2, 3, 4],
+                    showFinal: true
+                }
+            ];
+
+            let currentStepIndex = 0;
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const explanationDiv = document.getElementById('explanation');
+            const arrayContainer = document.getElementById('arrayContainer');
+            const finalResult = document.getElementById('finalResult');
+            const currentStepSpan = document.getElementById('currentStep');
+            const totalStepsSpan = document.getElementById('totalSteps');
+
+            totalStepsSpan.textContent = steps.length;
+
+            function updateStep() {
+                const step = steps[currentStepIndex];
+                currentStepSpan.textContent = currentStepIndex + 1;
+                
+                // Update explanation
+                explanationDiv.textContent = step.description;
+                
+                // Clear array container
+                arrayContainer.innerHTML = '';
+                
+                // Show/hide final result
+                finalResult.style.display = step.showFinal ? 'block' : 'none';
+                
+                // Create array visualization
+                for (let j = 0; j < step.array.length; j++) {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'array-cell';
+                    
+                    if (step.highlight && step.highlight.includes(j)) {
+                        cellDiv.classList.add('highlighted');
+                    }
+                    
+                    if (step.current === j) {
+                        cellDiv.classList.add('current');
+                    }
+                    
+                    if (step.write === j) {
+                        cellDiv.classList.add('write');
+                    }
+                    
+                    cellDiv.textContent = step.array[j];
+                    
+                    const indexDiv = document.createElement('div');
+                    indexDiv.className = 'array-index';
+                    indexDiv.textContent = j;
+                    cellDiv.appendChild(indexDiv);
+                    
+                    arrayContainer.appendChild(cellDiv);
+                }
+                
+                // Add 'i' pointer
+                if (step.i >= 0) {
+                    const iPointer = document.createElement('div');
+                    iPointer.className = 'pointer';
+                    iPointer.style.left = `${60 * step.i + 30}px`; // Position over the i-th element
+                    
+                    const pointerLabel = document.createElement('div');
+                    pointerLabel.className = 'pointer-label';
+                    pointerLabel.textContent = 'i';
+                    iPointer.appendChild(pointerLabel);
+                    
+                    const pointerArrow = document.createElement('div');
+                    pointerArrow.className = 'pointer-arrow';
+                    iPointer.appendChild(pointerArrow);
+                    
+                    arrayContainer.appendChild(iPointer);
+                }
+                
+                // Add 'k' pointer
+                if (step.k >= 0) {
+                    const kPointer = document.createElement('div');
+                    kPointer.className = 'pointer';
+                    kPointer.style.left = `${60 * step.k + 30}px`; // Position over the k-th element
+                    
+                    const pointerLabel = document.createElement('div');
+                    pointerLabel.className = 'pointer-label';
+                    pointerLabel.textContent = 'k';
+                    kPointer.appendChild(pointerLabel);
+                    
+                    const pointerArrow = document.createElement('div');
+                    pointerArrow.className = 'pointer-arrow';
+                    kPointer.appendChild(pointerArrow);
+                    
+                    arrayContainer.appendChild(kPointer);
+                }
+                
+                // Update buttons
+                prevBtn.disabled = currentStepIndex === 0;
+                nextBtn.disabled = currentStepIndex === steps.length - 1;
+            }
+
+            // Set up button events
+            prevBtn.addEventListener('click', function() {
+                if (currentStepIndex > 0) {
+                    currentStepIndex--;
+                    updateStep();
+                }
+            });
+
+            nextBtn.addEventListener('click', function() {
+                if (currentStepIndex < steps.length - 1) {
+                    currentStepIndex++;
+                    updateStep();
+                }
+            });
+
+            // Initialize visualization
+            updateStep();
+        });
+    </script>
+</body>
+</html>
