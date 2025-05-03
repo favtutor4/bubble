@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maximum Subarray Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        p {
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5px;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.5s ease;
+            background-color: #FFFFFF;
+        }
+        .active {
+            background-color: #FD9F78;
+            transform: translateY(-10px);
+        }
+        .best {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: translateY(-10px);
+        }
+        .info-box {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .sum-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Maximum Subarray Visualization</h1>
+        <p>This visualization shows how to find the subarray with the largest sum within an array.</p>
+        
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="sum-display" id="sumDisplay">Current Sum: 0</div>
+        
+        <div class="info-box" id="infoBox">
+            Welcome to the Maximum Subarray Visualization! Click Next to start.
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array data
+        const array = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+        
+        // Steps for the visualization
+        const steps = [
+            { 
+                message: "We start with an array of numbers. Our goal is to find the contiguous subarray with the largest sum.",
+                activeIndices: [],
+                bestIndices: [],
+                currentSum: null
+            },
+            { 
+                message: "Let's try with the first element: -2. Current sum = -2.",
+                activeIndices: [0],
+                bestIndices: [0],
+                currentSum: -2
+            },
+            { 
+                message: "Adding the next element (1). Current sum = -2 + 1 = -1.",
+                activeIndices: [0, 1],
+                bestIndices: [0, 1],
+                currentSum: -1
+            },
+            { 
+                message: "Adding the next element (-3). Current sum = -1 + (-3) = -4.",
+                activeIndices: [0, 1, 2],
+                bestIndices: [0, 1, 2],
+                currentSum: -4
+            },
+            { 
+                message: "Wait! Starting a new subarray with just 4 would give us a better sum (4 > -4).",
+                activeIndices: [3],
+                bestIndices: [3],
+                currentSum: 4
+            },
+            { 
+                message: "Adding the next element (-1). Current sum = 4 + (-1) = 3.",
+                activeIndices: [3, 4],
+                bestIndices: [3, 4],
+                currentSum: 3
+            },
+            { 
+                message: "Adding the next element (2). Current sum = 3 + 2 = 5.",
+                activeIndices: [3, 4, 5],
+                bestIndices: [3, 4, 5],
+                currentSum: 5
+            },
+            { 
+                message: "Adding the next element (1). Current sum = 5 + 1 = 6.",
+                activeIndices: [3, 4, 5, 6],
+                bestIndices: [3, 4, 5, 6],
+                currentSum: 6
+            },
+            { 
+                message: "Adding the next element (-5). Current sum = 6 + (-5) = 1.",
+                activeIndices: [3, 4, 5, 6, 7],
+                bestIndices: [3, 4, 5, 6],
+                currentSum: 1
+            },
+            { 
+                message: "Adding the next element (4). Current sum = 1 + 4 = 5.",
+                activeIndices: [3, 4, 5, 6, 7, 8],
+                bestIndices: [3, 4, 5, 6],
+                currentSum: 5
+            },
+            { 
+                message: "After checking all possible subarrays, we found that [4, -1, 2, 1] has the maximum sum of 6.",
+                activeIndices: [],
+                bestIndices: [3, 4, 5, 6],
+                currentSum: 6
+            }
+        ];
+        
+        // Current step index
+        let currentStep = 0;
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const infoBox = document.getElementById('infoBox');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const sumDisplay = document.getElementById('sumDisplay');
+        
+        // Initialize the array display
+        function initializeArray() {
+            arrayContainer.innerHTML = '';
+            array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${index}`;
+                element.textContent = value;
+                arrayContainer.appendChild(element);
+            });
+        }
+        
+        // Update the visualization based on the current step
+        function updateVisualization() {
+            // Reset all elements
+            array.forEach((_, index) => {
+                const element = document.getElementById(`element-${index}`);
+                element.className = 'array-element';
+            });
+            
+            const step = steps[currentStep];
+            
+            // Update active elements
+            step.activeIndices.forEach(index => {
+                const element = document.getElementById(`element-${index}`);
+                element.classList.add('active');
+            });
+            
+            // Update best elements
+            step.bestIndices.forEach(index => {
+                const element = document.getElementById(`element-${index}`);
+                element.classList.add('best');
+            });
+            
+            // Update info box
+            infoBox.textContent = step.message;
+            
+            // Update sum display
+            if (step.currentSum !== null) {
+                sumDisplay.textContent = `Current Sum: ${step.currentSum}`;
+            } else {
+                sumDisplay.textContent = '';
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        initializeArray();
+        updateVisualization();
+    </script>
+</body>
+</html>
