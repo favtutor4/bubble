@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Search Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .description {
+            margin-bottom: 30px;
+            text-align: left;
+            line-height: 1.6;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .array-element.active {
+            background-color: #FD9F78;
+            transform: translateY(-10px);
+        }
+        .array-element.found {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .target-display {
+            font-size: 18px;
+            margin: 20px 0;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .status-display {
+            font-size: 18px;
+            margin: 20px 0;
+            min-height: 27px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .restart-btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linear Search Animation</h1>
+        
+        <div class="description">
+            <p>Linear search is a simple search algorithm that finds the position of a target value within a list. It sequentially checks each element of the list until a match is found or the whole list has been searched.</p>
+            <p>In this animation, we are searching for the target value <strong>9</strong> in the array [5, 2, 9, 1, 7].</p>
+        </div>
+        
+        <div class="target-display">Target Value: 9</div>
+        
+        <div class="array-container" id="arrayContainer">
+            <!-- Array elements will be inserted here -->
+        </div>
+        
+        <div class="status-display" id="statusDisplay"></div>
+        
+        <div class="btn-container">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+        
+        <button class="btn restart-btn" id="restartBtn">Restart</button>
+    </div>
+
+    <script>
+        // Array to search through
+        const array = [5, 2, 9, 1, 7];
+        const target = 9;
+        
+        // Animation state
+        let currentStep = -1;
+        const totalSteps = array.length;
+        let found = false;
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        // Initialize the array display
+        function initializeArray() {
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = array[i];
+                
+                const indexElement = document.createElement('div');
+                indexElement.className = 'array-index';
+                indexElement.textContent = `Index ${i}`;
+                
+                element.appendChild(indexElement);
+                arrayContainer.appendChild(element);
+            }
+        }
+        
+        // Update the animation state based on current step
+        function updateAnimation() {
+            const arrayElements = document.querySelectorAll('.array-element');
+            
+            // Reset all elements
+            arrayElements.forEach(el => {
+                el.className = 'array-element';
+            });
+            
+            if (currentStep >= 0) {
+                // For all previous steps
+                for (let i = 0; i < currentStep; i++) {
+                    arrayElements[i].classList.add('active');
+                }
+                
+                // Current element being checked
+                arrayElements[currentStep].classList.add('active');
+                
+                // Update status message
+                if (array[currentStep] === target) {
+                    arrayElements[currentStep].classList.add('found');
+                    statusDisplay.textContent = `Found ${target} at index ${currentStep}!`;
+                    found = true;
+                    nextBtn.disabled = true;
+                } else {
+                    statusDisplay.textContent = `Checking index ${currentStep}: ${array[currentStep]} != ${target}`;
+                }
+            } else {
+                statusDisplay.textContent = '';
+            }
+            
+            // Update buttons
+            prevBtn.disabled = currentStep <= 0;
+            
+            if (!found) {
+                nextBtn.disabled = currentStep >= totalSteps - 1;
+            }
+        }
+        
+        // Event handlers
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateAnimation();
+                found = false;
+                nextBtn.disabled = false;
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateAnimation();
+            }
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            currentStep = -1;
+            found = false;
+            nextBtn.disabled = false;
+            updateAnimation();
+        });
+        
+        // Initialize
+        initializeArray();
+        updateAnimation();
+    </script>
+</body>
+</html>
