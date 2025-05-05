@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counting and Rebuilding Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            transition: all 0.5s ease;
+        }
+        .count-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .count-box {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .explanation {
+            margin: 20px 0;
+            font-size: 18px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            border-left: 4px solid #FF4800;
+            text-align: left;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .highlight {
+            background-color: #FD9F78;
+            transform: scale(1.1);
+        }
+        .step-indicator {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Counting and Rebuilding Visualization</h1>
+        
+        <div class="step-indicator">Step <span id="current-step">1</span> of <span id="total-steps">8</span></div>
+        
+        <div class="array-container" id="array-display">
+            <!-- Array elements will be inserted here -->
+        </div>
+        
+        <div class="count-container" id="count-display">
+            <div class="count-box">count_0: <span id="count0">0</span></div>
+            <div class="count-box">count_1: <span id="count1">0</span></div>
+            <div class="count-box">count_2: <span id="count2">0</span></div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <!-- Explanation text will be inserted here -->
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-btn" disabled>Previous</button>
+            <button class="nav-button" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const initialArray = [2, 0, 1, 1, 0, 2, 0];
+        
+        // Steps for the visualization
+        const steps = [
+            {
+                title: "Initial Array",
+                array: [2, 0, 1, 1, 0, 2, 0],
+                count0: 0,
+                count1: 0,
+                count2: 0,
+                highlight: [],
+                explanation: "We start with the array [2, 0, 1, 1, 0, 2, 0]. Our goal is to count each element and then rebuild the array in sorted order."
+            },
+            {
+                title: "Counting Elements",
+                array: [2, 0, 1, 1, 0, 2, 0],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [0, 1, 2, 3, 4, 5, 6],
+                explanation: "We count the occurrences of each value in the array. There are 3 zeros, 2 ones, and 2 twos."
+            },
+            {
+                title: "Start Rebuilding",
+                array: [2, 0, 1, 1, 0, 2, 0],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [],
+                explanation: "Now we'll rebuild the array by placing the elements in order: first all 0s, then all 1s, then all 2s."
+            },
+            {
+                title: "Placing Zeros",
+                array: [0, 0, 1, 1, 0, 2, 0],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [0],
+                explanation: "We place the first 0 at position 0."
+            },
+            {
+                title: "Placing Zeros",
+                array: [0, 0, 1, 1, 0, 2, 2],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [1],
+                explanation: "We place the second 0 at position 1."
+            },
+            {
+                title: "Placing Zeros",
+                array: [0, 0, 0, 1, 1, 2, 2],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [2],
+                explanation: "We place the third 0 at position 2, completing all zeros."
+            },
+            {
+                title: "Placing Ones",
+                array: [0, 0, 0, 1, 1, 2, 2],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [3, 4],
+                explanation: "We place two 1s at positions 3 and 4."
+            },
+            {
+                title: "Placing Twos",
+                array: [0, 0, 0, 1, 1, 2, 2],
+                count0: 3,
+                count1: 2,
+                count2: 2,
+                highlight: [5, 6],
+                explanation: "Finally, we place two 2s at positions 5 and 6. The array is now sorted!"
+            }
+        ];
+        
+        // Initialize variables
+        let currentStep = 0;
+        
+        // DOM elements
+        const arrayDisplay = document.getElementById('array-display');
+        const count0Display = document.getElementById('count0');
+        const count1Display = document.getElementById('count1');
+        const count2Display = document.getElementById('count2');
+        const explanationDisplay = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentStepDisplay = document.getElementById('current-step');
+        const totalStepsDisplay = document.getElementById('total-steps');
+        
+        // Update total steps
+        totalStepsDisplay.textContent = steps.length;
+        
+        // Function to render the current step
+        function renderStep() {
+            const step = steps[currentStep];
+            
+            // Update step indicator
+            currentStepDisplay.textContent = currentStep + 1;
+            
+            // Update array display
+            arrayDisplay.innerHTML = '';
+            step.array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = value;
+                
+                if (step.highlight.includes(index)) {
+                    element.classList.add('highlight');
+                }
+                
+                arrayDisplay.appendChild(element);
+            });
+            
+            // Update count display
+            count0Display.textContent = step.count0;
+            count1Display.textContent = step.count1;
+            count2Display.textContent = step.count2;
+            
+            // Update explanation
+            explanationDisplay.textContent = step.explanation;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep();
+            }
+        });
+        
+        // Initialize the visualization
+        renderStep();
+    </script>
+</body>
+</html>
