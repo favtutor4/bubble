@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force Subarray Iteration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .array-element {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -30px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .highlighted {
+            background-color: #FD9F78;
+        }
+        
+        .target-sum {
+            background-color: #FF4800;
+            color: white;
+        }
+        
+        .info-container {
+            text-align: center;
+            margin: 20px 0;
+            min-height: 100px;
+        }
+        
+        .sum-display {
+            font-size: 20px;
+            margin: 15px 0;
+        }
+        
+        .target-info {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force Subarray Iteration</h1>
+        
+        <div class="target-info">Target Sum: 33</div>
+        
+        <div class="array-container" id="array-container">
+            <!-- Will be filled by JavaScript -->
+        </div>
+        
+        <div class="info-container">
+            <div class="sum-display" id="sum-display"></div>
+            <div id="step-explanation"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn">Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div class="explanation">
+            <p>This animation demonstrates the brute force approach to find a subarray with a given sum.</p>
+            <p>We try all possible subarrays by using two pointers (start and end) and calculate the sum for each.</p>
+        </div>
+    </div>
+
+    <script>
+        // Array data
+        const array = [1, 4, 20, 3, 10, 5];
+        const targetSum = 33;
+        
+        // Generate all steps for the animation
+        function generateSteps() {
+            const steps = [];
+            
+            for (let start = 0; start < array.length; start++) {
+                let currentSum = 0;
+                
+                for (let end = start; end < array.length; end++) {
+                    currentSum += array[end];
+                    
+                    // Create a step
+                    const isTarget = currentSum === targetSum;
+                    const highlighted = [];
+                    for (let i = start; i <= end; i++) {
+                        highlighted.push(i);
+                    }
+                    
+                    steps.push({
+                        start: start,
+                        end: end,
+                        sum: currentSum,
+                        highlighted: highlighted,
+                        isTarget: isTarget,
+                        explanation: `Checking subarray [${start}...${end}]: Sum = ${currentSum}`
+                            + (isTarget ? ` = ${targetSum} (Target Found!)` : ` ≠ ${targetSum}`)
+                    });
+                    
+                    // If we found the target, we could stop here, but for demonstration
+                    // we continue to show all possible subarrays
+                }
+            }
+            
+            return steps;
+        }
+        
+        // Initialize the animation
+        let currentStepIndex = 0;
+        const steps = generateSteps();
+        
+        function renderArray() {
+            const arrayContainer = document.getElementById('array-container');
+            arrayContainer.innerHTML = '';
+            
+            const currentStep = steps[currentStepIndex];
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                
+                if (currentStep.highlighted.includes(i)) {
+                    if (currentStep.isTarget) {
+                        element.classList.add('target-sum');
+                    } else {
+                        element.classList.add('highlighted');
+                    }
+                }
+                
+                element.textContent = array[i];
+                
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'array-index';
+                indexSpan.textContent = i;
+                element.appendChild(indexSpan);
+                
+                if (i === currentStep.start) {
+                    const startPointer = document.createElement('div');
+                    startPointer.className = 'pointer';
+                    startPointer.textContent = 'start';
+                    element.appendChild(startPointer);
+                }
+                
+                if (i === currentStep.end) {
+                    const endPointer = document.createElement('div');
+                    endPointer.className = 'pointer';
+                    endPointer.textContent = 'end';
+                    element.appendChild(endPointer);
+                }
+                
+                arrayContainer.appendChild(element);
+            }
+            
+            // Update sum display and explanation
+            document.getElementById('sum-display').textContent = `Current Sum: ${currentStep.sum}`;
+            document.getElementById('step-explanation').textContent = currentStep.explanation;
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStepIndex === 0;
+            document.getElementById('next-btn').disabled = currentStepIndex === steps.length - 1;
+        }
+        
+        // Event listeners for buttons
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderArray();
+            }
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                renderArray();
+            }
+        });
+        
+        // Initial render
+        renderArray();
+    </script>
+</body>
+</html>
