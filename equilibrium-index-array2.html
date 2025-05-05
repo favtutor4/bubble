@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equilibrium Index Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .instruction {
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .animation-container {
+            position: relative;
+            height: 400px;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            font-weight: bold;
+            border-radius: 4px;
+            position: relative;
+        }
+        .array-element.current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #FF4800;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        tr.highlight {
+            background-color: #FD9F78;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #FF4800;
+        }
+        .sum-indicators {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .sum-box {
+            padding: 10px 20px;
+            border-radius: 4px;
+            background-color: #f2f2f2;
+            border: 2px solid #FF4800;
+            min-width: 150px;
+            text-align: center;
+        }
+        .sum-title {
+            font-weight: bold;
+            color: #FF4800;
+            margin-bottom: 5px;
+        }
+        .equilibrium-found {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #FF4800;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Finding Equilibrium Index in an Array</h1>
+        
+        <div class="instruction">
+            <p>The equilibrium index of an array is an index where the sum of elements to the left equals the sum of elements to the right. We'll visualize the optimized algorithm for finding it.</p>
+        </div>
+        
+        <div class="animation-container">
+            <div class="array-container" id="array-display">
+                <!-- Array elements will be generated here -->
+            </div>
+            
+            <div class="sum-indicators">
+                <div class="sum-box">
+                    <div class="sum-title">Left Sum</div>
+                    <div id="left-sum">0</div>
+                </div>
+                <div class="sum-box">
+                    <div class="sum-title">Current Element</div>
+                    <div id="current-element">-</div>
+                </div>
+                <div class="sum-box">
+                    <div class="sum-title">Right Sum</div>
+                    <div id="right-sum">-</div>
+                </div>
+            </div>
+            
+            <div id="equilibrium-message" class="equilibrium-found"></div>
+            
+            <div class="table-container">
+                <table id="calculation-table">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Current Element</th>
+                            <th>Total Sum</th>
+                            <th>Left Sum</th>
+                            <th>Right Sum</th>
+                            <th>Is Equilibrium</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table rows will be generated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="explanation" id="step-explanation">
+            <!-- Step explanation will be inserted here -->
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="btn" disabled>Previous</button>
+            <button id="next-btn" class="btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [4, 2, 2, 4, 5, 3];
+        let currentStep = -1;
+        const totalSteps = array.length + 1; // +1 for initialization
+        
+        // Pre-calculated steps for the example
+        const steps = [
+            {
+                index: "Init",
+                element: "-",
+                totalSum: 20,
+                leftSum: 0,
+                rightSum: 20,
+                isEquilibrium: "No",
+                explanation: "In the first step, we calculate the total sum of all elements (4+2+2+4+5+3 = 20). The left sum starts at 0, and the right sum equals the total sum = 20."
+            },
+            {
+                index: 0,
+                element: 4,
+                totalSum: 20,
+                leftSum: 0,
+                rightSum: 16,
+                isEquilibrium: "No",
+                explanation: "For index 0, the current element is 4. Left sum = 0 (no elements to the left). Right sum = Total sum - Current element = 20 - 4 = 16. Since leftSum (0) ≠ rightSum (16), this is not an equilibrium index."
+            },
+            {
+                index: 1,
+                element: 2,
+                totalSum: 20,
+                leftSum: 4,
+                rightSum: 14,
+                isEquilibrium: "No",
+                explanation: "For index 1, the current element is 2. Left sum = 4 (from the previous elements). Right sum = 20 - 4 - 2 = 14. Since leftSum (4) ≠ rightSum (14), this is not an equilibrium index."
+            },
+            {
+                index: 2,
+                element: 2,
+                totalSum: 20,
+                leftSum: 6,
+                rightSum: 12,
+                isEquilibrium: "No",
+                explanation: "For index 2, the current element is 2. Left sum = 6 (sum of elements at indices 0 and 1). Right sum = 20 - 6 - 2 = 12. Since leftSum (6) ≠ rightSum (12), this is not an equilibrium index."
+            },
+            {
+                index: 3,
+                element: 4,
+                totalSum: 20,
+                leftSum: 8,
+                rightSum: 8,
+                isEquilibrium: "Yes",
+                explanation: "For index 3, the current element is 4. Left sum = 8 (sum of elements at indices 0, 1, and 2). Right sum = 20 - 8 - 4 = 8. Since leftSum (8) = rightSum (8), index 3 is an equilibrium index!"
+            },
+            {
+                index: 4,
+                element: 5,
+                totalSum: 20,
+                leftSum: 12,
+                rightSum: 3,
+                isEquilibrium: "No",
+                explanation: "For index 4, the current element is 5. Left sum = 12 (sum of elements at indices 0 through 3). Right sum = 20 - 12 - 5 = 3. Since leftSum (12) ≠ rightSum (3), this is not an equilibrium index."
+            },
+            {
+                index: 5,
+                element: 3,
+                totalSum: 20,
+                leftSum: 17,
+                rightSum: 0,
+                isEquilibrium: "No",
+                explanation: "For index 5, the current element is 3. Left sum = 17 (sum of elements at indices 0 through 4). Right sum = 0 (no elements to the right). Since leftSum (17) ≠ rightSum (0), this is not an equilibrium index."
+            }
+        ];
+        
+        // Initialize the array display
+        function initializeArrayDisplay() {
+            const arrayDisplay = document.getElementById('array-display');
+            arrayDisplay.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${i}`;
+                element.textContent = array[i];
+                
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.textContent = i;
+                
+                element.appendChild(index);
+                arrayDisplay.appendChild(element);
+            }
+        }
+        
+        // Initialize the table
+        function initializeTable() {
+            const tableBody = document.querySelector('#calculation-table tbody');
+            tableBody.innerHTML = '';
+        }
+        
+        // Update the display for the current step
+        function updateDisplay() {
+            // Reset all elements
+            document.querySelectorAll('.array-element').forEach(el => {
+                el.classList.remove('current');
+            });
+            
+            document.querySelectorAll('tr.highlight').forEach(row => {
+                row.classList.remove('highlight');
+            });
+            
+            // Update sum displays
+            document.getElementById('left-sum').textContent = steps[currentStep].leftSum;
+            document.getElementById('current-element').textContent = steps[currentStep].element;
+            document.getElementById('right-sum').textContent = steps[currentStep].rightSum;
+            
+            // Add the current step to the table
+            const tableBody = document.querySelector('#calculation-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('highlight');
+            
+            newRow.innerHTML = `
+                <td>${steps[currentStep].index}</td>
+                <td>${steps[currentStep].element}</td>
+                <td>${steps[currentStep].totalSum}</td>
+                <td>${steps[currentStep].leftSum}</td>
+                <td>${steps[currentStep].rightSum}</td>
+                <td>${steps[currentStep].isEquilibrium}</td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Highlight current element in the array
+            if (currentStep > 0) {
+                const index = steps[currentStep].index;
+                if (index !== "Init") {
+                    document.getElementById(`element-${index}`).classList.add('current');
+                }
+            }
+            
+            // Update explanation
+            document.getElementById('step-explanation').textContent = steps[currentStep].explanation;
+            
+            // Show equilibrium message if found
+            const equilibriumMessage = document.getElementById('equilibrium-message');
+            if (steps[currentStep].isEquilibrium === "Yes") {
+                equilibriumMessage.textContent = `Equilibrium found at index ${steps[currentStep].index}!`;
+            } else {
+                equilibriumMessage.textContent = '';
+            }
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep <= 0;
+            document.getElementById('next-btn').disabled = currentStep >= steps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+        
+        // Initialize the visualization
+        function initialize() {
+            initializeArrayDisplay();
+            initializeTable();
+            currentStep = 0;
+            updateDisplay();
+        }
+        
+        // Start the visualization when the page loads
+        window.onload = initialize;
+    </script>
+</body>
+</html>
