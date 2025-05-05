@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dutch National Flag Algorithm Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            position: relative;
+            min-height: 150px;
+        }
+        .array-element {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 5px;
+            color: #FFFFFF;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .element-0 {
+            background-color: #FF4800;
+        }
+        .element-1 {
+            background-color: #FD9F78;
+        }
+        .element-2 {
+            background-color: #000000;
+        }
+        .pointer {
+            position: absolute;
+            font-size: 14px;
+            color: #000000;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .pointer::before {
+            content: "▲";
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        .description {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            color: #000000;
+            width: 100%;
+            min-height: 100px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .regions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 30px;
+            padding: 10px;
+            border: 1px solid #FD9F78;
+            border-radius: 5px;
+        }
+        .region {
+            display: flex;
+            align-items: center;
+        }
+        .region-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        .step-counter {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dutch National Flag Algorithm Visualization</h1>
+        
+        <div class="regions">
+            <div class="region">
+                <div class="region-color element-0"></div>
+                <span>0s (Red)</span>
+            </div>
+            <div class="region">
+                <div class="region-color element-1"></div>
+                <span>1s (Light Orange)</span>
+            </div>
+            <div class="region">
+                <div class="region-color element-2"></div>
+                <span>2s (Black)</span>
+            </div>
+        </div>
+        
+        <div class="step-counter" id="stepCounter">Step 1 of 9</div>
+        
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="description" id="description"></div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const initialArray = [2, 0, 1, 1, 0, 2, 0];
+        
+        // Steps of the algorithm
+        const steps = [
+            {
+                array: [2, 0, 1, 1, 0, 2, 0],
+                low: 0,
+                mid: 0,
+                high: 6,
+                description: "Initial array with three pointers: 'low', 'mid', and 'high'. The goal is to sort the array so that all 0s come first, then all 1s, and then all 2s."
+            },
+            {
+                array: [2, 0, 1, 1, 0, 2, 0],
+                low: 0,
+                mid: 0,
+                high: 6,
+                description: "We have arr[mid] = 2, which should be in the high section. We will swap arr[mid] with arr[high] and decrement high."
+            },
+            {
+                array: [0, 0, 1, 1, 0, 2, 2],
+                low: 0,
+                mid: 0,
+                high: 5,
+                description: "After swap, we have arr[mid] = 0, which belongs to the low section. We will swap arr[mid] with arr[low], and increment both low and mid."
+            },
+            {
+                array: [0, 0, 1, 1, 0, 2, 2],
+                low: 1,
+                mid: 1,
+                high: 5,
+                description: "Now arr[mid] = 0 again. We'll swap with arr[low] and increment both low and mid."
+            },
+            {
+                array: [0, 0, 1, 1, 0, 2, 2],
+                low: 2,
+                mid: 2,
+                high: 5,
+                description: "Now arr[mid] = 1, which is already in the correct middle section. We just increment mid."
+            },
+            {
+                array: [0, 0, 1, 1, 0, 2, 2],
+                low: 2,
+                mid: 3,
+                high: 5,
+                description: "arr[mid] = 1 again, which is already in the correct position. Increment mid."
+            },
+            {
+                array: [0, 0, 1, 1, 0, 2, 2],
+                low: 2,
+                mid: 4,
+                high: 5,
+                description: "Now arr[mid] = 0, which should be in the low section. We'll swap arr[mid] with arr[low] and increment both."
+            },
+            {
+                array: [0, 0, 0, 1, 1, 2, 2],
+                low: 3,
+                mid: 5,
+                high: 5,
+                description: "Now arr[mid] = 2, which belongs to the high section. We'll swap with arr[high] and decrement high."
+            },
+            {
+                array: [0, 0, 0, 1, 1, 2, 2],
+                low: 3,
+                mid: 5,
+                high: 4,
+                description: "Since mid > high, the algorithm is complete! The array is now partitioned with all 0s first (red), then all 1s (light orange), and then all 2s (black)."
+            }
+        ];
+        
+        let currentStep = 0;
+        const arrayContainer = document.getElementById('arrayContainer');
+        const description = document.getElementById('description');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounter = document.getElementById('stepCounter');
+        
+        // Render the current step
+        function renderStep() {
+            // Update step counter
+            stepCounter.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            
+            // Clear the array container
+            arrayContainer.innerHTML = '';
+            
+            const step = steps[currentStep];
+            
+            // Render the array elements
+            step.array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = `array-element element-${value}`;
+                element.textContent = value;
+                
+                // Calculate position
+                element.style.left = `${index * 70}px`;
+                
+                arrayContainer.appendChild(element);
+            });
+            
+            // Add pointers
+            const pointerWidth = 70;
+            
+            const lowPointer = document.createElement('div');
+            lowPointer.className = 'pointer';
+            lowPointer.textContent = 'low';
+            lowPointer.style.left = `${step.low * pointerWidth + 35}px`;
+            lowPointer.style.bottom = '-40px';
+            arrayContainer.appendChild(lowPointer);
+            
+            const midPointer = document.createElement('div');
+            midPointer.className = 'pointer';
+            midPointer.textContent = 'mid';
+            midPointer.style.left = `${step.mid * pointerWidth + 35}px`;
+            midPointer.style.bottom = '-80px';
+            arrayContainer.appendChild(midPointer);
+            
+            const highPointer = document.createElement('div');
+            highPointer.className = 'pointer';
+            highPointer.textContent = 'high';
+            highPointer.style.left = `${step.high * pointerWidth + 35}px`;
+            highPointer.style.bottom = '-120px';
+            arrayContainer.appendChild(highPointer);
+            
+            // Update description
+            description.textContent = step.description;
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep();
+            }
+        });
+        
+        // Initial render
+        renderStep();
+    </script>
+</body>
+</html>
