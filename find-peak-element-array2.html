@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search for Peak Elements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            height: 250px;
+            align-items: flex-end;
+            position: relative;
+        }
+        
+        .array-element {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 5px;
+            transition: all 0.5s ease;
+        }
+        
+        .bar {
+            width: 50px;
+            background-color: #FD9F78;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            color: #000000;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        
+        .bar-value {
+            margin-bottom: 5px;
+            color: #000000;
+        }
+        
+        .bar.current {
+            background-color: #FF4800;
+        }
+        
+        .bar.start, .bar.end {
+            background-color: #FD9F78;
+            border: 2px solid #FF4800;
+        }
+        
+        .bar.peak {
+            background-color: #FF4800;
+            transform: scale(1.05);
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -30px;
+            transform: translateX(-50%);
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .explanation {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #FF4800;
+            text-align: left;
+            min-height: 100px;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .index-labels {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .index-label {
+            width: 50px;
+            margin: 0 5px;
+            font-size: 14px;
+            color: #000000;
+        }
+        
+        .arrow {
+            position: absolute;
+            font-size: 24px;
+            color: #FF4800;
+            top: -20px;
+        }
+        
+        .step-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Search for Peak Elements</h1>
+        <p>A peak element is an element that is greater than its neighbors. We use binary search to efficiently find such elements.</p>
+        
+        <div class="step-counter">Step <span id="current-step">1</span> of <span id="total-steps">6</span></div>
+        
+        <div class="array-container" id="array-container"></div>
+        
+        <div class="index-labels" id="index-labels"></div>
+        
+        <div class="explanation" id="explanation"></div>
+        
+        <div class="button-container">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [10, 20, 15, a2, 23, 90, 67];
+        const steps = [
+            {
+                start: 0,
+                end: 6,
+                mid: 3,
+                current: 3,
+                explanation: "Initialize binary search with start = 0, end = 6. Calculate mid = (0 + 6) / 2 = 3. Check if a[3] = 2 is a peak element by comparing with its neighbors."
+            },
+            {
+                start: 4,
+                end: 6,
+                mid: 3,
+                current: 3,
+                explanation: "Since a[3] = 2 < a[4] = 23, the peak must be on the right side. Set start = mid + 1 = 4, end = 6."
+            },
+            {
+                start: 4,
+                end: 6,
+                mid: 5,
+                current: 5,
+                explanation: "Calculate new mid = (4 + 6) / 2 = 5. Check if a[5] = 90 is a peak element by comparing with its neighbors."
+            },
+            {
+                start: 4,
+                end: 6,
+                mid: 5,
+                current: 5,
+                peak: 5,
+                explanation: "a[5] = 90 > a[4] = 23 and a[5] = 90 > a[6] = 67. Therefore, 90 is a peak element! We found a peak at index 5."
+            },
+            {
+                start: 4,
+                end: 6,
+                mid: 5,
+                current: 5,
+                peak: 5,
+                conclusion: true,
+                explanation: "Binary search efficiently found the peak element 90 at index 5 by narrowing down the search space, taking only log(n) steps instead of checking every element."
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        // Initialize the array display
+        function initializeArray() {
+            const arrayContainer = document.getElementById('array-container');
+            const indexLabels = document.getElementById('index-labels');
+            
+            arrayContainer.innerHTML = '';
+            indexLabels.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${array[i] * 2}px`;
+                bar.id = `bar-${i}`;
+                
+                const value = document.createElement('div');
+                value.className = 'bar-value';
+                value.textContent = array[i];
+                
+                element.appendChild(bar);
+                element.appendChild(value);
+                arrayContainer.appendChild(element);
+                
+                // Index labels
+                const indexLabel = document.createElement('div');
+                indexLabel.className = 'index-label';
+                indexLabel.textContent = i;
+                indexLabels.appendChild(indexLabel);
+            }
+        }
+        
+        // Update the visualization based on the current step
+        function updateVisualization() {
+            // Reset all bars
+            for (let i = 0; i < array.length; i++) {
+                const bar = document.getElementById(`bar-${i}`);
+                bar.className = 'bar';
+                
+                // Remove any pointers
+                const pointers = bar.querySelectorAll('.pointer');
+                pointers.forEach(pointer => pointer.remove());
+            }
+            
+            const step = steps[currentStep];
+            
+            // Update the bars based on the current step
+            if (step.start !== undefined) {
+                document.getElementById(`bar-${step.start}`).classList.add('start');
+                
+                // Add start pointer
+                const startPointer = document.createElement('div');
+                startPointer.className = 'pointer';
+                startPointer.textContent = 'Start';
+                document.getElementById(`bar-${step.start}`).appendChild(startPointer);
+            }
+            
+            if (step.end !== undefined) {
+                document.getElementById(`bar-${step.end}`).classList.add('end');
+                
+                // Add end pointer
+                const endPointer = document.createElement('div');
+                endPointer.className = 'pointer';
+                endPointer.textContent = 'End';
+                document.getElementById(`bar-${step.end}`).appendChild(endPointer);
+            }
+            
+            if (step.mid !== undefined) {
+                // Add mid pointer
+                const midPointer = document.createElement('div');
+                midPointer.className = 'pointer';
+                midPointer.textContent = 'Mid';
+                document.getElementById(`bar-${step.mid}`).appendChild(midPointer);
+            }
+            
+            if (step.current !== undefined) {
+                document.getElementById(`bar-${step.current}`).classList.add('current');
+            }
+            
+            if (step.peak !== undefined) {
+                document.getElementById(`bar-${step.peak}`).classList.add('peak');
+            }
+            
+            // Update explanation
+            document.getElementById('explanation').textContent = step.explanation;
+            
+            // Update current step counter
+            document.getElementById('current-step').textContent = currentStep + 1;
+            
+            // Enable/disable buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+        
+        // Initialize the visualization
+        function init() {
+            // Fix the typo in the array
+            array[3] = 2;  // Correcting "a2" to 2
+            
+            initializeArray();
+            updateVisualization();
+            
+            // Set total steps
+            document.getElementById('total-steps').textContent = steps.length;
+            
+            // Add event listeners for buttons
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+        }
+        
+        // Start the visualization when the page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
