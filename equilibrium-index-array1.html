@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equilibrium Index Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            width: 800px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 40px;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        
+        .array-element {
+            width: 60px;
+            height: 60px;
+            background-color: #FD9F78;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.2);
+            transition: all 0.5s ease;
+        }
+        
+        .index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+        }
+        
+        .sum-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 80px;
+        }
+        
+        .sum {
+            width: 300px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #FD9F78;
+            color: #000000;
+            font-weight: bold;
+        }
+        
+        .sum-formula {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .sum-value {
+            font-size: 40px;
+            color: #FF4800;
+        }
+        
+        .arrows-container {
+            position: absolute;
+            top: 80px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .arrow-left, .arrow-right {
+            width: 120px;
+            height: 3px;
+            background-color: #FF4800;
+            position: relative;
+        }
+        
+        .arrow-left::after, .arrow-right::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            width: 15px;
+            height: 15px;
+            border-top: 3px solid #FF4800;
+            border-left: 3px solid #FF4800;
+        }
+        
+        .arrow-left::after {
+            left: 0;
+            transform: rotate(-45deg);
+        }
+        
+        .arrow-right::after {
+            right: 0;
+            transform: rotate(135deg);
+        }
+        
+        .explanation {
+            margin-top: 40px;
+            background-color: #FD9F78;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .buttons {
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 12px 25px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .equation-container {
+            margin-top: 30px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Equilibrium Index Visualization</h1>
+        
+        <div id="slide-container">
+            <!-- Slides will be inserted here via JavaScript -->
+        </div>
+        
+        <div class="buttons">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const slides = [
+            {
+                title: "What is Equilibrium Index?",
+                content: `
+                    <div class="explanation">
+                        <p>An equilibrium index of an array is an index such that the sum of elements at lower indexes is equal to the sum of elements at higher indexes.</p>
+                        <p>Let's visualize this with an example array: [4, 2, 2, 4, 5, 3]</p>
+                    </div>
+                    <div class="array-container">
+                        <div class="array-element">4<div class="index">0</div></div>
+                        <div class="array-element">2<div class="index">1</div></div>
+                        <div class="array-element">2<div class="index">2</div></div>
+                        <div class="array-element">4<div class="index">3</div></div>
+                        <div class="array-element">5<div class="index">4</div></div>
+                        <div class="array-element">3<div class="index">5</div></div>
+                    </div>
+                `
+            },
+            {
+                title: "Checking Index 0",
+                content: `
+                    <div class="explanation">
+                        <p>Let's check if index 0 is an equilibrium index.</p>
+                    </div>
+                    <div class="array-container">
+                        <div class="array-element highlighted">4<div class="index">0</div></div>
+                        <div class="array-element">2<div class="index">1</div></div>
+                        <div class="array-element">2<div class="index">2</div></div>
+                        <div class="array-element">4<div class="index">3</div></div>
+                        <div class="array-element">5<div class="index">4</div></div>
+                        <div class="array-element">3<div class="index">5</div></div>
+                    </div>
+                    <div class="sum-container">
+                        <div class="sum">
+                            <div class="sum-formula">Left Sum = 0</div>
+                            <div class="sum-value">0</div>
+                        </div>
+                        <div class="sum">
+                            <div class="sum-formula">Right Sum = 2 + 2 + 4 + 5 + 3</div>
+                            <div class="sum-value">16</div>
+                        </div>
+                    </div>
+                    <div class="equation-container">
+                        <p>0 ≠ 16, so index 0 is not an equilibrium index.</p>
+                    </div>
+                `
+            },
+            {
+                title: "Checking Index 1",
+                content: `
+                    <div class="explanation">
+                        <p>Let's check if index 1 is an equilibrium index.</p>
+                    </div>
+                    <div class="array-container">
+                        <div class="array-element">4<div class="index">0</div></div>
+                        <div class="array-element highlighted">2<div class="index">1</div></div>
+                        <div class="array-element">2<div class="index">2</div></div>
+                        <div class="array-element">4<div class="index">3</div></div>
+                        <div class="array-element">5<div class="index">4</div></div>
+                        <div class="array-element">3<div class="index">5</div></div>
+                    </div>
+                    <div class="sum-container">
+                        <div class="sum">
+                            <div class="sum-formula">Left Sum = 4</div>
+                            <div class="sum-value">4</div>
+                        </div>
+                        <div class="sum">
+                            <div class="sum-formula">Right Sum = 2 + 4 + 5 + 3</div>
+                            <div class="sum-value">14</div>
+                        </div>
+                    </div>
+                    <div class="equation-container">
+                        <p>4 ≠ 14, so index 1 is not an equilibrium index.</p>
+                    </div>
+                `
+            },
+            {
+                title: "Checking Index 2",
+                content: `
+                    <div class="explanation">
+                        <p>Let's check if index 2 is an equilibrium index.</p>
+                    </div>
+                    <div class="array-container">
+                        <div class="array-element">4<div class="index">0</div></div>
+                        <div class="array-element">2<div class="index">1</div></div>
+                        <div class="array-element highlighted">2<div class="index">2</div></div>
+                        <div class="array-element">4<div class="index">3</div></div>
+                        <div class="array-element">5<div class="index">4</div></div>
+                        <div class="array-element">3<div class="index">5</div></div>
+                    </div>
+                    <div class="sum-container">
+                        <div class="sum">
+                            <div class="sum-formula">Left Sum = 4 + 2</div>
+                            <div class="sum-value">6</div>
+                        </div>
+                        <div class="sum">
+                            <div class="sum-formula">Right Sum = 4 + 5 + 3</div>
+                            <div class="sum-value">12</div>
+                        </div>
+                    </div>
+                    <div class="equation-container">
+                        <p>6 ≠ 12, so index 2 is not an equilibrium index.</p>
+                    </div>
+                `
+            },
+            {
+                title: "Checking Index 3",
+                content: `
+                    <div class="explanation">
+                        <p>Let's check if index 3 is an equilibrium index.</p>
+                    </div>
+                    <div class="array-container">
+                        <div class="array-element">4<div class="index">0</div></div>
+                        <div class="array-element">2<div class="index">1</div></div>
+                        <div class="array-element">2<div class="index">2</div></div>
+                        <div class="array-element highlighted">4<div class="index">3</div></div>
+                        <div class="array-element">5<div class="index">4</div></div>
+                        <div class="array-element">3<div class="index">5</div></div>
+                        
+                        <div class="arrows-container">
+                            <div class="arrow-left" style="width: 115px; left: -60px;"></div>
+                            <div class="arrow-right" style="width: 115px; right: -60px;"></div>
+                        </div>
+                    </div>
+                    <div class="sum-container">
+                        <div class="sum">
+                            <div class="sum-formula">Left Sum = 4 + 2 + 2</div>
+                            <div class="sum-value">8</div>
+                        </div>
+                        <div class="sum">
+                            <div class="sum-formula">Right Sum = 5 + 3</div>
+                            <div class="sum-value">8</div>
+                        </div>
+                    </div>
+                    <div class="equation-container">
+                        <p>8 = 8, so index 3 is an equilibrium index!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Found: Equilibrium Index!",
+                content: `
+                    <div class="explanation">
+                        <p>We found that index 3 is an equilibrium index because the sum of elements on its left equals the sum of elements on its right.</p>
+                    </div>
+                    <div class="array-container">
+                        <div class="array-element">4<div class="index">0</div></div>
+                        <div class="array-element">2<div class="index">1</div></div>
+                        <div class="array-element">2<div class="index">2</div></div>
+                        <div class="array-element highlighted">4<div class="index">3</div></div>
+                        <div class="array-element">5<div class="index">4</div></div>
+                        <div class="array-element">3<div class="index">5</div></div>
+                        
+                        <div class="arrows-container">
+                            <div class="arrow-left" style="width: 115px; left: -60px;"></div>
+                            <div class="arrow-right" style="width: 115px; right: -60px;"></div>
+                        </div>
+                    </div>
+                    <div class="sum-container">
+                        <div class="sum">
+                            <div class="sum-formula">Left Sum = 4 + 2 + 2 = 8</div>
+                            <div class="sum-value">8</div>
+                        </div>
+                        <div class="sum">
+                            <div class="sum-formula">Right Sum = 5 + 3 = 8</div>
+                            <div class="sum-value">8</div>
+                        </div>
+                    </div>
+                    <div class="equation-container">
+                        <p>The equilibrium index of this array is 3!</p>
+                    </div>
+                `
+            }
+        ];
+
+        let currentSlide = 0;
+        const slideContainer = document.getElementById('slide-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        function renderSlide() {
+            slideContainer.innerHTML = slides[currentSlide].content;
+            document.querySelector('h1').textContent = slides[currentSlide].title;
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderSlide();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                renderSlide();
+            }
+        });
+
+        // Initialize the first slide
+        renderSlide();
+    </script>
+</body>
+</html>
