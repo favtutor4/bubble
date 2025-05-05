@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Inversion Counting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            background-color: #FD9F78;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .canvas-container {
+            position: relative;
+            margin: 20px auto;
+            width: 100%;
+            height: 500px;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: white;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            text-align: left;
+            border: 1px solid #FF4800;
+        }
+        .inversion-counter {
+            font-weight: bold;
+            color: #FF4800;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Merge Sort Inversion Counting</h1>
+        
+        <div class="info-box">
+            <p><strong>What are Inversions?</strong> An inversion occurs when elements in an array are out of order. Formally, if i &lt; j and arr[i] &gt; arr[j], then the pair (i, j) is an inversion.</p>
+            <p><strong>Merge Sort</strong> can efficiently count inversions while sorting an array. This animation demonstrates how inversions are counted during the merge step.</p>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="animationCanvas" width="1000" height="500"></canvas>
+        </div>
+        
+        <div class="inversion-counter">
+            Total Inversions: <span id="inversionCount">0</span>
+        </div>
+        
+        <div class="step-info" id="stepInfo">
+            Let's count inversions while merging [2, 4] and [1, 3, 5].
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous Step</button>
+            <button id="nextBtn">Next Step</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('animationCanvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepInfoText = document.getElementById('stepInfo');
+        const inversionCountDisplay = document.getElementById('inversionCount');
+        
+        // Arrays to merge
+        const leftArray = [2, 4];
+        const rightArray = [1, 3, 5];
+        const mergedArray = [];
+        
+        let currentStep = 0;
+        let totalSteps = 8; // Total number of animation steps
+        let inversionCount = 0;
+        
+        // Animation state
+        let leftPointer = 0;
+        let rightPointer = 0;
+        let mergePointer = 0;
+        
+        const steps = [
+            { 
+                desc: "We need to merge [2, 4] and [1, 3, 5] while counting inversions. An inversion occurs when an element from the right array is picked before an element from the left array.",
+                leftIdx: -1,
+                rightIdx: -1,
+                mergeIdx: -1,
+                inversions: 0,
+                action: 'init'
+            },
+            { 
+                desc: "Compare first elements: 2 vs 1. Since 1 < 2, pick 1 from the right array. This creates inversions with ALL remaining elements in the left array. Left array has 2 elements, so we add 2 inversions.",
+                leftIdx: 0,
+                rightIdx: 0,
+                mergeIdx: 0,
+                inversions: 2,
+                action: 'compare'
+            },
+            { 
+                desc: "Add 1 to the merged array. Right pointer moves to 3.",
+                leftIdx: 0,
+                rightIdx: 1,
+                mergeIdx: 0,
+                action: 'move_right'
+            },
+            { 
+                desc: "Compare next elements: 2 vs 3. Since 2 < 3, pick 2 from the left array. No new inversions.",
+                leftIdx: 0,
+                rightIdx: 1,
+                mergeIdx: 1,
+                action: 'compare'
+            },
+            { 
+                desc: "Add 2 to the merged array. Left pointer moves to 4.",
+                leftIdx: 1,
+                rightIdx: 1,
+                mergeIdx: 1,
+                action: 'move_left'
+            },
+            { 
+                desc: "Compare next elements: 4 vs 3. Since 3 < 4, pick 3 from the right array. This creates 1 inversion with the remaining element in the left array.",
+                leftIdx: 1,
+                rightIdx: 1,
+                mergeIdx: 2,
+                inversions: 1,
+                action: 'compare'
+            },
+            { 
+                desc: "Add 3 to the merged array. Right pointer moves to 5.",
+                leftIdx: 1,
+                rightIdx: 2,
+                mergeIdx: 2,
+                action: 'move_right'
+            },
+            { 
+                desc: "Compare next elements: 4 vs 5. Since 4 < 5, pick 4 from the left array. No new inversions.",
+                leftIdx: 1,
+                rightIdx: 2,
+                mergeIdx: 3,
+                action: 'compare'
+            },
+            { 
+                desc: "Add 4 to the merged array. Left array is now empty, so we add the remaining element 5 from the right array.",
+                leftIdx: 2,
+                rightIdx: 2,
+                mergeIdx: 4,
+                action: 'final'
+            }
+        ];
+        
+        function drawArrays() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const boxWidth = 60;
+            const boxHeight = 60;
+            const startY = 80;
+            const spacing = 30;
+            
+            // Title for the animation
+            ctx.font = "bold 24px Arial";
+            ctx.fillStyle = "#FF4800";
+            ctx.fillText("Merge Sort Inversion Counting", canvas.width/2 - 180, 40);
+            
+            // Draw left array
+            const leftStartX = 200;
+            ctx.font = "bold 20px Arial";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Left Array:", leftStartX - 100, startY + 30);
+            
+            for (let i = 0; i < leftArray.length; i++) {
+                const x = leftStartX + i * (boxWidth + spacing);
+                const y = startY;
+                
+                ctx.fillStyle = i === steps[currentStep].leftIdx ? "#FF4800" : "#FD9F78";
+                ctx.fillRect(x, y, boxWidth, boxHeight);
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "20px Arial";
+                ctx.fillText(leftArray[i], x + boxWidth/2 - 10, y + boxHeight/2 + 7);
+                
+                // Draw index
+                ctx.fillStyle = "#000000";
+                ctx.font = "14px Arial";
+                ctx.fillText(`index: ${i}`, x + boxWidth/2 - 25, y + boxHeight + 20);
+            }
+            
+            // Draw right array
+            const rightStartX = 500;
+            ctx.font = "bold 20px Arial";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Right Array:", rightStartX - 110, startY + 30);
+            
+            for (let i = 0; i < rightArray.length; i++) {
+                const x = rightStartX + i * (boxWidth + spacing);
+                const y = startY;
+                
+                ctx.fillStyle = i === steps[currentStep].rightIdx ? "#FF4800" : "#FD9F78";
+                ctx.fillRect(x, y, boxWidth, boxHeight);
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "20px Arial";
+                ctx.fillText(rightArray[i], x + boxWidth/2 - 10, y + boxHeight/2 + 7);
+                
+                // Draw index
+                ctx.fillStyle = "#000000";
+                ctx.font = "14px Arial";
+                ctx.fillText(`index: ${i}`, x + boxWidth/2 - 25, y + boxHeight + 20);
+            }
+            
+            // Draw merged array
+            const mergedStartX = 300;
+            const mergedY = startY + 150;
+            
+            ctx.font = "bold 20px Arial";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Merged Array:", mergedStartX - 120, mergedY + 30);
+            
+            // Calculate the merged array content based on current step
+            const currentMerged = [];
+            if (currentStep >= 3) currentMerged.push(1);
+            if (currentStep >= 5) currentMerged.push(2);
+            if (currentStep >= 7) currentMerged.push(3);
+            if (currentStep >= 8) currentMerged.push(4);
+            if (currentStep >= 9) currentMerged.push(5);
+            
+            for (let i = 0; i < currentMerged.length; i++) {
+                const x = mergedStartX + i * (boxWidth + spacing);
+                const y = mergedY;
+                
+                ctx.fillStyle = i === steps[currentStep].mergeIdx ? "#FF4800" : "#FD9F78";
+                ctx.fillRect(x, y, boxWidth, boxHeight);
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "20px Arial";
+                ctx.fillText(currentMerged[i], x + boxWidth/2 - 10, y + boxHeight/2 + 7);
+                
+                // Draw index
+                ctx.fillStyle = "#000000";
+                ctx.font = "14px Arial";
+                ctx.fillText(`index: ${i}`, x + boxWidth/2 - 25, y + boxHeight + 20);
+            }
+            
+            // Draw pointers
+            drawPointers();
+            
+            // Draw inversion explanation if applicable
+            if (steps[currentStep].inversions > 0) {
+                drawInversionExplanation(steps[currentStep].inversions);
+            }
+        }
+        
+        function drawPointers() {
+            const leftStartX = 200;
+            const rightStartX = 500;
+            const boxWidth = 60;
+            const spacing = 30;
+            const startY = 80;
+            
+            // Only draw pointers if they are in valid positions
+            if (steps[currentStep].leftIdx >= 0 && steps[currentStep].leftIdx < leftArray.length) {
+                // Left pointer
+                const leftPointerX = leftStartX + steps[currentStep].leftIdx * (boxWidth + spacing) + boxWidth/2;
+                drawPointer(leftPointerX, startY - 30, "Left Pointer");
+            }
+            
+            if (steps[currentStep].rightIdx >= 0 && steps[currentStep].rightIdx < rightArray.length) {
+                // Right pointer
+                const rightPointerX = rightStartX + steps[currentStep].rightIdx * (boxWidth + spacing) + boxWidth/2;
+                drawPointer(rightPointerX, startY - 30, "Right Pointer");
+            }
+        }
+        
+        function drawPointer(x, y, text) {
+            // Draw triangle pointer
+            ctx.fillStyle = "#FF4800";
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 10, y - 20);
+            ctx.lineTo(x + 10, y - 20);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw text
+            ctx.fillStyle = "#000000";
+            ctx.font = "14px Arial";
+            ctx.fillText(text, x - 40, y - 30);
+        }
+        
+        function drawInversionExplanation(count) {
+            const y = 350;
+            
+            ctx.fillStyle = "#FF4800";
+            ctx.font = "bold 18px Arial";
+            ctx.fillText(`Found ${count} new inversion${count > 1 ? 's' : ''}!`, canvas.width/2 - 100, y);
+            
+            if (steps[currentStep].action === 'compare') {
+                if (steps[currentStep].rightIdx === 0 && steps[currentStep].leftIdx === 0) {
+                    // Explain the inversion for 1 < 2
+                    ctx.fillStyle = "#000000";
+                    ctx.font = "16px Arial";
+                    ctx.fillText("1 is chosen from right array and is less than all elements in left array [2, 4]", canvas.width/2 - 250, y + 30);
+                    ctx.fillText("So we count 2 inversions: (1,2) and (1,4)", canvas.width/2 - 150, y + 60);
+                } else if (steps[currentStep].rightIdx === 1 && steps[currentStep].leftIdx === 1) {
+                    // Explain the inversion for 3 < 4
+                    ctx.fillStyle = "#000000";
+                    ctx.font = "16px Arial";
+                    ctx.fillText("3 is chosen from right array and is less than remaining element 4 in left array", canvas.width/2 - 250, y + 30);
+                    ctx.fillText("So we count 1 inversion: (3,4)", canvas.width/2 - 150, y + 60);
+                }
+            }
+        }
+        
+        function updateStep(step) {
+            currentStep = step;
+            stepInfoText.textContent = steps[step].desc;
+            
+            // Update inversion count if this step adds inversions
+            if (steps[step].inversions) {
+                inversionCount += steps[step].inversions;
+                inversionCountDisplay.textContent = inversionCount;
+            }
+            
+            // Enable/disable navigation buttons
+            prevBtn.disabled = step === 0;
+            nextBtn.disabled = step === steps.length - 1;
+            
+            drawArrays();
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                // If going back from a step that added inversions, subtract them
+                if (steps[currentStep].inversions) {
+                    inversionCount -= steps[currentStep].inversions;
+                    inversionCountDisplay.textContent = inversionCount;
+                }
+                updateStep(currentStep - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                updateStep(currentStep + 1);
+            }
+        });
+        
+        // Initialize the animation
+        updateStep(0);
+    </script>
+</body>
+</html>
