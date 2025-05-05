@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Detection in Array Permutation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        .description {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .array-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 50px auto;
+            width: 90%;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+        }
+        .element-index {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+        }
+        .arrow {
+            position: absolute;
+            stroke: #FF4800;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #FD9F78;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .cycle-info {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 8px;
+            color: #000000;
+            font-weight: bold;
+        }
+        .step-info {
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cycle Detection in Array Permutation</h1>
+        
+        <div class="description">
+            <p>This animation demonstrates how cycles are detected in an array permutation. We're using the array [7, 1, 3, 2, 4, 5, 6] and identifying the cycles by following each element to its destination.</p>
+            <p>A cycle occurs when elements form a loop in the permutation. In this example, we'll discover 3 cycles: (7→4→5→6), (1), and (3→2).</p>
+        </div>
+        
+        <div class="animation-container">
+            <svg width="100%" height="100%" id="svgContainer">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                    refX="9" refY="3.5" orient="auto">
+                      <polygon points="0 0, 10 3.5, 0 7" fill="#FF4800"/>
+                    </marker>
+                </defs>
+            </svg>
+            <div class="array-box" id="arrayBox"></div>
+            <div class="step-info" id="stepInfo">Click "Next" to start the animation</div>
+        </div>
+        
+        <div class="cycle-info" id="cycleInfo">
+            The array [7, 1, 3, 2, 4, 5, 6] contains 3 cycles:
+            <ul id="cyclesList">
+                <li>Cycle 1: None detected yet</li>
+                <li>Cycle 2: None detected yet</li>
+                <li>Cycle 3: None detected yet</li>
+            </ul>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" class="btn" disabled>Previous</button>
+            <button id="nextBtn" class="btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array data
+        const array = [7, 1, 3, 2, 4, 5, 6];
+        const cycles = [
+            [0, 3, 4, 5], // Represents indices of the cycle (7→4→5→6)
+            [1],          // Represents indices of the cycle (1)
+            [2, 6]        // Represents indices of the cycle (3→2)
+        ];
+        const cycleDescriptions = [
+            "(7→4→5→6)",
+            "(1)",
+            "(3→2)"
+        ];
+        
+        // Animation state
+        let currentStep = 0;
+        const totalSteps = cycles.flat().length + cycles.length + 1; // One step per element + one step per cycle + initial
+
+        // Elements and arrows references
+        const elements = [];
+        const arrows = [];
+        
+        // DOM elements
+        const arrayBox = document.getElementById('arrayBox');
+        const svgContainer = document.getElementById('svgContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepInfo = document.getElementById('stepInfo');
+        const cyclesList = document.getElementById('cyclesList');
+        
+        // Initialize the array visualization
+        function initializeArray() {
+            arrayBox.innerHTML = '';
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.innerHTML = array[i];
+                
+                const indexLabel = document.createElement('div');
+                indexLabel.className = 'element-index';
+                indexLabel.innerHTML = `Index ${i}`;
+                
+                element.appendChild(indexLabel);
+                arrayBox.appendChild(element);
+                elements.push(element);
+            }
+        }
+        
+        // Draw arrows between cycle elements
+        function drawArrows() {
+            arrows.length = 0;
+            svgContainer.innerHTML = `
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                    refX="9" refY="3.5" orient="auto">
+                      <polygon points="0 0, 10 3.5, 0 7" fill="#FF4800"/>
+                    </marker>
+                </defs>
+            `;
+            
+            cycles.forEach((cycle, cycleIndex) => {
+                const cycleColor = cycleIndex === 0 ? "#FF4800" : 
+                                  cycleIndex === 1 ? "#FF4800" : "#FF4800";
+                                  
+                cycle.forEach((fromIndex, i) => {
+                    const toIndex = cycle[(i + 1) % cycle.length];
+                    
+                    if (cycle.length === 1) {
+                        // Self loop for single element cycles
+                        const elem = elements[fromIndex];
+                        const rect = elem.getBoundingClientRect();
+                        const containerRect = svgContainer.getBoundingClientRect();
+                        
+                        const x = rect.left - containerRect.left + rect.width/2;
+                        const y = rect.top - containerRect.top + rect.height/2;
+                        
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        path.setAttribute("d", `M ${x} ${y-20} C ${x+30} ${y-50}, ${x-30} ${y-50}, ${x} ${y-20}`);
+                        path.setAttribute("stroke", cycleColor);
+                        path.setAttribute("stroke-width", "2");
+                        path.setAttribute("fill", "none");
+                        path.setAttribute("marker-end", "url(#arrowhead)");
+                        path.style.opacity = 0;
+                        
+                        svgContainer.appendChild(path);
+                        arrows.push(path);
+                    } else if (fromIndex !== toIndex) {
+                        const fromElem = elements[fromIndex];
+                        const toElem = elements[toIndex];
+                        
+                        const fromRect = fromElem.getBoundingClientRect();
+                        const toRect = toElem.getBoundingClientRect();
+                        const containerRect = svgContainer.getBoundingClientRect();
+                        
+                        const x1 = fromRect.left - containerRect.left + fromRect.width/2;
+                        const y1 = fromRect.top - containerRect.top + fromRect.height/2;
+                        const x2 = toRect.left - containerRect.left + toRect.width/2;
+                        const y2 = toRect.top - containerRect.top + toRect.height/2;
+                        
+                        // Calculate control points for a curved path
+                        const midX = (x1 + x2) / 2;
+                        const midY = y1 - 50; // Control point above the elements
+                        
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        path.setAttribute("d", `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`);
+                        path.setAttribute("stroke", cycleColor);
+                        path.setAttribute("stroke-width", "2");
+                        path.setAttribute("fill", "none");
+                        path.setAttribute("marker-end", "url(#arrowhead)");
+                        path.style.opacity = 0;
+                        
+                        svgContainer.appendChild(path);
+                        arrows.push(path);
+                    }
+                });
+            });
+        }
+        
+        // Update the visualization based on current step
+        function updateVisualization() {
+            // Reset all elements
+            elements.forEach(el => el.classList.remove('highlighted'));
+            arrows.forEach(arrow => arrow.style.opacity = 0);
+            
+            if (currentStep === 0) {
+                stepInfo.textContent = "Initial array [7, 1, 3, 2, 4, 5, 6]. Click Next to detect cycles.";
+                cyclesList.innerHTML = `
+                    <li>Cycle 1: Not detected yet</li>
+                    <li>Cycle 2: Not detected yet</li>
+                    <li>Cycle 3: Not detected yet</li>
+                `;
+                return;
+            }
+            
+            // Calculate which cycle and element we're at
+            let cycleIndex = 0;
+            let elementCount = 0;
+            let stepInCycle = currentStep - 1; // Adjust for 0-indexed
+            
+            // Find which cycle and element corresponds to current step
+            for (let i = 0; i < cycles.length; i++) {
+                if (stepInCycle < cycles[i].length + 1) {
+                    cycleIndex = i;
+                    elementCount = stepInCycle;
+                    break;
+                }
+                stepInCycle -= (cycles[i].length + 1); // +1 for the complete cycle step
+            }
+            
+            // Update cycles list based on progress
+            cyclesList.innerHTML = '';
+            for (let i = 0; i < cycles.length; i++) {
+                const li = document.createElement('li');
+                if (i < cycleIndex || (i === cycleIndex && elementCount === cycles[i].length)) {
+                    li.textContent = `Cycle ${i+1}: ${cycleDescriptions[i]}`;
+                } else {
+                    li.textContent = `Cycle ${i+1}: ${i === cycleIndex ? "Detecting..." : "Not detected yet"}`;
+                }
+                cyclesList.appendChild(li);
+            }
+            
+            if (elementCount < cycles[cycleIndex].length) {
+                // Highlighting individual elements in the cycle
+                const cycleElements = cycles[cycleIndex];
+                for (let i = 0; i <= elementCount; i++) {
+                    elements[cycleElements[i]].classList.add('highlighted');
+                    
+                    if (i < elementCount) {
+                        // Show arrows up to current element
+                        const arrowIndex = cycleElements.slice(0, i+1).length - 1 + 
+                                          cycles.slice(0, cycleIndex).reduce((sum, c) => sum + c.length, 0);
+                        arrows[arrowIndex].style.opacity = 1;
+                    }
+                }
+                
+                stepInfo.textContent = `Detecting Cycle ${cycleIndex+1}: Following element ${array[cycleElements[elementCount]]} at index ${cycleElements[elementCount]}`;
+            } else {
+                // Showing complete cycle
+                const cycleElements = cycles[cycleIndex];
+                cycleElements.forEach((index) => {
+                    elements[index].classList.add('highlighted');
+                });
+                
+                // Show all arrows in this cycle
+                const startArrowIndex = cycles.slice(0, cycleIndex).reduce((sum, c) => sum + c.length, 0);
+                for (let i = 0; i < cycleElements.length; i++) {
+                    arrows[startArrowIndex + i].style.opacity = 1;
+                }
+                
+                stepInfo.textContent = `Completed Cycle ${cycleIndex+1}: ${cycleDescriptions[cycleIndex]}`;
+            }
+        }
+        
+        // Handle next button click
+        function handleNext() {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateVisualization();
+                prevBtn.disabled = false;
+                
+                if (currentStep === totalSteps - 1) {
+                    nextBtn.disabled = true;
+                }
+            }
+        }
+        
+        // Handle previous button click
+        function handlePrev() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+                nextBtn.disabled = false;
+                
+                if (currentStep === 0) {
+                    prevBtn.disabled = true;
+                }
+            }
+        }
+        
+        // Initialize the visualization
+        function init() {
+            initializeArray();
+            drawArrows();
+            updateVisualization();
+            
+            // Set up event listeners
+            prevBtn.addEventListener('click', handlePrev);
+            nextBtn.addEventListener('click', handleNext);
+        }
+        
+        // Start when the page loads
+        window.addEventListener('load', init);
+        window.addEventListener('resize', drawArrows);
+    </script>
+</body>
+</html>
