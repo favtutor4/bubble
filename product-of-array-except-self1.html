@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefix and Suffix Products Calculation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .slide {
+            display: none;
+            padding: 20px;
+            text-align: center;
+            animation-duration: 1s;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .fade-in {
+            animation-name: fadeIn;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #FD9F78;
+            color: #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        
+        .active-element {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+        }
+        
+        .array-label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            padding: 10px;
+            color: #FF4800;
+        }
+        
+        .calculation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .calculation-text {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prefix and Suffix Products Calculation</h1>
+    
+    <div class="container">
+        <div class="slide" id="slide1">
+            <h2>Understanding Prefix and Suffix Products</h2>
+            <div class="explanation">
+                <p>Let's visualize how to calculate products of all elements except self using prefix and suffix products.</p>
+                <p>Given an array <strong>[1, 2, 3, 4]</strong>, we want to create a new array where each element is the product of all other elements in the original array.</p>
+            </div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide2">
+            <h2>Step 1: Create Prefix Products Array</h2>
+            <div class="explanation">
+                <p>We start by creating a <strong>prefix products array</strong> where each element at position i is the product of all elements up to i-1.</p>
+                <p>The first element is always 1 (no elements before it).</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array (initially):</div>
+            <div class="array-container">
+                <div class="array-element active-element">1</div>
+                <div class="array-element">?</div>
+                <div class="array-element">?</div>
+                <div class="array-element">?</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide3">
+            <h2>Building the Prefix Products Array</h2>
+            <div class="explanation">
+                <p>For position 1, the prefix product is: 1 (product of elements before position 1)</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element active-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element active-element">1</div>
+                <div class="array-element">?</div>
+                <div class="array-element">?</div>
+            </div>
+            
+            <div class="calculation">
+                <span class="calculation-text">prefix[1] = prefix[0] × nums[0] = 1 × 1 = 1</span>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide4">
+            <h2>Building the Prefix Products Array</h2>
+            <div class="explanation">
+                <p>For position 2, the prefix product is: 1 × 2 = 2 (product of all elements before position 2)</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element active-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">1</div>
+                <div class="array-element active-element">2</div>
+                <div class="array-element">?</div>
+            </div>
+            
+            <div class="calculation">
+                <span class="calculation-text">prefix[2] = prefix[1] × nums[1] = 1 × 2 = 2</span>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide5">
+            <h2>Building the Prefix Products Array</h2>
+            <div class="explanation">
+                <p>For position 3, the prefix product is: 2 × 3 = 6 (product of all elements before position 3)</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element active-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element active-element">6</div>
+            </div>
+            
+            <div class="calculation">
+                <span class="calculation-text">prefix[3] = prefix[2] × nums[2] = 2 × 3 = 6</span>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide6">
+            <h2>Complete Prefix Products Array</h2>
+            <div class="explanation">
+                <p>We now have our complete prefix products array: [1, 1, 2, 6]</p>
+                <p>Each value represents the product of all elements to the left in the original array.</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array:</div>
+            <div class="array-container">
+                <div class="array-element active-element">1</div>
+                <div class="array-element active-element">1</div>
+                <div class="array-element active-element">2</div>
+                <div class="array-element active-element">6</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide7">
+            <h2>Step 2: Create Suffix Products Array</h2>
+            <div class="explanation">
+                <p>Now, we'll create a <strong>suffix products array</strong> where each element at position i is the product of all elements from i+1 to the end.</p>
+                <p>The last element is always 1 (no elements after it).</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Suffix Array (initially):</div>
+            <div class="array-container">
+                <div class="array-element">?</div>
+                <div class="array-element">?</div>
+                <div class="array-element">?</div>
+                <div class="array-element active-element">1</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide8">
+            <h2>Building the Suffix Products Array</h2>
+            <div class="explanation">
+                <p>For position 2, the suffix product is: 4 (product of elements after position 2)</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element active-element">4</div>
+            </div>
+            
+            <div class="array-label">Suffix Array:</div>
+            <div class="array-container">
+                <div class="array-element">?</div>
+                <div class="array-element">?</div>
+                <div class="array-element active-element">4</div>
+                <div class="array-element">1</div>
+            </div>
+            
+            <div class="calculation">
+                <span class="calculation-text">suffix[2] = suffix[3] × nums[3] = 1 × 4 = 4</span>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide9">
+            <h2>Building the Suffix Products Array</h2>
+            <div class="explanation">
+                <p>For position 1, the suffix product is: 4 × 3 = 12 (product of all elements after position 1)</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element active-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Suffix Array:</div>
+            <div class="array-container">
+                <div class="array-element">?</div>
+                <div class="array-element active-element">12</div>
+                <div class="array-element">4</div>
+                <div class="array-element">1</div>
+            </div>
+            
+            <div class="calculation">
+                <span class="calculation-text">suffix[1] = suffix[2] × nums[2] = 4 × 3 = 12</span>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide10">
+            <h2>Building the Suffix Products Array</h2>
+            <div class="explanation">
+                <p>For position 0, the suffix product is: 12 × 2 = 24 (product of all elements after position 0)</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element active-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Suffix Array:</div>
+            <div class="array-container">
+                <div class="array-element active-element">24</div>
+                <div class="array-element">12</div>
+                <div class="array-element">4</div>
+                <div class="array-element">1</div>
+            </div>
+            
+            <div class="calculation">
+                <span class="calculation-text">suffix[0] = suffix[1] × nums[1] = 12 × 2 = 24</span>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide11">
+            <h2>Complete Suffix Products Array</h2>
+            <div class="explanation">
+                <p>We now have our complete suffix products array: [24, 12, 4, 1]</p>
+                <p>Each value represents the product of all elements to the right in the original array.</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Suffix Array:</div>
+            <div class="array-container">
+                <div class="array-element active-element">24</div>
+                <div class="array-element active-element">12</div>
+                <div class="array-element active-element">4</div>
+                <div class="array-element active-element">1</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide12">
+            <h2>Step 3: Combine Prefix and Suffix Arrays</h2>
+            <div class="explanation">
+                <p>Finally, we multiply corresponding elements from the prefix and suffix arrays to get our result.</p>
+                <p>This gives us the product of all elements except the one at that position.</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">6</div>
+            </div>
+            
+            <div class="array-label">Suffix Array:</div>
+            <div class="array-container">
+                <div class="array-element">24</div>
+                <div class="array-element">12</div>
+                <div class="array-element">4</div>
+                <div class="array-element">1</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide13">
+            <h2>Calculate Result Array</h2>
+            <div class="explanation">
+                <p>Let's calculate each position of the result array by multiplying the corresponding prefix and suffix values.</p>
+            </div>
+            <div class="array-label">Position 0:</div>
+            <div class="calculation">
+                <div class="array-element active-element">1</div>
+                <span class="calculation-text">×</span>
+                <div class="array-element active-element">24</div>
+                <span class="calculation-text">=</span>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">24</div>
+            </div>
+            
+            <div class="array-label">Position 1:</div>
+            <div class="calculation">
+                <div class="array-element active-element">1</div>
+                <span class="calculation-text">×</span>
+                <div class="array-element active-element">12</div>
+                <span class="calculation-text">=</span>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">12</div>
+            </div>
+            
+            <div class="array-label">Position 2:</div>
+            <div class="calculation">
+                <div class="array-element active-element">2</div>
+                <span class="calculation-text">×</span>
+                <div class="array-element active-element">4</div>
+                <span class="calculation-text">=</span>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">8</div>
+            </div>
+            
+            <div class="array-label">Position 3:</div>
+            <div class="calculation">
+                <div class="array-element active-element">6</div>
+                <span class="calculation-text">×</span>
+                <div class="array-element active-element">1</div>
+                <span class="calculation-text">=</span>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">6</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide14">
+            <h2>Final Result</h2>
+            <div class="explanation">
+                <p>The final result array is [24, 12, 8, 6], where each element is the product of all numbers in the original array except the one at that position.</p>
+            </div>
+            <div class="array-label">Original Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">3</div>
+                <div class="array-element">4</div>
+            </div>
+            
+            <div class="array-label">Prefix Array:</div>
+            <div class="array-container">
+                <div class="array-element">1</div>
+                <div class="array-element">1</div>
+                <div class="array-element">2</div>
+                <div class="array-element">6</div>
+            </div>
+            
+            <div class="array-label">Suffix Array:</div>
+            <div class="array-container">
+                <div class="array-element">24</div>
+                <div class="array-element">12</div>
+                <div class="array-element">4</div>
+                <div class="array-element">1</div>
+            </div>
+            
+            <div class="array-label">Result Array:</div>
+            <div class="array-container">
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">24</div>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">12</div>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">8</div>
+                <div class="array-element" style="background-color: #FF4800; color: #FFFFFF;">6</div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide15">
+            <h2>Summary</h2>
+            <div class="explanation">
+                <p>To calculate the product of all array elements except self:</p>
+                <ol>
+                    <li>Create a prefix products array where each element is the product of all previous elements</li>
+                    <li>Create a suffix products array where each element is the product of all following elements</li>
+                    <li>For each position, multiply the corresponding prefix and suffix values</li>
+                </ol>
+                <p>This approach has O(n) time complexity and O(n) space complexity.</p>
+            </div>
+            
+            <div class="array-label">Original: [1, 2, 3, 4]</div>
+            <div class="array-label">Prefix: [1, 1, 2, 6]</div>
+            <div class="array-label">Suffix: [24, 12, 4, 1]</div>
+            <div class="array-label">Result: [24, 12, 8, 6]</div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" disabled>Previous</button>
+            <button class="nav-button" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        
+        document.getElementById('slide1').classList.add('active', 'fade-in');
+        
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            
+            if (n > totalSlides) {
+                currentSlide = totalSlides;
+                return;
+            }
+            if (n < 1) {
+                currentSlide = 1;
+                return;
+            }
+            
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'fade-in');
+            });
+            
+            slides[currentSlide - 1].classList.add('active', 'fade-in');
+            
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+        }
+        
+        function nextSlide() {
+            showSlide(++currentSlide);
+        }
+        
+        function prevSlide() {
+            showSlide(--currentSlide);
+        }
+        
+        document.getElementById('nextBtn').addEventListener('click', nextSlide);
+        document.getElementById('prevBtn').addEventListener('click', prevSlide);
+    </script>
+</body>
+</html>
