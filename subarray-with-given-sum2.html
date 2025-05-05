@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Technique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        
+        .container {
+            width: 800px;
+            max-width: 95%;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            position: relative;
+            height: 120px;
+        }
+        
+        .array-element {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .array-element.active {
+            background-color: #FD9F78;
+            border-color: #FF4800;
+            color: #FFFFFF;
+        }
+        
+        .pointer {
+            position: absolute;
+            font-weight: bold;
+            text-align: center;
+            width: 60px;
+        }
+        
+        .start-pointer {
+            top: -30px;
+            color: #FF4800;
+        }
+        
+        .end-pointer {
+            bottom: -30px;
+            color: #FF4800;
+        }
+        
+        .pointer-arrow {
+            width: 2px;
+            height: 20px;
+            background-color: #FF4800;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .start-arrow {
+            top: -10px;
+        }
+        
+        .end-arrow {
+            bottom: -10px;
+        }
+        
+        .info-box {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            margin: 20px auto;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .highlight-sum {
+            background-color: rgba(255, 72, 0, 0.1);
+            position: absolute;
+            height: 70px;
+            border-radius: 10px;
+            z-index: 0;
+            top: -5px;
+            transition: all 0.5s ease;
+        }
+        
+        .step-indicator {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sliding Window Technique</h1>
+        
+        <div class="explanation">
+            <p>The Sliding Window technique is used to efficiently process arrays or lists by considering a "window" of elements at a time. The window can grow, shrink, or slide based on certain conditions.</p>
+            <p>In this example, we want to find a subarray with a sum of 33 in the array [1, 4, 20, 3, 10, 5].</p>
+        </div>
+        
+        <div class="array-container" id="arrayContainer">
+            <div id="highlightSum" class="highlight-sum"></div>
+            <!-- Array elements will be added here by JavaScript -->
+        </div>
+        
+        <div class="info-box" id="infoBox">
+            Welcome to the Sliding Window Technique animation. Click "Next" to start.
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">
+            Step: 0 / 10
+        </div>
+        
+        <div class="control-panel">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const array = [1, 4, 20, 3, 10, 5];
+        const targetSum = 33;
+        
+        let startIndex = 0;
+        let endIndex = 0;
+        let currentSum = array[0];
+        let currentStep = 0;
+        
+        const steps = [
+            {
+                message: "We start with both pointers at index 0. Current sum = 1.",
+                start: 0,
+                end: 0,
+                sum: 1
+            },
+            {
+                message: "Since the current sum (1) is less than our target (33), we expand the window by moving the end pointer.",
+                start: 0,
+                end: 1,
+                sum: 5
+            },
+            {
+                message: "Current sum (5) is still less than 33. Let's expand the window again.",
+                start: 0,
+                end: 2,
+                sum: 25
+            },
+            {
+                message: "Current sum (25) is still less than 33. Let's expand the window again.",
+                start: 0,
+                end: 3,
+                sum: 28
+            },
+            {
+                message: "Current sum (28) is still less than 33. Let's expand the window again.",
+                start: 0,
+                end: 4,
+                sum: 38
+            },
+            {
+                message: "Current sum (38) is greater than our target (33). We need to shrink the window by moving the start pointer.",
+                start: 1,
+                end: 4,
+                sum: 37
+            },
+            {
+                message: "Current sum (37) is still greater than 33. We shrink the window again.",
+                start: 2,
+                end: 4,
+                sum: 33
+            },
+            {
+                message: "We found a subarray with sum = 33! The subarray is [20, 3, 10].",
+                start: 2,
+                end: 4,
+                sum: 33,
+                success: true
+            },
+            {
+                message: "Let's try to find another solution by continuing. We expand the window.",
+                start: 2,
+                end: 5,
+                sum: 38
+            },
+            {
+                message: "Current sum (38) is greater than 33. We shrink the window.",
+                start: 3,
+                end: 5,
+                sum: 18
+            },
+            {
+                message: "We've reached the end of the array. The only subarray with sum = 33 is [20, 3, 10].",
+                start: 3,
+                end: 5,
+                sum: 18,
+                final: true
+            }
+        ];
+        
+        function initializeArray() {
+            const arrayContainer = document.getElementById('arrayContainer');
+            
+            // Clear existing content
+            while (arrayContainer.firstChild) {
+                if (!arrayContainer.firstChild.classList || !arrayContainer.firstChild.classList.contains('highlight-sum')) {
+                    arrayContainer.removeChild(arrayContainer.firstChild);
+                } else {
+                    // If it's the highlight-sum element, keep it but move to next sibling
+                    const sibling = arrayContainer.firstChild.nextSibling;
+                    if (sibling) {
+                        arrayContainer.removeChild(sibling);
+                    } else {
+                        break;
+                    }
+                }
+            }
+            
+            // Create array elements
+            array.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${index}`;
+                element.textContent = num;
+                
+                // Create start pointer
+                const startPointer = document.createElement('div');
+                startPointer.className = 'pointer start-pointer';
+                startPointer.textContent = 'Start';
+                startPointer.id = `start-pointer-${index}`;
+                startPointer.style.display = 'none';
+                
+                // Create start arrow
+                const startArrow = document.createElement('div');
+                startArrow.className = 'pointer-arrow start-arrow';
+                startPointer.appendChild(startArrow);
+                
+                // Create end pointer
+                const endPointer = document.createElement('div');
+                endPointer.className = 'pointer end-pointer';
+                endPointer.textContent = 'End';
+                endPointer.id = `end-pointer-${index}`;
+                endPointer.style.display = 'none';
+                
+                // Create end arrow
+                const endArrow = document.createElement('div');
+                endArrow.className = 'pointer-arrow end-arrow';
+                endPointer.appendChild(endArrow);
+                
+                element.appendChild(startPointer);
+                element.appendChild(endPointer);
+                
+                arrayContainer.appendChild(element);
+            });
+        }
+        
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Reset all elements
+            array.forEach((_, index) => {
+                const element = document.getElementById(`element-${index}`);
+                element.classList.remove('active');
+                
+                document.getElementById(`start-pointer-${index}`).style.display = 'none';
+                document.getElementById(`end-pointer-${index}`).style.display = 'none';
+            });
+            
+            // Update active elements based on current window
+            for (let i = step.start; i <= step.end; i++) {
+                document.getElementById(`element-${i}`).classList.add('active');
+            }
+            
+            // Show pointers
+            document.getElementById(`start-pointer-${step.start}`).style.display = 'block';
+            document.getElementById(`end-pointer-${step.end}`).style.display = 'block';
+            
+            // Update info box
+            const infoBox = document.getElementById('infoBox');
+            infoBox.innerHTML = step.message;
+            
+            if (step.success) {
+                infoBox.style.backgroundColor = '#FF4800';
+            } else if (step.final) {
+                infoBox.style.backgroundColor = '#000000';
+            } else {
+                infoBox.style.backgroundColor = '#FD9F78';
+            }
+            
+            // Update step indicator
+            document.getElementById('stepIndicator').textContent = `Step: ${currentStep + 1} / ${steps.length}`;
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentStep === 0;
+            document.getElementById('nextBtn').disabled = currentStep === steps.length - 1;
+            
+            // Update highlight sum
+            const highlightSum = document.getElementById('highlightSum');
+            if (step.start <= step.end) {
+                const startElement = document.getElementById(`element-${step.start}`);
+                const endElement = document.getElementById(`element-${step.end}`);
+                const startPos = startElement.offsetLeft - 5;
+                const width = (endElement.offsetLeft + endElement.offsetWidth) - startElement.offsetLeft + 10;
+                
+                highlightSum.style.left = `${startPos}px`;
+                highlightSum.style.width = `${width}px`;
+                highlightSum.style.opacity = '1';
+            } else {
+                highlightSum.style.opacity = '0';
+            }
+        }
+        
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        }
+        
+        // Initialize the visualization
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeArray();
+            updateVisualization();
+            
+            // Set up button event listeners
+            document.getElementById('nextBtn').addEventListener('click', nextStep);
+            document.getElementById('prevBtn').addEventListener('click', prevStep);
+        });
+    </script>
+</body>
+</html>
