@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Technique Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            font-size: 20px;
+            font-weight: bold;
+            position: relative;
+        }
+        .window {
+            position: absolute;
+            border: 3px solid #FF4800;
+            background-color: rgba(253, 159, 120, 0.3);
+            border-radius: 5px;
+            z-index: -1;
+        }
+        .index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+        .window-sum, .bad-count {
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sliding Window Technique Visualization</h1>
+        
+        <div class="explanation">
+            <p>The sliding window technique is a method used to perform operations on a specific window size of an array. The window 'slides' through the array to consider different subarrays.</p>
+            <p>In this example, we have array [2, 1, 5, 6, 3] with window size K=3. The window of size 3 moves through the array one element at a time, and we track the sum of elements and count of 'bad' elements (elements > 3) in each window position.</p>
+        </div>
+        
+        <div class="visualization">
+            <div class="array-container" id="array-container"></div>
+            <div class="status">
+                <p>Window: <span id="current-window">0</span>/3</p>
+                <p>Window Sum: <span id="window-sum" class="window-sum">0</span></p>
+                <p>Bad Count (elements > 3): <span id="bad-count" class="bad-count">0</span></p>
+            </div>
+            <div class="controls">
+                <button id="prev-btn" class="btn" disabled>Previous</button>
+                <button id="next-btn" class="btn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const array = [2, 1, 5, 6, 3];
+        const k = 3;
+        let currentStep = 0;
+        const totalSteps = array.length - k + 1;
+        
+        function initArray() {
+            const arrayContainer = document.getElementById('array-container');
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = array[i];
+                
+                const index = document.createElement('div');
+                index.className = 'index';
+                index.textContent = i;
+                element.appendChild(index);
+                
+                arrayContainer.appendChild(element);
+            }
+        }
+        
+        function updateVisualization() {
+            // Remove previous window
+            const oldWindow = document.querySelector('.window');
+            if (oldWindow) {
+                oldWindow.remove();
+            }
+            
+            // Create new window
+            const arrayContainer = document.getElementById('array-container');
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            
+            const windowElement = document.createElement('div');
+            windowElement.className = 'window';
+            
+            const firstElement = elements[currentStep];
+            const lastElement = elements[currentStep + k - 1];
+            
+            const firstRect = firstElement.getBoundingClientRect();
+            const lastRect = lastElement.getBoundingClientRect();
+            const containerRect = arrayContainer.getBoundingClientRect();
+            
+            const windowWidth = (lastRect.right - firstRect.left);
+            const windowHeight = firstRect.height + 10;
+            
+            windowElement.style.width = `${windowWidth}px`;
+            windowElement.style.height = `${windowHeight}px`;
+            windowElement.style.left = `${firstRect.left - containerRect.left - 5}px`;
+            windowElement.style.top = `${firstRect.top - containerRect.top - 5}px`;
+            
+            arrayContainer.appendChild(windowElement);
+            
+            // Calculate window sum and bad count
+            let windowSum = 0;
+            let badCount = 0;
+            
+            for (let i = currentStep; i < currentStep + k; i++) {
+                windowSum += array[i];
+                if (array[i] > 3) {
+                    badCount++;
+                }
+            }
+            
+            document.getElementById('current-window').textContent = currentStep + 1;
+            document.getElementById('window-sum').textContent = windowSum;
+            document.getElementById('bad-count').textContent = badCount;
+            
+            // Update buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === totalSteps - 1;
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentStep < totalSteps - 1) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+        }
+        
+        window.onload = function() {
+            initArray();
+            updateVisualization();
+            setupEventListeners();
+        };
+    </script>
+</body>
+</html>
