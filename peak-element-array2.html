@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search for Peak Element</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            overflow-x: auto;
+        }
+        .element {
+            width: 60px;
+            height: 60px;
+            background-color: #FD9F78;
+            color: #000000;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .element.active {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: translateY(-10px);
+        }
+        .element.left {
+            background-color: rgba(253, 159, 120, 0.4);
+        }
+        .element.right {
+            background-color: rgba(253, 159, 120, 0.4);
+        }
+        .element.peak {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: translateY(-20px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 5px solid #FF4800;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .pointers {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            height: 40px;
+        }
+        .pointer {
+            position: relative;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        .pointer::after {
+            content: "";
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 15px solid #000;
+        }
+        .low {
+            color: #0000FF;
+        }
+        .mid {
+            color: #FF4800;
+        }
+        .high {
+            color: #008000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Search for Peak Element</h1>
+        
+        <div class="explanation" id="explanation">
+            Welcome! We'll visualize how to find a peak element using binary search.
+            A peak element is one that is greater than or equal to its neighbors.
+            Click "Next" to start.
+        </div>
+        
+        <div class="pointers" id="pointers"></div>
+        
+        <div class="array-container" id="array-container"></div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [1, 3, 7, 4, 5, 9, 2];
+        const steps = [
+            {
+                explanation: "We start with the array [1, 3, 7, 4, 5, 9, 2]. Our goal is to find a peak element using binary search. A peak element is greater than or equal to its neighbors.",
+                low: 0,
+                high: 6,
+                mid: null,
+                leftHighlighted: [],
+                rightHighlighted: [],
+                active: null,
+                peak: null
+            },
+            {
+                explanation: "Initialize low=0 and high=6 (the first and last indices of the array). Calculate mid=(0+6)/2=3. The element at mid is 4.",
+                low: 0,
+                high: 6,
+                mid: 3,
+                leftHighlighted: [],
+                rightHighlighted: [],
+                active: 3,
+                peak: null
+            },
+            {
+                explanation: "Compare mid element (4) with its right neighbor (5). Since 4 < 5, the peak must be on the right side. Update low = mid + 1 = 4.",
+                low: 4,
+                high: 6,
+                mid: 3,
+                leftHighlighted: [0, 1, 2, 3],
+                rightHighlighted: [],
+                active: 3,
+                peak: null
+            },
+            {
+                explanation: "Now we have low=4 and high=6. Calculate mid=(4+6)/2=5. The element at mid is 9.",
+                low: 4,
+                high: 6,
+                mid: 5,
+                leftHighlighted: [0, 1, 2, 3],
+                rightHighlighted: [],
+                active: 5,
+                peak: null
+            },
+            {
+                explanation: "Compare mid element (9) with its left neighbor (5) and right neighbor (2). Since 9 > 5 and 9 > 2, element 9 is a peak!",
+                low: 4,
+                high: 6,
+                mid: 5,
+                leftHighlighted: [0, 1, 2, 3],
+                rightHighlighted: [],
+                active: null,
+                peak: 5
+            },
+            {
+                explanation: "We found the peak element 9 at index 5. The binary search algorithm efficiently narrowed down the search space to find the peak.",
+                low: null,
+                high: null,
+                mid: null,
+                leftHighlighted: [],
+                rightHighlighted: [],
+                active: null,
+                peak: 5
+            }
+        ];
+
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const arrayContainer = document.getElementById('array-container');
+        const explanation = document.getElementById('explanation');
+        const pointers = document.getElementById('pointers');
+
+        function renderArray() {
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'element';
+                
+                const step = steps[currentStep];
+                
+                if (step.active === i) {
+                    element.classList.add('active');
+                }
+                
+                if (step.peak === i) {
+                    element.classList.add('peak');
+                }
+                
+                if (step.leftHighlighted.includes(i)) {
+                    element.classList.add('left');
+                }
+                
+                if (step.rightHighlighted.includes(i)) {
+                    element.classList.add('right');
+                }
+                
+                element.innerHTML = array[i];
+                
+                const index = document.createElement('div');
+                index.className = 'index';
+                index.innerHTML = i;
+                
+                element.appendChild(index);
+                arrayContainer.appendChild(element);
+            }
+        }
+
+        function renderPointers() {
+            pointers.innerHTML = '';
+            
+            const step = steps[currentStep];
+            
+            if (step.low !== null) {
+                const lowPointer = document.createElement('div');
+                lowPointer.className = 'pointer low';
+                lowPointer.style.left = `${step.low * 70 + 30}px`;
+                lowPointer.innerHTML = 'low';
+                pointers.appendChild(lowPointer);
+            }
+            
+            if (step.mid !== null) {
+                const midPointer = document.createElement('div');
+                midPointer.className = 'pointer mid';
+                midPointer.style.left = `${step.mid * 70 + 30}px`;
+                midPointer.innerHTML = 'mid';
+                pointers.appendChild(midPointer);
+            }
+            
+            if (step.high !== null) {
+                const highPointer = document.createElement('div');
+                highPointer.className = 'pointer high';
+                highPointer.style.left = `${step.high * 70 + 30}px`;
+                highPointer.innerHTML = 'high';
+                pointers.appendChild(highPointer);
+            }
+        }
+
+        function updateStep() {
+            explanation.textContent = steps[currentStep].explanation;
+            renderArray();
+            renderPointers();
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+
+        // Initial render
+        renderArray();
+        updateStep();
+    </script>
+</body>
+</html>
