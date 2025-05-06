@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Pointer Technique Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .array-element {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            position: relative;
+        }
+        .pointer {
+            position: absolute;
+            top: -40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #FF4800;
+        }
+        .calculation {
+            margin: 30px 0;
+            font-size: 20px;
+            line-height: 1.6;
+        }
+        .highlight {
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .explanation {
+            margin: 20px 0;
+            text-align: left;
+            line-height: 1.6;
+            font-size: 18px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .animation-area {
+            min-height: 300px;
+        }
+        .step-indicator {
+            margin: 20px 0;
+            font-size: 18px;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Two-Pointer Technique Visualization</h1>
+        
+        <div class="step-indicator">Step <span id="currentStep">1</span> of <span id="totalSteps">4</span></div>
+        
+        <div class="animation-area">
+            <div class="array-container" id="arrayContainer">
+                <div class="array-element" id="element0">
+                    -4
+                    <div class="pointer" id="pointer0">i</div>
+                </div>
+                <div class="array-element" id="element1">
+                    -1
+                    <div class="pointer" id="pointer1">left</div>
+                </div>
+                <div class="array-element" id="element2">
+                    1
+                </div>
+                <div class="array-element" id="element3">
+                    2
+                    <div class="pointer" id="pointer3">right</div>
+                </div>
+            </div>
+            
+            <div class="calculation" id="calculation">
+                <p>Current Sum Calculation: <span class="highlight">-4</span> + <span class="highlight">-1</span> + <span class="highlight">2</span> = <span class="highlight">-3</span></p>
+                <p>Target Sum: <span class="highlight">1</span></p>
+                <p>Since <span class="highlight">-3 < 1</span>, we need to increase our sum.</p>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>In this step, we're using the Two-Pointer technique to find a triplet in the sorted array that sums to our target value (1).</p>
+            <p>Here's what's happening:</p>
+            <ul>
+                <li>We've fixed the first number at index 'i' (value -4)</li>
+                <li>We use two pointers: 'left' starting after 'i' (value -1) and 'right' at the end (value 2)</li>
+                <li>The current sum is -4 + (-1) + 2 = -3</li>
+                <li>Since -3 is less than our target 1, we need to increase the sum</li>
+                <li>To increase the sum, we'll move the 'left' pointer to the right in the next step</li>
+            </ul>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="nav-button" id="prevBtn" disabled>Previous</button>
+            <button class="nav-button" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Define all steps for the animation
+        const steps = [
+            {
+                i: 0,
+                left: 1,
+                right: 3,
+                sum: -3,
+                calcText: "<p>Current Sum Calculation: <span class='highlight'>-4</span> + <span class='highlight'>-1</span> + <span class='highlight'>2</span> = <span class='highlight'>-3</span></p><p>Target Sum: <span class='highlight'>1</span></p><p>Since <span class='highlight'>-3 < 1</span>, we need to increase our sum.</p>",
+                explanation: "<p>In this step, we're using the Two-Pointer technique to find a triplet in the sorted array that sums to our target value (1).</p><p>Here's what's happening:</p><ul><li>We've fixed the first number at index 'i' (value -4)</li><li>We use two pointers: 'left' starting after 'i' (value -1) and 'right' at the end (value 2)</li><li>The current sum is -4 + (-1) + 2 = -3</li><li>Since -3 is less than our target 1, we need to increase the sum</li><li>To increase the sum, we'll move the 'left' pointer to the right in the next step</li></ul>"
+            },
+            {
+                i: 0,
+                left: 2,
+                right: 3,
+                sum: -1,
+                calcText: "<p>Current Sum Calculation: <span class='highlight'>-4</span> + <span class='highlight'>1</span> + <span class='highlight'>2</span> = <span class='highlight'>-1</span></p><p>Target Sum: <span class='highlight'>1</span></p><p>Since <span class='highlight'>-1 < 1</span>, we need to increase our sum.</p>",
+                explanation: "<p>Moving to the next step:</p><ul><li>We moved 'left' pointer to the right (now at value 1)</li><li>The first element 'i' stays fixed at -4</li><li>The 'right' pointer remains at the end (value 2)</li><li>The new sum is -4 + 1 + 2 = -1</li><li>Since -1 is still less than our target 1, we need to increase the sum further</li><li>But we can't move 'left' anymore because it would collide with 'right'</li><li>So, we need to change our fixed element 'i' in the next step</li></ul>"
+            },
+            {
+                i: 1,
+                left: 2,
+                right: 3,
+                sum: 2,
+                calcText: "<p>Current Sum Calculation: <span class='highlight'>-1</span> + <span class='highlight'>1</span> + <span class='highlight'>2</span> = <span class='highlight'>2</span></p><p>Target Sum: <span class='highlight'>1</span></p><p>Since <span class='highlight'>2 > 1</span>, we need to decrease our sum.</p>",
+                explanation: "<p>Moving to our next step:</p><ul><li>We've fixed a new first element 'i' at index 1 (value -1)</li><li>The 'left' pointer is now at index 2 (value 1)</li><li>The 'right' pointer remains at the end (value 2)</li><li>The new sum is -1 + 1 + 2 = 2</li><li>Since 2 is greater than our target 1, we need to decrease the sum</li><li>To decrease the sum, we'll move the 'right' pointer to the left in the next step</li></ul><p>But we can't move 'right' anymore because it would collide with 'left'. This means we need to find another approach or try different values of 'i'.</p>"
+            },
+            {
+                i: 0,
+                left: 1,
+                right: 2,
+                sum: -4,
+                calcText: "<p>Current Sum Calculation: <span class='highlight'>-4</span> + <span class='highlight'>-1</span> + <span class='highlight'>1</span> = <span class='highlight'>-4</span></p><p>Target Sum: <span class='highlight'>1</span></p><p>Since <span class='highlight'>-4 < 1</span>, we need to increase our sum.</p>",
+                explanation: "<p>Let's try a different arrangement:</p><ul><li>We've gone back to the first element 'i' at index 0 (value -4)</li><li>'left' is at index 1 (value -1)</li><li>We've moved 'right' to index 2 (value 1)</li><li>The new sum is -4 + (-1) + 1 = -4</li><li>Since -4 is much less than our target 1, we need to increase the sum significantly</li></ul><p>After trying various combinations, we can see that finding a triplet that sums exactly to 1 in this array is challenging. The closest we got was a sum of 2 with the triplet (-1, 1, 2).</p><p>This demonstrates the core concept of the Two-Pointer technique: by strategically moving pointers, we can efficiently search for specific sum values in a sorted array without checking every possible combination.</p>"
+            }
+        ];
+        
+        let currentStepIndex = 0;
+        const totalSteps = steps.length;
+        
+        document.getElementById('totalSteps').textContent = totalSteps;
+        
+        // Function to update the visualization based on the current step
+        function updateVisualization() {
+            const step = steps[currentStepIndex];
+            
+            // Clear all pointers
+            document.querySelectorAll('.pointer').forEach(p => p.remove());
+            
+            // Add pointers at the current positions
+            const element0 = document.getElementById('element0');
+            const element1 = document.getElementById('element1');
+            const element2 = document.getElementById('element2');
+            const element3 = document.getElementById('element3');
+            
+            const elements = [element0, element1, element2, element3];
+            
+            // Add i pointer
+            const iPointer = document.createElement('div');
+            iPointer.className = 'pointer';
+            iPointer.textContent = 'i';
+            elements[step.i].appendChild(iPointer);
+            
+            // Add left pointer
+            const leftPointer = document.createElement('div');
+            leftPointer.className = 'pointer';
+            leftPointer.textContent = 'left';
+            elements[step.left].appendChild(leftPointer);
+            
+            // Add right pointer
+            const rightPointer = document.createElement('div');
+            rightPointer.className = 'pointer';
+            rightPointer.textContent = 'right';
+            elements[step.right].appendChild(rightPointer);
+            
+            // Update calculation
+            document.getElementById('calculation').innerHTML = step.calcText;
+            
+            // Update explanation
+            document.getElementById('explanation').innerHTML = step.explanation;
+            
+            // Update step indicator
+            document.getElementById('currentStep').textContent = currentStepIndex + 1;
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentStepIndex === 0;
+            document.getElementById('nextBtn').disabled = currentStepIndex === totalSteps - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStepIndex < totalSteps - 1) {
+                currentStepIndex++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
