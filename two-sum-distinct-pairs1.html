@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finding Pairs with Sum 8</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .explanation {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .canvas-container {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+        canvas {
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Finding Pairs with Sum 8</h1>
+        <div class="explanation">
+            <p>This animation demonstrates how to find pairs in an array where the sum equals a target value.</p>
+            <p>Example array: [1, 5, 1, 7, 3, 3, 5] with target sum: 8</p>
+            <p>We need to find all distinct pairs of numbers that sum up to 8.</p>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="pairsCanvas" width="800" height="300"></canvas>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 1/3</div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('pairsCanvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        
+        const array = [1, 5, 1, 7, 3, 3, 5];
+        const target = 8;
+        const pairs = [[1, 7], [3, 5]]; // Pre-identified pairs that sum to 8
+        
+        let currentStep = 1;
+        const totalSteps = 3;
+        
+        // Colors
+        const primaryColor = '#FF4800';
+        const secondaryColor = '#FD9F78';
+        const blackColor = '#000000';
+        const whiteColor = '#FFFFFF';
+        
+        function drawArray() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw title
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = primaryColor;
+            ctx.textAlign = 'center';
+            ctx.fillText(`Array [1, 5, 1, 7, 3, 3, 5] with Target Sum: 8`, canvas.width/2, 30);
+            
+            const circleRadius = 30;
+            const spacing = 80;
+            const startX = (canvas.width - (array.length - 1) * spacing) / 2;
+            const y = 100;
+            
+            // Draw array elements
+            for (let i = 0; i < array.length; i++) {
+                const x = startX + i * spacing;
+                
+                // Draw circle
+                ctx.beginPath();
+                ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+                ctx.fillStyle = secondaryColor;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = blackColor;
+                ctx.stroke();
+                
+                // Draw number
+                ctx.font = 'bold 20px Arial';
+                ctx.fillStyle = blackColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(array[i], x, y);
+                
+                // Draw index
+                ctx.font = '14px Arial';
+                ctx.fillStyle = blackColor;
+                ctx.fillText(`index: ${i}`, x, y + circleRadius + 20);
+            }
+            
+            // Process based on current step
+            if (currentStep === 2) {
+                // Step 2: Highlight the first pair (1,7)
+                drawPair(pairs[0], startX, y, circleRadius, spacing);
+                
+                ctx.font = '18px Arial';
+                ctx.fillStyle = primaryColor;
+                ctx.textAlign = 'center';
+                ctx.fillText(`Found Pair: (${pairs[0][0]}, ${pairs[0][1]}) → ${pairs[0][0]} + ${pairs[0][1]} = ${target}`, canvas.width/2, 220);
+            } 
+            else if (currentStep === 3) {
+                // Step 3: Show all pairs
+                drawPair(pairs[0], startX, y, circleRadius, spacing);
+                drawPair(pairs[1], startX, y, circleRadius, spacing);
+                
+                ctx.font = '18px Arial';
+                ctx.fillStyle = primaryColor;
+                ctx.textAlign = 'center';
+                ctx.fillText(`Found Pairs: (${pairs[0][0]}, ${pairs[0][1]}) and (${pairs[1][0]}, ${pairs[1][1]})`, canvas.width/2, 220);
+                ctx.fillText(`Both pairs sum to our target: 8`, canvas.width/2, 250);
+            }
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentStep}/${totalSteps}`;
+        }
+        
+        function drawPair(pair, startX, y, circleRadius, spacing) {
+            // Find indices of the pair values
+            const indices = [];
+            for (let i = 0; i < array.length; i++) {
+                if (array[i] === pair[0] || array[i] === pair[1]) {
+                    indices.push(i);
+                }
+            }
+            
+            // For first pair (1, 7), use indices 0 and 3
+            // For second pair (3, 5), use indices 4 and 6
+            let index1, index2;
+            
+            if (pair[0] === 1 && pair[1] === 7) {
+                index1 = 0; // First 1
+                index2 = 3; // First 7
+            } else if (pair[0] === 3 && pair[1] === 5) {
+                index1 = 4; // First 3
+                index2 = 6; // Second 5
+            }
+            
+            const x1 = startX + index1 * spacing;
+            const x2 = startX + index2 * spacing;
+            
+            // Draw connecting line
+            ctx.beginPath();
+            ctx.moveTo(x1, y + circleRadius + 5);
+            ctx.lineTo(x2, y + circleRadius + 5);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = primaryColor;
+            ctx.stroke();
+            
+            // Highlight the circles
+            ctx.beginPath();
+            ctx.arc(x1, y, circleRadius + 3, 0, Math.PI * 2);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = primaryColor;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(x2, y, circleRadius + 3, 0, Math.PI * 2);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = primaryColor;
+            ctx.stroke();
+        }
+        
+        // Initial draw
+        drawArray();
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateButtons();
+                drawArray();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateButtons();
+                drawArray();
+            }
+        });
+        
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+    </script>
+</body>
+</html>
