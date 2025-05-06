@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Partitioning Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+
+        .description {
+            margin-bottom: 30px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            overflow-x: auto;
+        }
+
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .pointer {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+
+        .positive {
+            background-color: #FD9F78;
+        }
+
+        .negative {
+            background-color: #FF4800;
+            color: white;
+        }
+
+        .normal {
+            background-color: #f0f0f0;
+        }
+
+        .highlight {
+            transform: translateY(-10px);
+            box-shadow: 0 5px 15px rgba(255, 72, 0, 0.3);
+        }
+
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #FF4800;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .step-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Partitioning Visualization</h1>
+        
+        <div class="description">
+            <p>This visualization demonstrates how to partition an array to move all positive elements to the left and negative elements to the right. We use two pointers: <strong>i</strong> starting from the left, and <strong>j</strong> starting from the right. We swap elements when i points to a negative number and j points to a positive number.</p>
+        </div>
+
+        <div class="step-info" id="stepInfo">
+            <p>Initial array: [-1, 2, -3, 4, 5, 6, -7, 8, 9]</p>
+            <p>Pointer i starts at index 0, pointer j starts at index 8.</p>
+        </div>
+
+        <div class="array-container" id="arrayContainer"></div>
+
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const initialArray = [-1, 2, -3, 4, 5, 6, -7, 8, 9];
+        
+        // Steps for visualization
+        const steps = [
+            {
+                array: [-1, 2, -3, 4, 5, 6, -7, 8, 9],
+                i: 0,
+                j: 8,
+                description: "Initial array with i=0 and j=8. i points to -1 (negative) and j points to 9 (positive).",
+                swap: false,
+                highlight: []
+            },
+            {
+                array: [-1, 2, -3, 4, 5, 6, -7, 8, 9],
+                i: 0,
+                j: 8,
+                description: "We found i pointing to negative (-1) and j pointing to positive (9). We'll swap them.",
+                swap: true,
+                highlight: [0, 8]
+            },
+            {
+                array: [9, 2, -3, 4, 5, 6, -7, 8, -1],
+                i: 1,
+                j: 8,
+                description: "After swapping, i increments to 1 and j remains at 8.",
+                swap: false,
+                highlight: []
+            },
+            {
+                array: [9, 2, -3, 4, 5, 6, -7, 8, -1],
+                i: 1,
+                j: 8,
+                description: "i points to 2 (positive) so we increment i to 2.",
+                swap: false,
+                highlight: [1]
+            },
+            {
+                array: [9, 2, -3, 4, 5, 6, -7, 8, -1],
+                i: 2,
+                j: 8,
+                description: "i points to -3 (negative) and j points to -1 (negative). j decrements to 7.",
+                swap: false,
+                highlight: [2, 8]
+            },
+            {
+                array: [9, 2, -3, 4, 5, 6, -7, 8, -1],
+                i: 2,
+                j: 7,
+                description: "i points to -3 (negative) and j points to 8 (positive). We'll swap them.",
+                swap: true,
+                highlight: [2, 7]
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 3,
+                j: 7,
+                description: "After swapping, i increments to 3.",
+                swap: false,
+                highlight: []
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 3,
+                j: 7,
+                description: "i points to 4 (positive) so we increment i to 4.",
+                swap: false,
+                highlight: [3]
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 4,
+                j: 7,
+                description: "i points to 5 (positive) so we increment i to 5.",
+                swap: false,
+                highlight: [4]
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 5,
+                j: 7,
+                description: "i points to 6 (positive) so we increment i to 6.",
+                swap: false,
+                highlight: [5]
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 6,
+                j: 7,
+                description: "i points to -7 (negative) and j points to -3 (negative). j decrements to 6.",
+                swap: false,
+                highlight: [6, 7]
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 6,
+                j: 6,
+                description: "i equals j. The partitioning is complete!",
+                swap: false,
+                highlight: [6]
+            },
+            {
+                array: [9, 2, 8, 4, 5, 6, -7, -3, -1],
+                i: 6,
+                j: 6,
+                description: "Final result: All positive numbers [9, 2, 8, 4, 5, 6] are on the left, and all negative numbers [-7, -3, -1] are on the right!",
+                swap: false,
+                highlight: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+            }
+        ];
+        
+        let currentStep = 0;
+        const arrayContainer = document.getElementById('arrayContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepInfo = document.getElementById('stepInfo');
+        
+        // Function to update the visualization based on current step
+        function updateVisualization() {
+            arrayContainer.innerHTML = '';
+            const step = steps[currentStep];
+            
+            step.array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = `array-element ${value < 0 ? 'negative' : 'positive'} ${step.highlight.includes(index) ? 'highlight' : ''}`;
+                element.textContent = value;
+                
+                // Add pointers
+                if (index === step.i || index === step.j) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer';
+                    pointer.textContent = index === step.i ? 'i' : 'j';
+                    element.appendChild(pointer);
+                }
+                
+                arrayContainer.appendChild(element);
+            });
+            
+            stepInfo.innerHTML = `<p>${step.description}</p>`;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Initialize visualization
+        updateVisualization();
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+    </script>
+</body>
+</html>
