@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force Subarray Checking Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .explanation {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .index {
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color: #000000;
+        }
+        .visualization {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+        }
+        .subarray-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .count-display {
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+        }
+        .highlighted {
+            background-color: #FD9F78;
+        }
+        .valid {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            margin: 0 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .best-subarray {
+            margin-top: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force Subarray Checking</h1>
+        
+        <div class="explanation">
+            <p>This visualization demonstrates the brute force approach to find the longest subarray with an equal number of 0's and 1's in the array [0, 1, 0, 1, 1, 0].</p>
+            <p>We'll check all possible subarrays (by trying every start and end position) and count the number of 0's and 1's in each.</p>
+        </div>
+        
+        <div class="array-container" id="mainArray">
+            <!-- Array elements will be inserted here by JavaScript -->
+        </div>
+        
+        <div class="visualization">
+            <h3 id="stepExplanation">Step 1: Start with the first subarray</h3>
+            
+            <div class="subarray-container" id="subarrayDisplay">
+                <!-- Current subarray elements will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="count-display" id="countDisplay">
+                Zeros: 0, Ones: 0
+            </div>
+            
+            <div class="count-display" id="validityDisplay">
+                
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <div class="step-counter" id="stepCounter">Step 1 of 21</div>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+        
+        <div class="best-subarray hidden" id="bestSubarray">
+            Longest valid subarray with equal 0's and 1's: <span id="bestResult"></span>
+        </div>
+    </div>
+
+    <script>
+        // Original array
+        const array = [0, 1, 0, 1, 1, 0];
+        
+        // Create all possible subarrays for demonstration
+        const subarrays = [];
+        for (let start = 0; start < array.length; start++) {
+            for (let end = start; end < array.length; end++) {
+                const subarray = array.slice(start, end + 1);
+                const zeros = subarray.filter(num => num === 0).length;
+                const ones = subarray.filter(num => num === 1).length;
+                
+                subarrays.push({
+                    start,
+                    end,
+                    subarray,
+                    zeros,
+                    ones,
+                    isValid: zeros === ones,
+                    length: end - start + 1
+                });
+            }
+        }
+        
+        // Find the best valid subarray
+        let bestSubarray = null;
+        for (const sub of subarrays) {
+            if (sub.isValid) {
+                if (bestSubarray === null || sub.length > bestSubarray.length) {
+                    bestSubarray = sub;
+                }
+            }
+        }
+        
+        // Current step in the visualization
+        let currentStep = 0;
+        
+        // DOM elements
+        const mainArrayElement = document.getElementById('mainArray');
+        const subarrayDisplayElement = document.getElementById('subarrayDisplay');
+        const countDisplayElement = document.getElementById('countDisplay');
+        const validityDisplayElement = document.getElementById('validityDisplay');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounterElement = document.getElementById('stepCounter');
+        const stepExplanationElement = document.getElementById('stepExplanation');
+        const bestSubarrayElement = document.getElementById('bestSubarray');
+        const bestResultElement = document.getElementById('bestResult');
+        
+        // Initialize the visualization
+        function initialize() {
+            // Render the main array
+            mainArrayElement.innerHTML = '';
+            array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'index';
+                indexSpan.textContent = index;
+                
+                element.appendChild(indexSpan);
+                mainArrayElement.appendChild(element);
+            });
+            
+            // Show the first subarray
+            updateVisualization();
+        }
+        
+        // Update the visualization for the current step
+        function updateVisualization() {
+            const currentSubarray = subarrays[currentStep];
+            
+            // Update step counter
+            stepCounterElement.textContent = `Step ${currentStep + 1} of ${subarrays.length}`;
+            
+            // Update step explanation
+            stepExplanationElement.textContent = `Step ${currentStep + 1}: Checking subarray from index ${currentSubarray.start} to ${currentSubarray.end}`;
+            
+            // Update main array highlighting
+            const mainArrayElements = mainArrayElement.querySelectorAll('.element');
+            mainArrayElements.forEach((element, index) => {
+                element.className = 'element';
+                if (index >= currentSubarray.start && index <= currentSubarray.end) {
+                    element.classList.add('highlighted');
+                }
+            });
+            
+            // Update subarray display
+            subarrayDisplayElement.innerHTML = '';
+            currentSubarray.subarray.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                subarrayDisplayElement.appendChild(element);
+            });
+            
+            // Update count display
+            countDisplayElement.textContent = `Zeros: ${currentSubarray.zeros}, Ones: ${currentSubarray.ones}`;
+            
+            // Update validity display
+            if (currentSubarray.isValid) {
+                validityDisplayElement.textContent = "This subarray is VALID (equal number of 0's and 1's)";
+                validityDisplayElement.style.color = "#FF4800";
+                
+                // Highlight the subarray elements if valid
+                const subarrayElements = subarrayDisplayElement.querySelectorAll('.element');
+                subarrayElements.forEach(element => {
+                    element.classList.add('valid');
+                });
+            } else {
+                validityDisplayElement.textContent = "This subarray is NOT valid (unequal number of 0's and 1's)";
+                validityDisplayElement.style.color = "#000000";
+            }
+            
+            // If reached the last step, show the best result
+            if (currentStep === subarrays.length - 1) {
+                bestSubarrayElement.classList.remove('hidden');
+                if (bestSubarray) {
+                    bestResultElement.textContent = `[${bestSubarray.subarray.join(', ')}] from index ${bestSubarray.start} to ${bestSubarray.end} (length: ${bestSubarray.length})`;
+                } else {
+                    bestResultElement.textContent = "No valid subarray found";
+                }
+            } else {
+                bestSubarrayElement.classList.add('hidden');
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === subarrays.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < subarrays.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        initialize();
+    </script>
+</body>
+</html>
