@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alternating Array Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+            min-height: 100vh;
+        }
+        
+        h1, h2 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .array-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            width: 100%;
+        }
+        
+        .array {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            width: 100%;
+            min-height: 100px;
+            position: relative;
+        }
+        
+        .element {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin: 0 5px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        
+        .positive {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .negative {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            margin: 0 10px;
+            color: #FF4800;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #FF4800;
+        }
+        
+        .step-counter {
+            color: #FF4800;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+
+        .animation-container {
+            width: 100%;
+            position: relative;
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Alternating Array Visualization</h1>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color positive"></div>
+                <span>Positive Numbers</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color negative"></div>
+                <span>Negative Numbers</span>
+            </div>
+        </div>
+        
+        <div class="step-counter" id="stepCounter">Step 1 of 4</div>
+        
+        <div class="animation-container" id="animationContainer">
+            <!-- Animation will be rendered here -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>In this visualization, we'll see how to arrange an array so that positive and negative numbers alternate.</p>
+            <p>Our input array is: [9, -3, 5, -2, -8, 10, 15, -7]</p>
+            <p>Our goal is to rearrange it to alternate between positive and negative values.</p>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const inputArray = [9, -3, 5, -2, -8, 10, 15, -7];
+        const outputArray = [9, -3, 5, -2, 10, -8, 15, -7];
+        
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        const animationContainer = document.getElementById('animationContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounter = document.getElementById('stepCounter');
+        
+        function updateStepCounter() {
+            stepCounter.textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+        
+        function renderStep(step) {
+            animationContainer.innerHTML = '';
+            
+            switch(step) {
+                case 1:
+                    renderArrays("Input Array", inputArray);
+                    explanation.innerHTML = `
+                        <p>Here's our input array: [9, -3, 5, -2, -8, 10, 15, -7]</p>
+                        <p>Notice that we have positive numbers (in green) and negative numbers (in red).</p>
+                        <p>However, they are not arranged in an alternating pattern. For example, we have two consecutive negative numbers (-2, -8).</p>
+                    `;
+                    break;
+                case 2:
+                    renderArraysWithHighlight("Input Array", inputArray, [4, 5]);
+                    explanation.innerHTML = `
+                        <p>Looking at our array, we can see a problem at positions 4 and 5.</p>
+                        <p>We have two consecutive elements with the same sign: -8 (negative) followed by 10 (positive).</p>
+                        <p>In an alternating array, we want positive and negative values to alternate.</p>
+                    `;
+                    break;
+                case 3:
+                    renderRearrangement(inputArray, outputArray);
+                    explanation.innerHTML = `
+                        <p>To fix this, we need to rearrange some elements.</p>
+                        <p>One possible solution is to swap some elements so that positives and negatives alternate.</p>
+                        <p>In this case, we swap -8 and 10 to ensure the alternating pattern.</p>
+                    `;
+                    break;
+                case 4:
+                    renderArrays("Alternating Array", outputArray);
+                    explanation.innerHTML = `
+                        <p>Now we have our alternating array: [9, -3, 5, -2, 10, -8, 15, -7]</p>
+                        <p>Notice how positive and negative numbers now alternate throughout the entire array:</p>
+                        <p>Positive (9) → Negative (-3) → Positive (5) → Negative (-2) → Positive (10) → Negative (-8) → Positive (15) → Negative (-7)</p>
+                        <p>This pattern makes the array "alternating" - each positive number is followed by a negative number and vice versa.</p>
+                    `;
+                    break;
+            }
+            
+            updateStepCounter();
+        }
+        
+        function renderArrays(title, array) {
+            const arrayContainer = document.createElement('div');
+            arrayContainer.className = 'array-container';
+            
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = title;
+            arrayContainer.appendChild(titleElement);
+            
+            const arrayElement = document.createElement('div');
+            arrayElement.className = 'array';
+            
+            array.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = `element ${num >= 0 ? 'positive' : 'negative'}`;
+                element.textContent = num;
+                arrayElement.appendChild(element);
+            });
+            
+            arrayContainer.appendChild(arrayElement);
+            animationContainer.appendChild(arrayContainer);
+        }
+        
+        function renderArraysWithHighlight(title, array, highlightIndices) {
+            const arrayContainer = document.createElement('div');
+            arrayContainer.className = 'array-container';
+            
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = title;
+            arrayContainer.appendChild(titleElement);
+            
+            const arrayElement = document.createElement('div');
+            arrayElement.className = 'array';
+            
+            array.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = `element ${num >= 0 ? 'positive' : 'negative'}`;
+                element.textContent = num;
+                
+                if (highlightIndices.includes(index)) {
+                    element.style.border = '3px solid #FF4800';
+                    element.style.transform = 'scale(1.1)';
+                }
+                
+                arrayElement.appendChild(element);
+            });
+            
+            arrayContainer.appendChild(arrayElement);
+            animationContainer.appendChild(arrayContainer);
+        }
+        
+        function renderRearrangement(inputArray, outputArray) {
+            // Input array
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'array-container';
+            
+            const inputTitle = document.createElement('h3');
+            inputTitle.textContent = 'Input Array';
+            inputContainer.appendChild(inputTitle);
+            
+            const inputArrayElement = document.createElement('div');
+            inputArrayElement.className = 'array';
+            
+            inputArray.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = `element ${num >= 0 ? 'positive' : 'negative'}`;
+                element.textContent = num;
+                
+                if (index === 4 || index === 5) {
+                    element.style.border = '3px solid #FF4800';
+                }
+                
+                inputArrayElement.appendChild(element);
+            });
+            
+            inputContainer.appendChild(inputArrayElement);
+            
+            // Arrow
+            const arrowContainer = document.createElement('div');
+            arrowContainer.innerHTML = '↓<br>Swap elements<br>↓';
+            arrowContainer.style.textAlign = 'center';
+            arrowContainer.style.margin = '15px 0';
+            arrowContainer.style.color = '#FF4800';
+            arrowContainer.style.fontWeight = 'bold';
+            
+            // Output array
+            const outputContainer = document.createElement('div');
+            outputContainer.className = 'array-container';
+            
+            const outputTitle = document.createElement('h3');
+            outputTitle.textContent = 'Alternating Array';
+            outputContainer.appendChild(outputTitle);
+            
+            const outputArrayElement = document.createElement('div');
+            outputArrayElement.className = 'array';
+            
+            outputArray.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = `element ${num >= 0 ? 'positive' : 'negative'}`;
+                element.textContent = num;
+                
+                if (index === 4 || index === 5) {
+                    element.style.border = '3px solid #FF4800';
+                }
+                
+                outputArrayElement.appendChild(element);
+            });
+            
+            outputContainer.appendChild(outputArrayElement);
+            
+            // Add all to the animation container
+            animationContainer.appendChild(inputContainer);
+            animationContainer.appendChild(arrowContainer);
+            animationContainer.appendChild(outputContainer);
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                renderStep(currentStep);
+                nextBtn.disabled = false;
+                if (currentStep === 1) {
+                    prevBtn.disabled = true;
+                }
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                renderStep(currentStep);
+                prevBtn.disabled = false;
+                if (currentStep === totalSteps) {
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+        
+        // Initialize the visualization
+        renderStep(currentStep);
+    </script>
+</body>
+</html>
