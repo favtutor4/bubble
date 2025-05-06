@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting-Based Solution Visualization</title>
+    <style>
+        :root {
+            --primary-color: #FF4800;
+            --secondary-color: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--white);
+            color: var(--black);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        #visualization {
+            border: 2px solid var(--secondary-color);
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 20px;
+            min-height: 300px;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+        .element {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+            color: var(--black);
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        
+        .highlighted {
+            background-color: var(--primary-color);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .min-diff {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sorting-Based Solution Visualization</h1>
+    <div class="container">
+        <div id="visualization">
+            <!-- Content will be dynamically added here -->
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: var(--secondary-color)"></div>
+                <span>Normal Element</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: var(--primary-color)"></div>
+                <span>Highlighted Element (Window)</span>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial data
+        const originalArray = [7, 3, 2, 4, 9, 12, 56];
+        const sortedArray = [2, 3, 4, 7, 9, 12, 56];
+        const windowSize = 3;
+        
+        // Steps of the visualization
+        const steps = [
+            {
+                title: "Step 1: Original Array",
+                array: originalArray,
+                explanation: "This is our original unsorted array. We need to find the minimum difference between any elements in a sliding window of size 3.",
+                highlighted: []
+            },
+            {
+                title: "Step 2: Sort the Array",
+                array: sortedArray,
+                explanation: "We sort the array in ascending order. This helps us minimize the difference between elements in any window.",
+                highlighted: []
+            },
+            {
+                title: "Step 3: Window 1",
+                array: sortedArray,
+                explanation: "We start with the first window of size 3. The difference between the maximum and minimum elements in this window is 4 - 2 = 2.",
+                highlighted: [0, 1, 2],
+                difference: 2
+            },
+            {
+                title: "Step 4: Window 2",
+                array: sortedArray,
+                explanation: "We slide the window by one position. The difference in this window is 7 - 3 = 4.",
+                highlighted: [1, 2, 3],
+                difference: 4
+            },
+            {
+                title: "Step 5: Window 3",
+                array: sortedArray,
+                explanation: "We continue sliding the window. The difference in this window is 9 - 4 = 5.",
+                highlighted: [2, 3, 4],
+                difference: 5
+            },
+            {
+                title: "Step 6: Window 4",
+                array: sortedArray,
+                explanation: "Next window. The difference is 12 - 7 = 5.",
+                highlighted: [3, 4, 5],
+                difference: 5
+            },
+            {
+                title: "Step 7: Window 5",
+                array: sortedArray,
+                explanation: "Final window. The difference is 56 - 9 = 47.",
+                highlighted: [4, 5, 6],
+                difference: 47
+            },
+            {
+                title: "Final Result",
+                array: sortedArray,
+                explanation: "After checking all windows, we found that Window 1 has the minimum difference of 2 between its maximum and minimum elements.",
+                highlighted: [0, 1, 2],
+                difference: 2,
+                final: true
+            }
+        ];
+        
+        let currentStep = 0;
+        const visualizationContainer = document.getElementById('visualization');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Render the current step
+        function renderStep() {
+            const step = steps[currentStep];
+            
+            let html = `
+                <div class="step-title">${step.title}</div>
+                <div class="array-container">
+            `;
+            
+            // Render array elements
+            for (let i = 0; i < step.array.length; i++) {
+                const isHighlighted = step.highlighted.includes(i) ? 'highlighted' : '';
+                html += `<div class="element ${isHighlighted}">${step.array[i]}</div>`;
+            }
+            
+            html += `</div>`;
+            
+            // Add explanation
+            html += `<div class="explanation">${step.explanation}</div>`;
+            
+            // Add difference calculation if available
+            if (step.difference !== undefined) {
+                let minValue = Math.min(...step.highlighted.map(i => step.array[i]));
+                let maxValue = Math.max(...step.highlighted.map(i => step.array[i]));
+                
+                html += `
+                    <div class="min-diff">
+                        Difference = Max - Min = ${maxValue} - ${minValue} = ${step.difference}
+                    </div>
+                `;
+                
+                if (step.final) {
+                    html += `
+                        <div class="explanation" style="color: var(--primary-color); font-weight: bold; margin-top: 20px;">
+                            Therefore, the minimum difference possible with a window of size 3 is 2.
+                        </div>
+                    `;
+                }
+            }
+            
+            visualizationContainer.innerHTML = html;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep();
+            }
+        });
+        
+        // Initial render
+        renderStep();
+    </script>
+</body>
+</html>
