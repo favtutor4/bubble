@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Detection Algorithm Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.5s ease;
+            background-color: #FFFFFF;
+        }
+        .array-element.highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .array-element.visited {
+            background-color: #FD9F78;
+        }
+        .index {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+        }
+        .target-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #FF4800;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #FD9F78;
+            color: #000000;
+            min-height: 80px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .arrows {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            position: relative;
+            height: 40px;
+        }
+        .arrow {
+            position: absolute;
+            height: 30px;
+            border-left: 2px solid #FF4800;
+            transform-origin: bottom center;
+            bottom: 0;
+            display: none;
+        }
+        .arrow::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 8px solid #FF4800;
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cycle Detection Algorithm</h1>
+        
+        <div class="array-container">
+            <div class="array-element" id="elem0">
+                <span class="index">Index: 0</span>
+                10
+                <span class="target-index">Target: 3</span>
+            </div>
+            <div class="array-element" id="elem1">
+                <span class="index">Index: 1</span>
+                20
+                <span class="target-index">Target: 0</span>
+            </div>
+            <div class="array-element" id="elem2">
+                <span class="index">Index: 2</span>
+                30
+                <span class="target-index">Target: 2</span>
+            </div>
+            <div class="array-element" id="elem3">
+                <span class="index">Index: 3</span>
+                40
+                <span class="target-index">Target: 1</span>
+            </div>
+        </div>
+        
+        <div class="arrows" id="arrows">
+            <!-- Arrows will be added dynamically -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Cycle Detection Algorithm animation! This algorithm finds cycles in an array where each element contains a target position. Press "Next" to start the animation.
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array and indices
+        const values = [10, 20, 30, 40];
+        const indices = [3, 0, 2, 1];
+        
+        // Animation steps
+        const steps = [
+            {
+                text: "Welcome to the Cycle Detection Algorithm animation! This algorithm finds cycles in an array where each element contains a target position. Press 'Next' to start the animation.",
+                highlight: [],
+                visited: [],
+                arrows: []
+            },
+            {
+                text: "We start with array [10, 20, 30, 40] and corresponding target indices [3, 0, 2, 1]. Each element needs to be moved to its target position.",
+                highlight: [],
+                visited: [],
+                arrows: []
+            },
+            {
+                text: "We begin at index 0 with value 10. Its target position is index 3.",
+                highlight: [0],
+                visited: [],
+                arrows: [{from: 0, to: 3}]
+            },
+            {
+                text: "We swap element at index 0 (value 10) with element at index 3 (value 40).",
+                highlight: [0, 3],
+                visited: [],
+                arrows: [{from: 0, to: 3}]
+            },
+            {
+                text: "After swap: value 40 is now at index 0, and value 10 is at index 3. The value 10 is now in its correct position, so we mark index 3 as visited.",
+                highlight: [0],
+                visited: [3],
+                arrows: [],
+                swap: {from: 0, to: 3}
+            },
+            {
+                text: "Now we look at the new element at index 0 (value 40). Its target position is index 1.",
+                highlight: [0],
+                visited: [3],
+                arrows: [{from: 0, to: 1}]
+            },
+            {
+                text: "We swap element at index 0 (value 40) with element at index 1 (value 20).",
+                highlight: [0, 1],
+                visited: [3],
+                arrows: [{from: 0, to: 1}]
+            },
+            {
+                text: "After swap: value 20 is now at index 0, and value 40 is at index 1. The value 40 is now in its correct position, so we mark index 1 as visited.",
+                highlight: [0],
+                visited: [3, 1],
+                arrows: [],
+                swap: {from: 0, to: 1}
+            },
+            {
+                text: "Now we look at the new element at index 0 (value 20). Its target position is index 0, which means it's already in the correct position. We mark index 0 as visited.",
+                highlight: [0],
+                visited: [3, 1, 0],
+                arrows: [{from: 0, to: 0}]
+            },
+            {
+                text: "We've completed our first cycle: 0 → 3 → 1 → 0. Now we need to find any unvisited positions.",
+                highlight: [],
+                visited: [3, 1, 0],
+                arrows: []
+            },
+            {
+                text: "Index 2 hasn't been visited yet, so we start a new cycle from index 2 with value 30.",
+                highlight: [2],
+                visited: [3, 1, 0],
+                arrows: []
+            },
+            {
+                text: "The target position for value 30 at index 2 is index 2, so it's already in the correct position. We mark index 2 as visited.",
+                highlight: [2],
+                visited: [3, 1, 0, 2],
+                arrows: [{from: 2, to: 2}]
+            },
+            {
+                text: "All positions have now been visited! The final array is [20, 40, 30, 10], with all elements in their correct target positions.",
+                highlight: [],
+                visited: [0, 1, 2, 3],
+                arrows: []
+            }
+        ];
+        
+        // Animation control variables
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanation = document.getElementById('explanation');
+        const arrowsContainer = document.getElementById('arrows');
+        
+        // Updated array state (will change as swaps occur)
+        let currentValues = [...values];
+        
+        // Update the display based on the current step
+        function updateDisplay() {
+            const step = steps[currentStep];
+            
+            // Update explanation text
+            explanation.textContent = step.text;
+            
+            // Reset highlights and visited
+            for (let i = 0; i < 4; i++) {
+                const elem = document.getElementById(`elem${i}`);
+                elem.classList.remove('highlighted', 'visited');
+                
+                // Update the element's value (in case swaps have occurred)
+                const valueSpan = elem.childNodes[2];
+                valueSpan.textContent = currentValues[i];
+            }
+            
+            // Apply new highlights
+            step.highlight.forEach(index => {
+                document.getElementById(`elem${index}`).classList.add('highlighted');
+            });
+            
+            // Apply visited
+            step.visited.forEach(index => {
+                document.getElementById(`elem${index}`).classList.add('visited');
+            });
+            
+            // Clear all arrows
+            arrowsContainer.innerHTML = '';
+            
+            // Add new arrows
+            if (step.arrows) {
+                step.arrows.forEach(arrow => {
+                    drawArrow(arrow.from, arrow.to);
+                });
+            }
+            
+            // Perform swap if needed
+            if (step.swap) {
+                // Swap in our tracked array
+                const temp = currentValues[step.swap.from];
+                currentValues[step.swap.from] = currentValues[step.swap.to];
+                currentValues[step.swap.to] = temp;
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Draw an arrow from one element to another
+        function drawArrow(fromIndex, toIndex) {
+            const fromElement = document.getElementById(`elem${fromIndex}`);
+            const toElement = document.getElementById(`elem${toIndex}`);
+            
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            
+            const arrowsRect = arrowsContainer.getBoundingClientRect();
+            
+            const fromX = fromRect.left + fromRect.width/2 - arrowsRect.left;
+            const toX = toRect.left + toRect.width/2 - arrowsRect.left;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            
+            // Position arrow
+            arrow.style.left = `${fromX}px`;
+            
+            // Calculate arrow length and angle
+            const dx = toX - fromX;
+            const distance = Math.abs(dx);
+            arrow.style.width = `${distance}px`;
+            
+            // Determine direction
+            if (dx < 0) {
+                arrow.style.transform = 'rotate(180deg)';
+                arrow.style.transformOrigin = 'left bottom';
+            }
+            
+            arrow.style.display = 'block';
+            arrowsContainer.appendChild(arrow);
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+        
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
