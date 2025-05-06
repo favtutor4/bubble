@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Sum and HashMap Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .visualization-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .array-container, .conversion-container, .running-sum-container, .hashmap-container, .result-container {
+            margin-bottom: 20px;
+        }
+        .array-box, .converted-box, .sum-box {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            text-align: center;
+            line-height: 40px;
+            border: 2px solid #FD9F78;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .hashmap {
+            border: 2px solid #FD9F78;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .hashmap-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #FD9F78;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid #FF4800;
+        }
+        .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #FF4800;
+        }
+        .subarray-highlight {
+            background-color: #FD9F78;
+        }
+        .arrow {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Running Sum and HashMap Visualization</h1>
+        <div class="visualization-container">
+            <div class="step-indicator">Step <span id="step-number">1</span> of 7</div>
+            
+            <div class="array-container">
+                <div class="label">Original Array:</div>
+                <div id="array-display"></div>
+            </div>
+            
+            <div class="conversion-container">
+                <div class="label">Convert 0s to -1s:</div>
+                <div id="converted-display"></div>
+            </div>
+            
+            <div class="running-sum-container">
+                <div class="label">Running Sum:</div>
+                <div id="running-sum-display"></div>
+            </div>
+            
+            <div class="hashmap-container">
+                <div class="label">HashMap (Sum → Index):</div>
+                <div id="hashmap" class="hashmap"></div>
+            </div>
+            
+            <div class="result-container">
+                <div class="label">Result:</div>
+                <div id="result-explanation" class="explanation"></div>
+            </div>
+            
+            <div class="controls">
+                <button id="prev-btn" disabled>Previous</button>
+                <button id="next-btn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const originalArray = [0, 1, 0, 1, 1, 0];
+        const convertedArray = originalArray.map(val => val === 0 ? -1 : 1);
+        
+        let currentStep = 1;
+        const totalSteps = 7;
+        
+        // Initialize displays
+        const arrayDisplay = document.getElementById('array-display');
+        const convertedDisplay = document.getElementById('converted-display');
+        const runningSumDisplay = document.getElementById('running-sum-display');
+        const hashmapDisplay = document.getElementById('hashmap');
+        const resultExplanation = document.getElementById('result-explanation');
+        const stepNumber = document.getElementById('step-number');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        // Initialize the array displays
+        function initializeArrays() {
+            arrayDisplay.innerHTML = '';
+            convertedDisplay.innerHTML = '';
+            runningSumDisplay.innerHTML = '';
+            
+            for (let i = 0; i < originalArray.length; i++) {
+                // Original array
+                const arrayBox = document.createElement('div');
+                arrayBox.className = 'array-box';
+                arrayBox.id = `array-${i}`;
+                arrayBox.textContent = originalArray[i];
+                arrayDisplay.appendChild(arrayBox);
+                
+                // Converted array
+                const convertedBox = document.createElement('div');
+                convertedBox.className = 'converted-box';
+                convertedBox.id = `converted-${i}`;
+                convertedBox.textContent = convertedArray[i];
+                convertedDisplay.appendChild(convertedBox);
+                
+                // Running sum
+                const sumBox = document.createElement('div');
+                sumBox.className = 'sum-box';
+                sumBox.id = `sum-${i}`;
+                sumBox.textContent = '?';
+                runningSumDisplay.appendChild(sumBox);
+                
+                // Add index labels below
+                if (i < originalArray.length - 1) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.innerHTML = '';
+                    arrayDisplay.appendChild(arrow);
+                    
+                    const convertedArrow = document.createElement('div');
+                    convertedArrow.className = 'arrow';
+                    convertedArrow.innerHTML = '';
+                    convertedDisplay.appendChild(convertedArrow);
+                    
+                    const sumArrow = document.createElement('div');
+                    sumArrow.className = 'arrow';
+                    sumArrow.innerHTML = '';
+                    runningSumDisplay.appendChild(sumArrow);
+                }
+            }
+        }
+        
+        // Function to update the visualization based on the current step
+        function updateVisualization() {
+            // Reset all highlights
+            document.querySelectorAll('.array-box, .converted-box, .sum-box').forEach(box => {
+                box.classList.remove('highlight');
+                box.classList.remove('subarray-highlight');
+            });
+            
+            stepNumber.textContent = currentStep;
+            
+            // Enable/disable buttons based on current step
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+            
+            // Clear result explanation
+            resultExplanation.textContent = '';
+            
+            let runningSum = 0;
+            let hashmap = {'0': -1}; // Initialize with sum 0 at index -1
+            let maxLength = 0;
+            let start = -1;
+            let end = -1;
+            
+            // Calculate up to the current position for the step
+            const stepToIndex = Math.min(currentStep - 1, originalArray.length - 1);
+            
+            // Update hashmap display based on the current step
+            hashmapDisplay.innerHTML = '';
+            const initialHashmapItem = document.createElement('div');
+            initialHashmapItem.className = 'hashmap-item';
+            initialHashmapItem.textContent = 'Sum 0 → Index -1 (initial)';
+            hashmapDisplay.appendChild(initialHashmapItem);
+            
+            // Update visualization based on current step
+            switch(currentStep) {
+                case 1:
+                    // Introduction
+                    document.getElementById('array-0').classList.add('highlight');
+                    resultExplanation.textContent = 'We start with the original array [0, 1, 0, 1, 1, 0]. Our goal is to find the longest subarray with an equal number of 0s and 1s.';
+                    break;
+                    
+                case 2:
+                    // Convert 0s to -1s
+                    document.querySelectorAll('.converted-box').forEach(box => {
+                        box.classList.add('highlight');
+                    });
+                    resultExplanation.textContent = 'Convert all 0s to -1s. This transforms our problem: now we need to find the longest subarray with a sum of 0.';
+                    break;
+                    
+                default:
+                    // Process the array up to the current index (step - 3)
+                    const currentIndex = currentStep - 3;
+                    
+                    // Fill in the running sum values up to the current index
+                    for (let i = 0; i <= currentIndex; i++) {
+                        runningSum += convertedArray[i];
+                        const sumBox = document.getElementById(`sum-${i}`);
+                        sumBox.textContent = runningSum;
+                        
+                        // Add to hashmap if not already seen
+                        if (i === currentIndex) {
+                            document.getElementById(`array-${i}`).classList.add('highlight');
+                            document.getElementById(`converted-${i}`).classList.add('highlight');
+                            sumBox.classList.add('highlight');
+                        }
+                        
+                        // Update hashmap (only display relevant entries)
+                        if (i <= currentIndex) {
+                            if (hashmap[runningSum] === undefined) {
+                                hashmap[runningSum] = i;
+                                
+                                if (i === currentIndex) {
+                                    const hashmapItem = document.createElement('div');
+                                    hashmapItem.className = 'hashmap-item highlight';
+                                    hashmapItem.textContent = `Sum ${runningSum} → Index ${i} (new entry)`;
+                                    hashmapDisplay.appendChild(hashmapItem);
+                                }
+                            } else {
+                                // We've seen this sum before - calculate subarray length
+                                const subarrayLength = i - hashmap[runningSum];
+                                
+                                if (subarrayLength > maxLength) {
+                                    maxLength = subarrayLength;
+                                    start = hashmap[runningSum] + 1;
+                                    end = i;
+                                }
+                                
+                                if (i === currentIndex) {
+                                    const hashmapItem = document.createElement('div');
+                                    hashmapItem.className = 'hashmap-item highlight';
+                                    hashmapItem.textContent = `Sum ${runningSum} → Index ${hashmap[runningSum]} (existing entry)`;
+                                    hashmapDisplay.appendChild(hashmapItem);
+                                    
+                                    // Highlight the subarray that was found
+                                    for (let j = hashmap[runningSum] + 1; j <= i; j++) {
+                                        document.getElementById(`array-${j}`).classList.add('subarray-highlight');
+                                        document.getElementById(`converted-${j}`).classList.add('subarray-highlight');
+                                    }
+                                    
+                                    resultExplanation.textContent = `At index ${i}, the running sum is ${runningSum}. We've seen this sum before at index ${hashmap[runningSum]}.
+                                    This means the subarray from index ${hashmap[runningSum] + 1} to ${i} has a sum of 0, which means equal number of 0s and 1s.
+                                    Subarray length = ${i} - ${hashmap[runningSum]} = ${subarrayLength}`;
+                                }
+                            }
+                            
+                            // Display all existing hashmap entries for steps 3-7
+                            if (i < currentIndex) {
+                                const hashmapItem = document.createElement('div');
+                                hashmapItem.className = 'hashmap-item';
+                                hashmapItem.textContent = `Sum ${runningSum} → Index ${hashmap[runningSum]}`;
+                                hashmapDisplay.appendChild(hashmapItem);
+                            }
+                        }
+                    }
+                    
+                    // For the final step, show the overall result
+                    if (currentStep === totalSteps) {
+                        if (maxLength > 0) {
+                            for (let i = start; i <= end; i++) {
+                                document.getElementById(`array-${i}`).classList.add('subarray-highlight');
+                            }
+                            resultExplanation.textContent = `The longest subarray with an equal number of 0s and 1s is from index ${start} to ${end} with a length of ${maxLength}.`;
+                        } else {
+                            resultExplanation.textContent = 'No subarray with equal number of 0s and 1s was found.';
+                        }
+                    }
+                    
+                    if (currentStep === 3 && resultExplanation.textContent === '') {
+                        resultExplanation.textContent = `Initialize a hashmap with Sum 0 at Index -1. Starting to calculate running sum. At index 0, the sum is ${runningSum}.`;
+                    }
+                    break;
+            }
+        }
+        
+        // Button handlers
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        initializeArrays();
+        updateVisualization();
+    </script>
+</body>
+</html>
