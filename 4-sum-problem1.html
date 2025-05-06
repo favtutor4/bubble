@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Pointer Technique Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        .description {
+            margin-bottom: 30px;
+            text-align: left;
+            line-height: 1.6;
+        }
+        .visualization {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFFFFF;
+            border: 2px solid #000000;
+            border-radius: 8px;
+            font-weight: bold;
+            position: relative;
+        }
+        .pointer {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .pointer.top {
+            top: -30px;
+        }
+        .pointer.bottom {
+            bottom: -30px;
+        }
+        .pointer-line {
+            position: absolute;
+            width: 2px;
+            background-color: #FF4800;
+            transform-origin: bottom center;
+        }
+        .explanation {
+            margin-top: 40px;
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 8px;
+            color: #000000;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .sum-display {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .highlight {
+            background-color: #FD9F78;
+        }
+        .found {
+            background-color: #8BF18B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Two-Pointer Technique Visualization</h1>
+        <div class="description">
+            <p>This visualization demonstrates the two-pointer technique used in the 4Sum problem. We have an array [1, 0, -1, 0, -2, 2] and we want to find all unique quadruplets that sum up to target = 0.</p>
+            <p>We fix two pointers (i and j) and use two more pointers (left and right) to find the remaining two elements.</p>
+        </div>
+        <div class="visualization">
+            <div class="array-container" id="array-container"></div>
+            <div class="sum-display" id="sum-display"></div>
+            <div class="explanation" id="explanation"></div>
+        </div>
+        <div class="controls">
+            <button class="btn" id="prev-btn" disabled>Previous</button>
+            <button class="btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [1, 0, -1, 0, -2, 2];
+        const target = 0;
+        let currentStep = 0;
+        
+        // Define the steps of the animation
+        const steps = [
+            {
+                i: 0,
+                j: 2,
+                left: 3,
+                right: 5,
+                highlight: [],
+                found: [],
+                explanation: "Initial setup: We have array [1, 0, -1, 0, -2, 2] with target sum = 0. We'll fix i=0 and j=2, and use left and right pointers to find two more elements."
+            },
+            {
+                i: 0,
+                j: 2,
+                left: 3,
+                right: 5,
+                highlight: [0, 2, 3, 5],
+                found: [],
+                explanation: "Step 1: Fixed values are array[i]=1 and array[j]=-1. Now we need to find two values that sum to (target - (1 + (-1))) = 0 - 0 = 0. We set left=3 and right=5."
+            },
+            {
+                i: 0,
+                j: 2,
+                left: 3,
+                right: 5,
+                highlight: [0, 2, 3, 5],
+                found: [],
+                explanation: "Step 2: Check if array[left] + array[right] = array[3] + array[5] = 0 + 2 = 2. This is > 0, so we need a smaller sum. We decrease right pointer."
+            },
+            {
+                i: 0,
+                j: 2,
+                left: 3,
+                right: 4,
+                highlight: [0, 2, 3, 4],
+                found: [],
+                explanation: "Step 3: Now check if array[left] + array[right] = array[3] + array[4] = 0 + (-2) = -2. This is < 0, so we need a larger sum. We increase left pointer."
+            },
+            {
+                i: 0,
+                j: 2,
+                left: 4,
+                right: 4,
+                highlight: [0, 2, 4, 4],
+                found: [],
+                explanation: "Step 4: Now left === right, which means we've exhausted all possible combinations for this (i,j) pair. We didn't find any valid quadruplets."
+            },
+            {
+                i: 0,
+                j: 2,
+                left: 3,
+                right: 5,
+                highlight: [],
+                found: [],
+                explanation: "The two-pointer technique efficiently narrows down the search space. In this case, we didn't find valid quadruplets, but the technique allows us to search through all possible combinations without using nested loops."
+            },
+            {
+                i: 0,
+                j: 1,
+                left: 2,
+                right: 5,
+                highlight: [0, 1, 2, 5],
+                found: [0, 1, 2, 5],
+                explanation: "In another iteration (i=0, j=1), we would find a valid quadruplet: [1, 0, -1, 0] as array[0] + array[1] + array[2] + array[5] = 1 + 0 + (-1) + 0 = 0, which equals our target!"
+            }
+        ];
+
+        function renderStep(step) {
+            const arrayContainer = document.getElementById('array-container');
+            const explanation = document.getElementById('explanation');
+            const sumDisplay = document.getElementById('sum-display');
+            
+            // Clear previous content
+            arrayContainer.innerHTML = '';
+            
+            // Render array with pointers
+            for (let idx = 0; idx < array.length; idx++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (step.highlight.includes(idx)) {
+                    cell.classList.add('highlight');
+                }
+                if (step.found.includes(idx)) {
+                    cell.classList.add('found');
+                }
+                cell.textContent = array[idx];
+                
+                // Add pointers
+                if (idx === step.i) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer top';
+                    pointer.textContent = 'i';
+                    cell.appendChild(pointer);
+                }
+                if (idx === step.j) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer top';
+                    pointer.textContent = 'j';
+                    cell.appendChild(pointer);
+                }
+                if (idx === step.left) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer bottom';
+                    pointer.textContent = 'left';
+                    cell.appendChild(pointer);
+                }
+                if (idx === step.right) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer bottom';
+                    pointer.textContent = 'right';
+                    cell.appendChild(pointer);
+                }
+                
+                arrayContainer.appendChild(cell);
+            }
+            
+            // Update explanation
+            explanation.textContent = step.explanation;
+            
+            // Update sum display
+            if (step.highlight.length === 4) {
+                const sum = step.highlight.reduce((acc, idx) => acc + array[idx], 0);
+                sumDisplay.textContent = `Current Sum: ${array[step.i]} + ${array[step.j]} + ${array[step.left]} + ${array[step.right]} = ${sum}`;
+            } else {
+                sumDisplay.textContent = '';
+            }
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(steps[currentStep]);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(steps[currentStep]);
+            }
+        }
+
+        // Initialize
+        document.getElementById('next-btn').addEventListener('click', nextStep);
+        document.getElementById('prev-btn').addEventListener('click', prevStep);
+        renderStep(steps[currentStep]);
+    </script>
+</body>
+</html>
