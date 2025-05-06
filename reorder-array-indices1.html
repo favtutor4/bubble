@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Reordering Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 800px;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+        
+        .step-info {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            min-height: 60px;
+        }
+        
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 100px;
+            margin: 30px 0;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .array-container {
+            display: flex;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .array-label {
+            position: absolute;
+            left: -100px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            width: 80px;
+            text-align: right;
+        }
+        
+        .array-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FD9F78;
+            border-radius: 10px;
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #000000;
+            transition: all 0.5s ease-in-out;
+        }
+        
+        .array-cell.highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+        }
+        
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.9rem;
+            color: #000000;
+        }
+        
+        svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        path {
+            fill: none;
+            stroke: #FF4800;
+            stroke-width: 3;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            line-height: 1.6;
+            text-align: center;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Reordering Visualization</h1>
+        
+        <div class="step-info" id="stepInfo">
+            Welcome to Array Reordering Visualization! Click 'Next' to begin.
+        </div>
+        
+        <div class="arrays-container">
+            <div class="array-container" id="originalArray">
+                <div class="array-label">Original Array:</div>
+                <div class="array-cell">5<div class="array-index">index: 0</div></div>
+                <div class="array-cell">3<div class="array-index">index: 1</div></div>
+                <div class="array-cell">2<div class="array-index">index: 2</div></div>
+                <div class="array-cell">1<div class="array-index">index: 3</div></div>
+                <div class="array-cell">4<div class="array-index">index: 4</div></div>
+            </div>
+            
+            <div class="array-container" id="indicesArray">
+                <div class="array-label">Indices Array:</div>
+                <div class="array-cell">4<div class="array-index">index: 0</div></div>
+                <div class="array-cell">0<div class="array-index">index: 1</div></div>
+                <div class="array-cell">1<div class="array-index">index: 2</div></div>
+                <div class="array-cell">2<div class="array-index">index: 3</div></div>
+                <div class="array-cell">3<div class="array-index">index: 4</div></div>
+            </div>
+            
+            <div class="array-container" id="resultArray">
+                <div class="array-label">Result Array:</div>
+                <div class="array-cell">3<div class="array-index">index: 0</div></div>
+                <div class="array-cell">2<div class="array-index">index: 1</div></div>
+                <div class="array-cell">1<div class="array-index">index: 2</div></div>
+                <div class="array-cell">4<div class="array-index">index: 3</div></div>
+                <div class="array-cell">5<div class="array-index">index: 4</div></div>
+            </div>
+            
+            <svg id="arrows"></svg>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="explanation">
+            <p>This visualization shows how to reorder an array based on indices. Each element in the original array will be moved to a new position defined by the indices array.</p>
+        </div>
+    </div>
+    
+    <script>
+        const originalArray = [5, 3, 2, 1, 4];
+        const indicesArray = [4, 0, 1, 2, 3];
+        const resultArray = [3, 2, 1, 4, 5];
+        
+        const originalElements = document.querySelectorAll('#originalArray .array-cell');
+        const indicesElements = document.querySelectorAll('#indicesArray .array-cell');
+        const resultElements = document.querySelectorAll('#resultArray .array-cell');
+        const arrowsSvg = document.getElementById('arrows');
+        const stepInfo = document.getElementById('stepInfo');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Initially hide the result array
+        resultElements.forEach(el => {
+            el.style.opacity = '0';
+        });
+        
+        const steps = [
+            {
+                info: "Let's reorder the array [5, 3, 2, 1, 4] using the indices array [4, 0, 1, 2, 3].",
+                action: () => {
+                    // Reset everything
+                    clearHighlights();
+                    clearArrows();
+                    resultElements.forEach(el => {
+                        el.style.opacity = '0';
+                    });
+                }
+            },
+            {
+                info: "Element at index 0 is 5. According to indices array, it should move to position 4.",
+                action: () => {
+                    clearHighlights();
+                    clearArrows();
+                    originalElements[0].classList.add('highlighted');
+                    indicesElements[0].classList.add('highlighted');
+                    resultElements[4].style.opacity = '1';
+                    resultElements[4].classList.add('highlighted');
+                    drawArrow(originalElements[0], resultElements[4]);
+                }
+            },
+            {
+                info: "Element at index 1 is 3. According to indices array, it should move to position 0.",
+                action: () => {
+                    clearHighlights();
+                    clearArrows();
+                    originalElements[1].classList.add('highlighted');
+                    indicesElements[1].classList.add('highlighted');
+                    resultElements[0].style.opacity = '1';
+                    resultElements[0].classList.add('highlighted');
+                    drawArrow(originalElements[1], resultElements[0]);
+                }
+            },
+            {
+                info: "Element at index 2 is 2. According to indices array, it should move to position 1.",
+                action: () => {
+                    clearHighlights();
+                    clearArrows();
+                    originalElements[2].classList.add('highlighted');
+                    indicesElements[2].classList.add('highlighted');
+                    resultElements[1].style.opacity = '1';
+                    resultElements[1].classList.add('highlighted');
+                    drawArrow(originalElements[2], resultElements[1]);
+                }
+            },
+            {
+                info: "Element at index 3 is 1. According to indices array, it should move to position 2.",
+                action: () => {
+                    clearHighlights();
+                    clearArrows();
+                    originalElements[3].classList.add('highlighted');
+                    indicesElements[3].classList.add('highlighted');
+                    resultElements[2].style.opacity = '1';
+                    resultElements[2].classList.add('highlighted');
+                    drawArrow(originalElements[3], resultElements[2]);
+                }
+            },
+            {
+                info: "Element at index 4 is 4. According to indices array, it should move to position 3.",
+                action: () => {
+                    clearHighlights();
+                    clearArrows();
+                    originalElements[4].classList.add('highlighted');
+                    indicesElements[4].classList.add('highlighted');
+                    resultElements[3].style.opacity = '1';
+                    resultElements[3].classList.add('highlighted');
+                    drawArrow(originalElements[4], resultElements[3]);
+                }
+            },
+            {
+                info: "Now we have all elements in their new positions! The result array is [3, 2, 1, 4, 5].",
+                action: () => {
+                    clearHighlights();
+                    clearArrows();
+                    resultElements.forEach(el => {
+                        el.style.opacity = '1';
+                    });
+                    
+                    // Draw all arrows
+                    for (let i = 0; i < originalArray.length; i++) {
+                        const originalIndex = i;
+                        const newIndex = indicesArray[i];
+                        drawArrow(originalElements[originalIndex], resultElements[newIndex]);
+                    }
+                }
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        function clearHighlights() {
+            originalElements.forEach(el => el.classList.remove('highlighted'));
+            indicesElements.forEach(el => el.classList.remove('highlighted'));
+            resultElements.forEach(el => el.classList.remove('highlighted'));
+        }
+        
+        function clearArrows() {
+            arrowsSvg.innerHTML = '';
+        }
+        
+        function drawArrow(fromElement, toElement) {
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            
+            const svg = document.getElementById('arrows');
+            const svgRect = svg.getBoundingClientRect();
+            
+            const fromX = fromRect.left + fromRect.width / 2 - svgRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - svgRect.top;
+            const toX = toRect.left + toRect.width / 2 - svgRect.left;
+            const toY = toRect.top + toRect.height / 2 - svgRect.top;
+            
+            // Calculate control points for a curved arrow
+            const midY = (fromY + toY) / 2;
+            const curveX = (fromX + toX) / 2;
+            const curveY = midY - 30;
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${fromX} ${fromY} Q ${curveX} ${curveY} ${toX} ${toY}`);
+            path.setAttribute('marker-end', 'url(#arrowhead)');
+            
+            // Add arrowhead marker if it doesn't exist
+            if (!document.getElementById('arrowhead')) {
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                marker.setAttribute('id', 'arrowhead');
+                marker.setAttribute('markerWidth', '10');
+                marker.setAttribute('markerHeight', '7');
+                marker.setAttribute('refX', '10');
+                marker.setAttribute('refY', '3.5');
+                marker.setAttribute('orient', 'auto');
+                
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+                polygon.setAttribute('fill', '#FF4800');
+                
+                marker.appendChild(polygon);
+                defs.appendChild(marker);
+                svg.appendChild(defs);
+            }
+            
+            svg.appendChild(path);
+            
+            // Animate the path
+            setTimeout(() => {
+                path.style.strokeDashoffset = '0';
+            }, 50);
+        }
+        
+        function updateStep() {
+            stepInfo.textContent = steps[currentStep].info;
+            steps[currentStep].action();
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize the first step
+        updateStep();
+    </script>
+</body>
+</html>
