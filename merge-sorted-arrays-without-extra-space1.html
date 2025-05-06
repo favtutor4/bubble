@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force Method Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .array-container {
+            display: flex;
+            margin-bottom: 30px;
+            width: 100%;
+            justify-content: center;
+        }
+        .array-label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #FF4800;
+            align-self: center;
+            width: 60px;
+        }
+        .array {
+            display: flex;
+            gap: 10px;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FD9F78;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #FFFFFF;
+            transition: all 0.5s ease;
+        }
+        .highlight {
+            background-color: #FF4800;
+            transform: scale(1.1);
+        }
+        .swap-animation {
+            animation: swap 1s ease;
+        }
+        @keyframes swap {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(60px); }
+            100% { transform: translateY(0); }
+        }
+        .description {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            min-height: 60px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            color: #FF4800;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force Method Visualization</h1>
+        
+        <div class="step-counter">Step <span id="currentStep">1</span> of <span id="totalSteps">8</span></div>
+        
+        <div class="description" id="description">
+            Starting with two arrays: arr1 = [1, 3, 5, 7] and arr2 = [0, 2, 6, 8, 9]. We'll swap elements to ensure arr1 has the smaller elements.
+        </div>
+        
+        <div class="visualization">
+            <div class="array-container">
+                <div class="array-label">arr1:</div>
+                <div class="array" id="array1">
+                    <div class="element">1</div>
+                    <div class="element">3</div>
+                    <div class="element">5</div>
+                    <div class="element">7</div>
+                </div>
+            </div>
+            
+            <div class="array-container">
+                <div class="array-label">arr2:</div>
+                <div class="array" id="array2">
+                    <div class="element">0</div>
+                    <div class="element">2</div>
+                    <div class="element">6</div>
+                    <div class="element">8</div>
+                    <div class="element">9</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                description: "Starting with two arrays: arr1 = [1, 3, 5, 7] and arr2 = [0, 2, 6, 8, 9]. We'll swap elements to ensure arr1 has the smaller elements.",
+                arr1: [1, 3, 5, 7],
+                arr2: [0, 2, 6, 8, 9],
+                highlight1: [],
+                highlight2: [],
+                swap: false
+            },
+            {
+                description: "Compare arr1[0] = 1 with arr2[0] = 0. Since 1 > 0, we need to swap them.",
+                arr1: [1, 3, 5, 7],
+                arr2: [0, 2, 6, 8, 9],
+                highlight1: [0],
+                highlight2: [0],
+                swap: true
+            },
+            {
+                description: "After swapping, arr1 = [0, 3, 5, 7] and arr2 = [1, 2, 6, 8, 9]. The arrays are now partially sorted.",
+                arr1: [0, 3, 5, 7],
+                arr2: [1, 2, 6, 8, 9],
+                highlight1: [0],
+                highlight2: [0],
+                swap: false
+            },
+            {
+                description: "Compare arr1[1] = 3 with arr2[0] = 1. Since 3 > 1, we need to swap them.",
+                arr1: [0, 3, 5, 7],
+                arr2: [1, 2, 6, 8, 9],
+                highlight1: [1],
+                highlight2: [0],
+                swap: true
+            },
+            {
+                description: "After swapping, arr1 = [0, 1, 5, 7] and arr2 = [3, 2, 6, 8, 9]. Now arr2 is not sorted, so we need to sort it.",
+                arr1: [0, 1, 5, 7],
+                arr2: [3, 2, 6, 8, 9],
+                highlight1: [1],
+                highlight2: [0],
+                swap: false
+            },
+            {
+                description: "After sorting arr2, we have arr1 = [0, 1, 5, 7] and arr2 = [2, 3, 6, 8, 9].",
+                arr1: [0, 1, 5, 7],
+                arr2: [2, 3, 6, 8, 9],
+                highlight1: [],
+                highlight2: [0, 1],
+                swap: false
+            },
+            {
+                description: "Compare arr1[2] = 5 with arr2[0] = 2. Since 5 > 2, we need to swap them.",
+                arr1: [0, 1, 5, 7],
+                arr2: [2, 3, 6, 8, 9],
+                highlight1: [2],
+                highlight2: [0],
+                swap: true
+            },
+            {
+                description: "Final result: arr1 = [0, 1, 2, 7] and arr2 = [3, 5, 6, 8, 9]. Both arrays are sorted and arr1 contains the smaller elements.",
+                arr1: [0, 1, 2, 7],
+                arr2: [3, 5, 6, 8, 9],
+                highlight1: [],
+                highlight2: [],
+                swap: false
+            }
+        ];
+
+        let currentStepIndex = 0;
+        const descriptionElement = document.getElementById('description');
+        const array1Element = document.getElementById('array1');
+        const array2Element = document.getElementById('array2');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentStepElement = document.getElementById('currentStep');
+        const totalStepsElement = document.getElementById('totalSteps');
+
+        totalStepsElement.textContent = steps.length;
+
+        function updateVisualization() {
+            const step = steps[currentStepIndex];
+            
+            descriptionElement.textContent = step.description;
+            currentStepElement.textContent = currentStepIndex + 1;
+            
+            // Update arrays
+            updateArray(array1Element, step.arr1, step.highlight1);
+            updateArray(array2Element, step.arr2, step.highlight2);
+            
+            // Enable/disable buttons
+            prevBtn.disabled = currentStepIndex === 0;
+            nextBtn.disabled = currentStepIndex === steps.length - 1;
+            
+            // Handle animation if this step involves a swap
+            if (step.swap) {
+                const highlightIndex1 = step.highlight1[0];
+                const highlightIndex2 = step.highlight2[0];
+                
+                if (highlightIndex1 !== undefined && highlightIndex2 !== undefined) {
+                    const element1 = array1Element.children[highlightIndex1];
+                    const element2 = array2Element.children[highlightIndex2];
+                    
+                    element1.classList.add('swap-animation');
+                    element2.classList.add('swap-animation');
+                    
+                    setTimeout(() => {
+                        element1.classList.remove('swap-animation');
+                        element2.classList.remove('swap-animation');
+                    }, 1000);
+                }
+            }
+        }
+
+        function updateArray(arrayElement, values, highlightIndices) {
+            arrayElement.innerHTML = '';
+            values.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.classList.add('element');
+                element.textContent = value;
+                
+                if (highlightIndices.includes(index)) {
+                    element.classList.add('highlight');
+                }
+                
+                arrayElement.appendChild(element);
+            });
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateVisualization();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                updateVisualization();
+            }
+        });
+
+        // Initialize
+        updateVisualization();
+    </script>
+</body>
+</html>
