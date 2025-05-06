@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Rotation Operation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .visualization {
+            margin: 30px 0;
+            position: relative;
+            height: 300px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .array-element {
+            width: 60px;
+            height: 60px;
+            background-color: #FD9F78;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .array-element.highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .array-element.moving {
+            opacity: 0.7;
+        }
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+        }
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+            min-height: 100px;
+        }
+        .nav-buttons {
+            margin-top: 30px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .range-highlight {
+            position: absolute;
+            height: 80px;
+            background-color: rgba(255, 72, 0, 0.1);
+            border: 2px dashed #FF4800;
+            border-radius: 5px;
+            z-index: -1;
+            top: -10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Right Rotation Operation</h1>
+        <p>Step-by-step visualization of rotating a subarray to the right by one position</p>
+        
+        <div class="visualization">
+            <div class="range-highlight" id="rangeHighlight"></div>
+            <div class="array-container" id="arrayContainer"></div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Click "Next" to start the visualization.
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array
+        const array = [9, -3, 5, -2, -8, 10];
+        // The subarray to rotate (indices 2 to 5)
+        const start = 2;
+        const end = 5;
+        
+        // Animation steps
+        const steps = [
+            {
+                title: "Initial Array",
+                description: "We start with the array [9, -3, 5, -2, -8, 10]. We want to rotate the subarray between indices 2 and 5 (highlighted) to the right by one position.",
+                highlights: [],
+                showRange: true
+            },
+            {
+                title: "Identify Rotation Range",
+                description: "The subarray to rotate is [5, -2, -8, 10], which are the elements at indices 2, 3, 4, and 5.",
+                highlights: [2, 3, 4, 5],
+                showRange: true
+            },
+            {
+                title: "Store Last Element",
+                description: "First, we store the last element of the subarray (10 at index 5) in a temporary variable because it will move to the beginning of the subarray.",
+                highlights: [5],
+                showRange: true
+            },
+            {
+                title: "Right Rotation - Step 1",
+                description: "We're moving the last element (10) to the first position of the subarray (index 2).",
+                highlights: [5],
+                showRange: true,
+                animation: {
+                    from: 5,
+                    to: 'temp'
+                }
+            },
+            {
+                title: "Right Rotation - Step 2",
+                description: "Now we shift all other elements one position to the right.",
+                highlights: [2, 3, 4],
+                showRange: true,
+                shiftRight: true
+            },
+            {
+                title: "Right Rotation - Step 3",
+                description: "Finally, we place the stored last element (10) at the beginning of the subarray (index 2).",
+                highlights: [2],
+                showRange: true,
+                animation: {
+                    from: 'temp',
+                    to: 2
+                }
+            },
+            {
+                title: "Rotation Complete",
+                description: "The right rotation is complete! The subarray [5, -2, -8, 10] has been rotated to [10, 5, -2, -8]. The full array is now [9, -3, 10, 5, -2, -8].",
+                highlights: [2, 3, 4, 5],
+                showRange: true,
+                result: true
+            }
+        ];
+        
+        // Variables to track the current step
+        let currentStep = 0;
+        let rotatedArray = [...array];
+        let isAnimating = false;
+        
+        // DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const rangeHighlight = document.getElementById('rangeHighlight');
+        
+        // Initialize the visualization
+        function initVisualization() {
+            // Create array elements
+            renderArray(array);
+            updateStep();
+        }
+        
+        // Render the array
+        function renderArray(arr) {
+            arrayContainer.innerHTML = '';
+            arr.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${index}`;
+                element.innerHTML = value;
+                
+                const indexLabel = document.createElement('div');
+                indexLabel.className = 'array-index';
+                indexLabel.textContent = index;
+                
+                element.appendChild(indexLabel);
+                arrayContainer.appendChild(element);
+            });
+        }
+        
+        // Update the visualization based on the current step
+        function updateStep() {
+            const step = steps[currentStep];
+            
+            // Clear previous highlights
+            document.querySelectorAll('.array-element').forEach(el => {
+                el.classList.remove('highlight');
+            });
+            
+            // Apply new highlights
+            step.highlights.forEach(index => {
+                const element = document.getElementById(`element-${index}`);
+                if (element) element.classList.add('highlight');
+            });
+            
+            // Update explanation
+            explanation.innerHTML = `<h3>${step.title}</h3><p>${step.description}</p>`;
+            
+            // Show/hide range highlight
+            if (step.showRange) {
+                const firstElement = document.getElementById(`element-${start}`);
+                const lastElement = document.getElementById(`element-${end}`);
+                if (firstElement && lastElement) {
+                    const firstRect = firstElement.getBoundingClientRect();
+                    const lastRect = lastElement.getBoundingClientRect();
+                    const containerRect = arrayContainer.getBoundingClientRect();
+                    
+                    const width = (lastRect.right - firstRect.left);
+                    const left = firstRect.left - containerRect.left;
+                    
+                    rangeHighlight.style.width = `${width}px`;
+                    rangeHighlight.style.left = `${left}px`;
+                    rangeHighlight.style.display = 'block';
+                }
+            } else {
+                rangeHighlight.style.display = 'none';
+            }
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0 || isAnimating;
+            nextBtn.disabled = currentStep === steps.length - 1 || isAnimating;
+            
+            // Perform animations if needed
+            if (step.animation) {
+                performAnimation(step.animation);
+            } else if (step.shiftRight) {
+                performShiftAnimation();
+            } else if (step.result) {
+                // Show the final rotated array
+                rotatedArray = [9, -3, 10, 5, -2, -8];
+                renderArray(rotatedArray);
+                updateHighlights();
+            }
+        }
+        
+        // Update highlights after animation
+        function updateHighlights() {
+            const step = steps[currentStep];
+            step.highlights.forEach(index => {
+                const element = document.getElementById(`element-${index}`);
+                if (element) element.classList.add('highlight');
+            });
+        }
+        
+        // Perform element animation
+        function performAnimation(animation) {
+            isAnimating = true;
+            
+            if (animation.from === 'temp' && typeof animation.to === 'number') {
+                // Animate from temp to array
+                const targetElement = document.getElementById(`element-${animation.to}`);
+                const tempElement = document.createElement('div');
+                tempElement.className = 'array-element moving';
+                tempElement.textContent = '10'; // The value we saved (last element)
+                tempElement.style.position = 'absolute';
+                
+                // Position above the array
+                const targetRect = targetElement.getBoundingClientRect();
+                const containerRect = arrayContainer.getBoundingClientRect();
+                
+                tempElement.style.top = `-80px`;
+                tempElement.style.left = `${targetRect.left - containerRect.left}px`;
+                arrayContainer.appendChild(tempElement);
+                
+                setTimeout(() => {
+                    tempElement.style.top = '0px';
+                    
+                    setTimeout(() => {
+                        arrayContainer.removeChild(tempElement);
+                        targetElement.textContent = '10';
+                        isAnimating = false;
+                    }, 500);
+                }, 100);
+                
+            } else if (typeof animation.from === 'number' && animation.to === 'temp') {
+                // Animate from array to temp
+                const sourceElement = document.getElementById(`element-${animation.from}`);
+                const sourceRect = sourceElement.getBoundingClientRect();
+                const containerRect = arrayContainer.getBoundingClientRect();
+                
+                const tempElement = document.createElement('div');
+                tempElement.className = 'array-element moving';
+                tempElement.textContent = sourceElement.textContent;
+                tempElement.style.position = 'absolute';
+                tempElement.style.top = '0px';
+                tempElement.style.left = `${sourceRect.left - containerRect.left}px`;
+                
+                arrayContainer.appendChild(tempElement);
+                
+                setTimeout(() => {
+                    tempElement.style.top = `-80px`;
+                    
+                    setTimeout(() => {
+                        arrayContainer.removeChild(tempElement);
+                        isAnimating = false;
+                    }, 500);
+                }, 100);
+            }
+            
+            // Enable buttons after animation
+            setTimeout(() => {
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length - 1;
+            }, 600);
+        }
+        
+        // Perform shift animation
+        function performShiftAnimation() {
+            isAnimating = true;
+            
+            // Create a copy of the elements to animate
+            const elements = [];
+            for (let i = start; i < end; i++) {
+                const element = document.getElementById(`element-${i}`);
+                const rect = element.getBoundingClientRect();
+                const containerRect = arrayContainer.getBoundingClientRect();
+                
+                const clone = document.createElement('div');
+                clone.className = 'array-element moving';
+                clone.textContent = element.textContent;
+                clone.style.position = 'absolute';
+                clone.style.top = '0px';
+                clone.style.left = `${rect.left - containerRect.left}px`;
+                
+                elements.push({
+                    index: i,
+                    clone: clone,
+                    startLeft: rect.left - containerRect.left,
+                    endLeft: (i < end - 1) ? (rect.left - containerRect.left + rect.width + 10) : (rect.left - containerRect.left)
+                });
+                
+                arrayContainer.appendChild(clone);
+            }
+            
+            // Animate the shift
+            setTimeout(() => {
+                elements.forEach(item => {
+                    item.clone.style.left = `${item.endLeft}px`;
+                });
+                
+                // Update the actual array elements after animation
+                setTimeout(() => {
+                    for (let i = end - 1; i > start; i--) {
+                        const element = document.getElementById(`element-${i}`);
+                        const prevElement = document.getElementById(`element-${i-1}`);
+                        element.textContent = prevElement.textContent;
+                    }
+                    
+                    // Clean up clones
+                    elements.forEach(item => {
+                        arrayContainer.removeChild(item.clone);
+                    });
+                    
+                    isAnimating = false;
+                    
+                    // Enable buttons
+                    prevBtn.disabled = currentStep === 0;
+                    nextBtn.disabled = currentStep === steps.length - 1;
+                }, 500);
+            }, 100);
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0 && !isAnimating) {
+                currentStep--;
+                // If we're going back from the result step
+                if (currentStep < steps.length - 1) {
+                    renderArray(array); // Reset to original array
+                }
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1 && !isAnimating) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize the visualization
+        initVisualization();
+    </script>
+</body>
+</html>
