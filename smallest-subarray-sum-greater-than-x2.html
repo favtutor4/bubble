@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Technique Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .index {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .start-pointer, .end-pointer {
+            position: absolute;
+            bottom: -40px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .active {
+            background-color: #FD9F78;
+        }
+        .info-box {
+            border: 2px solid #FF4800;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            background-color: #FFF;
+            width: 80%;
+            text-align: center;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .current-sum {
+            font-weight: bold;
+            color: #FF4800;
+            font-size: 18px;
+            margin: 15px 0;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .nav-button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .target-sum {
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sliding Window Technique Visualization</h1>
+        
+        <div class="target-sum">Target Sum: <span id="target-sum">51</span></div>
+        
+        <div class="visualization">
+            <div class="array-container" id="array-container">
+                <!-- Array elements will be generated here -->
+            </div>
+            
+            <div class="current-sum" id="current-sum">Current Sum: 0</div>
+            
+            <div class="info-box">
+                <div class="explanation" id="explanation">
+                    Welcome to the Sliding Window Technique visualization! 
+                    Click "Next" to start.
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-btn" disabled>Previous</button>
+            <button class="nav-button" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const array = [1, 4, 45, 6, 0, 19];
+        const targetSum = 51;
+        document.getElementById('target-sum').textContent = targetSum;
+        
+        // Steps for the visualization
+        const steps = [
+            {
+                start: 0,
+                end: 0,
+                sum: 1,
+                explanation: "Initialize with a window containing just the first element. Start=0, End=0, Current Sum=1."
+            },
+            {
+                start: 0,
+                end: 1,
+                sum: 5,
+                explanation: "Expand the window to include the second element. Start=0, End=1, Current Sum=5."
+            },
+            {
+                start: 0,
+                end: 2,
+                sum: 50,
+                explanation: "Expand the window to include the third element. Start=0, End=2, Current Sum=50."
+            },
+            {
+                start: 0,
+                end: 3,
+                sum: 56,
+                explanation: "Expand the window to include the fourth element. Start=0, End=3, Current Sum=56. The sum exceeds our target (51)."
+            },
+            {
+                start: 1,
+                end: 3,
+                sum: 55,
+                explanation: "Shrink the window by moving the start pointer. Start=1, End=3, Current Sum=55. Still exceeds our target."
+            },
+            {
+                start: 2,
+                end: 3,
+                sum: 51,
+                explanation: "Shrink the window again. Start=2, End=3, Current Sum=51. We found a window with the target sum!"
+            },
+            {
+                start: 2,
+                end: 3,
+                sum: 51,
+                explanation: "We've found a window with sum equal to our target! The subarray [45, 6] has a sum of 51.",
+                highlight: true
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        function initializeArray() {
+            const arrayContainer = document.getElementById('array-container');
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${i}`;
+                element.textContent = array[i];
+                
+                const index = document.createElement('div');
+                index.className = 'index';
+                index.textContent = i;
+                element.appendChild(index);
+                
+                arrayContainer.appendChild(element);
+            }
+        }
+        
+        function updateVisualization() {
+            // Reset all elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.getElementById(`element-${i}`);
+                element.className = 'array-element';
+                
+                // Remove pointers if they exist
+                const existingStartPointer = document.getElementById(`start-pointer-${i}`);
+                if (existingStartPointer) {
+                    existingStartPointer.remove();
+                }
+                
+                const existingEndPointer = document.getElementById(`end-pointer-${i}`);
+                if (existingEndPointer) {
+                    existingEndPointer.remove();
+                }
+            }
+            
+            // Highlight active elements
+            const step = steps[currentStep];
+            for (let i = step.start; i <= step.end; i++) {
+                const element = document.getElementById(`element-${i}`);
+                element.classList.add('active');
+            }
+            
+            // Add pointers
+            const startElement = document.getElementById(`element-${step.start}`);
+            const startPointer = document.createElement('div');
+            startPointer.className = 'start-pointer';
+            startPointer.id = `start-pointer-${step.start}`;
+            startPointer.textContent = 'Start';
+            startElement.appendChild(startPointer);
+            
+            const endElement = document.getElementById(`element-${step.end}`);
+            const endPointer = document.createElement('div');
+            endPointer.className = 'end-pointer';
+            endPointer.id = `end-pointer-${step.end}`;
+            endPointer.textContent = 'End';
+            endElement.appendChild(endPointer);
+            
+            // Update sum and explanation
+            document.getElementById('current-sum').textContent = `Current Sum: ${step.sum}`;
+            document.getElementById('explanation').textContent = step.explanation;
+            
+            // If this is the highlight step, add special styling
+            if (step.highlight) {
+                document.getElementById('explanation').style.color = '#FF4800';
+                document.getElementById('explanation').style.fontWeight = 'bold';
+            } else {
+                document.getElementById('explanation').style.color = '#000000';
+                document.getElementById('explanation').style.fontWeight = 'normal';
+            }
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+        
+        function onNextClick() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        }
+        
+        function onPrevClick() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        }
+        
+        // Initialize the visualization
+        initializeArray();
+        updateVisualization();
+        
+        // Add event listeners
+        document.getElementById('next-btn').addEventListener('click', onNextClick);
+        document.getElementById('prev-btn').addEventListener('click', onPrevClick);
+    </script>
+</body>
+</html>
