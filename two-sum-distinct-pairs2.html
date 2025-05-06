@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash-Based Algorithm Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            position: relative;
+        }
+        .animation-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .array-display {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            background-color: #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            position: relative;
+        }
+        .cell-index {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .cell.current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+        }
+        .cell.paired {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .info-box {
+            background-color: #f9f9f9;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            min-width: 250px;
+        }
+        .info-box h3 {
+            color: #FF4800;
+            margin-top: 0;
+        }
+        .info-item {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .explanation {
+            background-color: #f9f9f9;
+            border-left: 5px solid #FF4800;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .current-value {
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 24px;
+            color: #FF4800;
+            bottom: -40px;
+        }
+        .complement-animation {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #FF4800;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hash-Based Algorithm to Find Pairs with Sum 8</h1>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="animation-container">
+            <div class="current-value" id="currentStep">Step 1: Initialize and check the first element</div>
+            
+            <div class="array-display" id="arrayDisplay">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            
+            <div class="complement-animation" id="complementAnimation">
+                Looking for complement: 8 - 1 = 7
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-box">
+                <h3>Seen Numbers</h3>
+                <div id="seenSet" class="info-item">{ }</div>
+            </div>
+            
+            <div class="info-box">
+                <h3>Distinct Pairs Found</h3>
+                <div id="pairsSet" class="info-item">{ }</div>
+            </div>
+            
+            <div class="info-box">
+                <h3>Target Sum</h3>
+                <div class="info-item">8</div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Initialize empty sets for 'seen' numbers and 'distinct pairs'. We'll iterate through the array and for each number, check if its complement (target - current number) has been seen before.
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array data and algorithm steps
+        const array = [1, 5, 1, 7, 3, 3, 5];
+        const target = 8;
+        
+        // Define algorithm steps
+        const steps = [
+            {
+                title: "Step 1: Initialize and check the first element",
+                currentIndex: 0,
+                seen: [],
+                pairs: [],
+                explanation: "Initialize empty sets for 'seen' numbers and 'distinct pairs'. For the first element (1), we check if its complement (target - current number = 8 - 1 = 7) exists in the 'seen' set. Since 'seen' is empty, we don't find a pair. We add 1 to the 'seen' set."
+            },
+            {
+                title: "Step 2: Check the second element",
+                currentIndex: 1,
+                seen: [1],
+                pairs: [],
+                explanation: "For the second element (5), we check if its complement (8 - 5 = 3) exists in the 'seen' set. It doesn't, so we add 5 to the 'seen' set."
+            },
+            {
+                title: "Step 3: Check the third element",
+                currentIndex: 2,
+                seen: [1, 5],
+                pairs: [],
+                explanation: "For the third element (1), we check if its complement (8 - 1 = 7) exists in the 'seen' set. It doesn't, and since 1 is already in 'seen', we don't add it again."
+            },
+            {
+                title: "Step 4: Check the fourth element",
+                currentIndex: 3,
+                seen: [1, 5],
+                pairs: ["(1,7)"],
+                explanation: "For the fourth element (7), we check if its complement (8 - 7 = 1) exists in the 'seen' set. It does! So we found a pair (1, 7) that sums to 8. We add this distinct pair to our 'pairs' set. We also add 7 to the 'seen' set."
+            },
+            {
+                title: "Step 5: Check the fifth element",
+                currentIndex: 4,
+                seen: [1, 5, 7],
+                pairs: ["(1,7)", "(3,5)"],
+                explanation: "For the fifth element (3), we check if its complement (8 - 3 = 5) exists in the 'seen' set. It does! So we found another pair (3, 5) that sums to 8. We add this pair to our 'pairs' set and add 3 to the 'seen' set."
+            },
+            {
+                title: "Step 6: Check the sixth element",
+                currentIndex: 5,
+                seen: [1, 5, 7, 3],
+                pairs: ["(1,7)", "(3,5)"],
+                explanation: "For the sixth element (3), we check if its complement (8 - 3 = 5) exists in the 'seen' set. It does, but we've already added the pair (3, 5) to our 'pairs' set, so we don't add a duplicate. Since 3 is already in 'seen', we don't add it again."
+            },
+            {
+                title: "Step 7: Check the final element",
+                currentIndex: 6,
+                seen: [1, 5, 7, 3],
+                pairs: ["(1,7)", "(3,5)"],
+                explanation: "For the final element (5), we check if its complement (8 - 5 = 3) exists in the 'seen' set. It does, but we've already added the pair (3, 5) to our 'pairs' set, so we don't add a duplicate. Since 5 is already in 'seen', we don't add it again."
+            },
+            {
+                title: "Algorithm Complete",
+                currentIndex: -1,
+                seen: [1, 5, 7, 3],
+                pairs: ["(1,7)", "(3,5)"],
+                explanation: "The algorithm has finished processing all elements. We found 2 distinct pairs that sum to 8: (1,7) and (3,5). The hash-based approach allowed us to find these pairs in a single pass through the array with O(n) time complexity."
+            }
+        ];
+        
+        let currentStepIndex = 0;
+        
+        // DOM Elements
+        const arrayDisplay = document.getElementById('arrayDisplay');
+        const seenSet = document.getElementById('seenSet');
+        const pairsSet = document.getElementById('pairsSet');
+        const explanation = document.getElementById('explanation');
+        const currentStep = document.getElementById('currentStep');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progress = document.getElementById('progress');
+        const complementAnimation = document.getElementById('complementAnimation');
+        
+        // Initialize the display
+        function initializeDisplay() {
+            arrayDisplay.innerHTML = '';
+            
+            // Create array cells
+            array.forEach((num, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${index}`;
+                
+                const indexElem = document.createElement('div');
+                indexElem.className = 'cell-index';
+                indexElem.textContent = index;
+                
+                cell.textContent = num;
+                cell.appendChild(indexElem);
+                arrayDisplay.appendChild(cell);
+            });
+            
+            updateDisplay();
+        }
+        
+        // Update the display based on current step
+        function updateDisplay() {
+            const step = steps[currentStepIndex];
+            
+            // Update step title
+            currentStep.textContent = step.title;
+            
+            // Update progress bar
+            progress.style.width = `${(currentStepIndex / (steps.length - 1)) * 100}%`;
+            
+            // Reset all cells
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.className = 'cell';
+            });
+            
+            // Highlight current cell
+            if (step.currentIndex >= 0) {
+                const currentCell = document.getElementById(`cell-${step.currentIndex}`);
+                currentCell.classList.add('current');
+                
+                // Show complement animation
+                const currentVal = array[step.currentIndex];
+                const complement = target - currentVal;
+                complementAnimation.style.display = 'block';
+                complementAnimation.textContent = `Looking for complement: ${target} - ${currentVal} = ${complement}`;
+                
+                // Highlight paired cell if a pair is found in this step
+                if (currentStepIndex > 0) {
+                    const prevStep = steps[currentStepIndex - 1];
+                    if (prevStep.pairs.length < step.pairs.length) {
+                        // New pair was found
+                        array.forEach((val, idx) => {
+                            if (val === complement && idx !== step.currentIndex) {
+                                const pairCell = document.getElementById(`cell-${idx}`);
+                                pairCell.classList.add('paired');
+                            }
+                        });
+                    }
+                }
+            } else {
+                complementAnimation.style.display = 'none';
+            }
+            
+            // Update seen set
+            seenSet.textContent = step.seen.length ? `{ ${step.seen.join(', ')} }` : "{ }";
+            
+            // Update pairs set
+            pairsSet.textContent = step.pairs.length ? `{ ${step.pairs.join(', ')} }` : "{ }";
+            
+            // Update explanation
+            explanation.textContent = step.explanation;
+            
+            // Update buttons
+            prevBtn.disabled = currentStepIndex === 0;
+            nextBtn.disabled = currentStepIndex === steps.length - 1;
+        }
+        
+        // Event listeners for navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateDisplay();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                updateDisplay();
+            }
+        });
+        
+        // Initialize the visualization
+        initializeDisplay();
+    </script>
+</body>
+</html>
