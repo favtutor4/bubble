@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force vs Optimized Approach</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .approach {
+            width: 48%;
+            background-color: #FFF;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .approach h2 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            background-color: #FFFFFF;
+            border: 1px solid #FD9F78;
+            border-radius: 5px;
+        }
+        
+        .explanation {
+            background-color: #FFF;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .explanation h3 {
+            color: #FF4800;
+            margin-top: 0;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .counter {
+            background-color: #FFF;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #FF4800;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .array-display {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .array-element {
+            width: 40px;
+            height: 40px;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force vs Optimized Approach</h1>
+        
+        <div class="array-display" id="array-display"></div>
+        
+        <div class="comparison">
+            <div class="approach">
+                <h2>Brute Force Approach</h2>
+                <div class="canvas-container">
+                    <canvas id="bruteForceCanvas" width="450" height="300"></canvas>
+                </div>
+                <div class="counter" id="bruteForceCounter">Combinations checked: 0 / 27</div>
+            </div>
+            
+            <div class="approach">
+                <h2>Optimized Approach</h2>
+                <div class="canvas-container">
+                    <canvas id="optimizedCanvas" width="450" height="300"></canvas>
+                </div>
+                <div class="counter" id="optimizedCounter">Combinations checked: 0</div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <h3>How it works:</h3>
+            <p id="explanationText">This animation compares two approaches for finding triplets in an array. The brute force approach checks every possible combination of three elements, while the optimized approach uses a two-pointer technique to reduce the number of combinations checked.</p>
+            <p>Click "Next" to start the animation.</p>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array to work with
+        const array = [-1, 0, 1, 2, -1, -4];
+        
+        // Initialize the display
+        const arrayDisplay = document.getElementById('array-display');
+        array.forEach((num, index) => {
+            const element = document.createElement('div');
+            element.className = 'array-element';
+            element.id = `array-element-${index}`;
+            element.textContent = num;
+            arrayDisplay.appendChild(element);
+        });
+        
+        // Canvas and contexts
+        const bfCanvas = document.getElementById('bruteForceCanvas');
+        const optCanvas = document.getElementById('optimizedCanvas');
+        const bfCtx = bfCanvas.getContext('2d');
+        const optCtx = optCanvas.getContext('2d');
+        
+        // Counters
+        const bfCounter = document.getElementById('bruteForceCounter');
+        const optCounter = document.getElementById('optimizedCounter');
+        
+        // Navigation
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanationText = document.getElementById('explanationText');
+        
+        // Animation states
+        let currentStep = 0;
+        const totalSteps = 30; // Adjust based on your animation sequence
+        
+        // Brute force combinations
+        const bruteForceCombinations = [];
+        for (let i = 0; i < array.length; i++) {
+            for (let j = i + 1; j < array.length; j++) {
+                for (let k = j + 1; k < array.length; k++) {
+                    bruteForceCombinations.push([i, j, k]);
+                }
+            }
+        }
+        
+        // Optimized approach steps
+        const optimizedSteps = [];
+        // Simulate optimized approach (two pointers)
+        array.sort((a, b) => a - b); // Sort for two-pointer approach
+        for (let i = 0; i < array.length - 2; i++) {
+            if (i > 0 && array[i] === array[i - 1]) continue; // Skip duplicates
+            
+            let left = i + 1;
+            let right = array.length - 1;
+            
+            while (left < right) {
+                optimizedSteps.push({
+                    i: i,
+                    left: left,
+                    right: right,
+                    sum: array[i] + array[left] + array[right]
+                });
+                
+                if (array[i] + array[left] + array[right] < 0) {
+                    left++;
+                } else if (array[i] + array[left] + array[right] > 0) {
+                    right--;
+                } else {
+                    // Found a triplet
+                    left++;
+                    right--;
+                    // Skip duplicates
+                    while (left < right && array[left] === array[left - 1]) left++;
+                    while (left < right && array[right] === array[right + 1]) right--;
+                }
+            }
+        }
+        
+        // Draw functions
+        function drawBruteForce(step) {
+            bfCtx.clearRect(0, 0, bfCanvas.width, bfCanvas.height);
+            
+            // Title
+            bfCtx.fillStyle = "#000000";
+            bfCtx.font = "16px Arial";
+            bfCtx.fillText("Checking all possible triplet combinations", 40, 30);
+            
+            if (step === 0) {
+                // Initial state
+                bfCtx.fillText("Click 'Next' to start", 140, 150);
+                return;
+            }
+            
+            // Draw the combinations checked so far
+            const combinationsToShow = Math.min(step, bruteForceCombinations.length);
+            bfCounter.textContent = `Combinations checked: ${combinationsToShow} / ${bruteForceCombinations.length}`;
+            
+            const boxSize = 40;
+            const startX = 50;
+            const startY = 60;
+            const cols = 5;
+            
+            for (let i = 0; i < combinationsToShow; i++) {
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+                
+                const x = startX + col * (boxSize + 30);
+                const y = startY + row * (boxSize + 20);
+                
+                const [a, b, c] = bruteForceCombinations[i];
+                
+                // Highlight the current combination
+                if (i === combinationsToShow - 1) {
+                    bfCtx.fillStyle = "#FF4800";
+                } else {
+                    bfCtx.fillStyle = "#FD9F78";
+                }
+                
+                bfCtx.fillRect(x, y, boxSize * 3 + 20, boxSize);
+                bfCtx.fillStyle = "#FFFFFF";
+                bfCtx.font = "14px Arial";
+                bfCtx.fillText(`${array[a]},${array[b]},${array[c]}`, x + 5, y + boxSize/2 + 5);
+            }
+            
+            // Highlight elements in the array display
+            if (step <= bruteForceCombinations.length) {
+                document.querySelectorAll('.array-element').forEach(el => el.classList.remove('highlighted'));
+                
+                if (step > 0) {
+                    const [a, b, c] = bruteForceCombinations[step - 1];
+                    document.getElementById(`array-element-${a}`).classList.add('highlighted');
+                    document.getElementById(`array-element-${b}`).classList.add('highlighted');
+                    document.getElementById(`array-element-${c}`).classList.add('highlighted');
+                }
+            }
+        }
+        
+        function drawOptimized(step) {
+            optCtx.clearRect(0, 0, optCanvas.width, optCanvas.height);
+            
+            // Title
+            optCtx.fillStyle = "#000000";
+            optCtx.font = "16px Arial";
+            optCtx.fillText("Two-Pointer Approach (after sorting)", 40, 30);
+            
+            if (step === 0) {
+                // Initial state
+                optCtx.fillText("Click 'Next' to start", 140, 150);
+                return;
+            }
+            
+            // Draw array
+            const boxSize = 40;
+            const startX = 60;
+            const startY = 80;
+            
+            // Sort the array for two-pointer approach
+            const sortedArray = [...array].sort((a, b) => a - b);
+            
+            for (let i = 0; i < sortedArray.length; i++) {
+                optCtx.fillStyle = "#FD9F78";
+                optCtx.fillRect(startX + i * (boxSize + 10), startY, boxSize, boxSize);
+                
+                optCtx.fillStyle = "#000000";
+                optCtx.font = "16px Arial";
+                optCtx.fillText(sortedArray[i], startX + i * (boxSize + 10) + boxSize/3, startY + boxSize/2 + 5);
+            }
+            
+            // Show the optimized approach steps
+            const stepsToShow = Math.min(step, optimizedSteps.length);
+            optCounter.textContent = `Combinations checked: ${stepsToShow}`;
+            
+            if (step <= optimizedSteps.length && step > 0) {
+                const currentStep = optimizedSteps[step - 1];
+                
+                // Draw pointers
+                optCtx.fillStyle = "#FF4800";
+                
+                // Draw i pointer
+                optCtx.beginPath();
+                optCtx.moveTo(startX + currentStep.i * (boxSize + 10) + boxSize/2, startY + boxSize + 10);
+                optCtx.lineTo(startX + currentStep.i * (boxSize + 10) + boxSize/2 - 10, startY + boxSize + 25);
+                optCtx.lineTo(startX + currentStep.i * (boxSize + 10) + boxSize/2 + 10, startY + boxSize + 25);
+                optCtx.closePath();
+                optCtx.fill();
+                optCtx.fillText("i", startX + currentStep.i * (boxSize + 10) + boxSize/2 - 5, startY + boxSize + 40);
+                
+                // Draw left pointer
+                optCtx.beginPath();
+                optCtx.moveTo(startX + currentStep.left * (boxSize + 10) + boxSize/2, startY + boxSize + 10);
+                optCtx.lineTo(startX + currentStep.left * (boxSize + 10) + boxSize/2 - 10, startY + boxSize + 25);
+                optCtx.lineTo(startX + currentStep.left * (boxSize + 10) + boxSize/2 + 10, startY + boxSize + 25);
+                optCtx.closePath();
+                optCtx.fill();
+                optCtx.fillText("left", startX + currentStep.left * (boxSize + 10) + boxSize/2 - 12, startY + boxSize + 40);
+                
+                // Draw right pointer
+                optCtx.beginPath();
+                optCtx.moveTo(startX + currentStep.right * (boxSize + 10) + boxSize/2, startY + boxSize + 10);
+                optCtx.lineTo(startX + currentStep.right * (boxSize + 10) + boxSize/2 - 10, startY + boxSize + 25);
+                optCtx.lineTo(startX + currentStep.right * (boxSize + 10) + boxSize/2 + 10, startY + boxSize + 25);
+                optCtx.closePath();
+                optCtx.fill();
+                optCtx.fillText("right", startX + currentStep.right * (boxSize + 10) + boxSize/2 - 15, startY + boxSize + 40);
+                
+                // Current sum
+                optCtx.fillStyle = "#000000";
+                optCtx.fillText(`Current sum: ${currentStep.sum}`, startX, startY + boxSize + 70);
+                
+                if (currentStep.sum < 0) {
+                    optCtx.fillText("Sum < 0, need to increase sum → move left pointer right", startX, startY + boxSize + 90);
+                } else if (currentStep.sum > 0) {
+                    optCtx.fillText("Sum > 0, need to decrease sum → move right pointer left", startX, startY + boxSize + 90);
+                } else {
+                    optCtx.fillText("Sum = 0, found a triplet! Move both pointers", startX, startY + boxSize + 90);
+                }
+            }
+        }
+        
+        // Update explanation based on step
+        function updateExplanation(step) {
+            if (step === 0) {
+                explanationText.textContent = "This animation compares two approaches for finding triplets in an array. The brute force approach checks every possible combination of three elements, while the optimized approach uses a two-pointer technique to reduce the number of combinations checked.";
+            } else if (step <= bruteForceCombinations.length / 3) {
+                explanationText.textContent = "Brute Force Approach: We check every possible combination of three elements in the array. For an array of 6 elements, there are 20 different triplet combinations to check, making it inefficient for larger arrays.";
+            } else if (step <= bruteForceCombinations.length * 2 / 3) {
+                explanationText.textContent = "Brute Force has O(n³) time complexity because of the three nested loops needed to check all possible triplet combinations. Notice how the number of combinations grows quickly as array size increases.";
+            } else if (step <= bruteForceCombinations.length) {
+                explanationText.textContent = "The brute force approach keeps checking all combinations regardless of patterns or previous results. This makes it exhaustive but inefficient.";
+            } else if (step <= bruteForceCombinations.length + optimizedSteps.length / 3) {
+                explanationText.textContent = "Optimized Approach: First, we sort the array (not shown in animation). Then use three pointers: i (fixed), left (starts right after i), and right (starts at the end). This reduces the search space significantly.";
+            } else if (step <= bruteForceCombinations.length + optimizedSteps.length * 2 / 3) {
+                explanationText.textContent = "For each fixed element (i), we use two pointers (left and right) to find pairs that sum with the fixed element to zero. If the sum is less than zero, we move left pointer right; if more than zero, we move right pointer left.";
+            } else {
+                explanationText.textContent = "The optimized approach has O(n²) time complexity, as we have one loop for i and the two-pointer approach takes linear time. Notice how many fewer combinations we check compared to brute force!";
+            }
+        }
+        
+        // Initial draw
+        drawBruteForce(0);
+        drawOptimized(0);
+        
+        // Navigation handlers
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateAnimation();
+                prevBtn.disabled = false;
+                if (currentStep === totalSteps) {
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateAnimation();
+                nextBtn.disabled = false;
+                if (currentStep === 0) {
+                    prevBtn.disabled = true;
+                }
+            }
+        });
+        
+        function updateAnimation() {
+            // Map the current step to appropriate drawing state for both animations
+            const bruteForceStep = Math.min(currentStep, bruteForceCombinations.length);
+            const optimizedStep = Math.max(0, currentStep - bruteForceCombinations.length);
+            
+            drawBruteForce(bruteForceStep);
+            drawOptimized(optimizedStep);
+            updateExplanation(currentStep);
+        }
+    </script>
+</body>
+</html>
