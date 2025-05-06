@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search in Rotated Array</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            margin: 30px 0;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #FFFFFF;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            color: #000000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Search in Rotated Array</h1>
+        
+        <div class="explanation" id="explanation">
+            Welcome to Binary Search in Rotated Array! This animation will show how to find the minimum element in a rotated sorted array using binary search.
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="binarySearchCanvas"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-counter" id="stepCounter">Step 0 of 0</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('binarySearchCanvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounter = document.getElementById('stepCounter');
+        const explanationEl = document.getElementById('explanation');
+        
+        // Set canvas size to match container
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Colors
+        const COLORS = {
+            primary: '#FF4800',
+            secondary: '#FD9F78',
+            black: '#000000',
+            white: '#FFFFFF',
+            highlight: '#FF4800',
+            lowlight: '#CCCCCC'
+        };
+        
+        // Array to visualize
+        const arr = [4, 5, 6, 7, 0, 1, 2];
+        
+        // Animation steps
+        const steps = [
+            {
+                text: "Let's find the minimum element in the rotated sorted array [4, 5, 6, 7, 0, 1, 2] using binary search.",
+                left: 0,
+                right: arr.length - 1,
+                mid: null,
+                highlight: null,
+                comparison: null
+            },
+            {
+                text: "Initialize left=0 and right=6 (first and last indices). Calculate mid = Math.floor((0 + 6) / 2) = 3.",
+                left: 0,
+                right: 6,
+                mid: 3,
+                highlight: [0, 6, 3],
+                comparison: "Compare arr[mid]=7 with arr[right]=2"
+            },
+            {
+                text: "Since arr[mid]=7 > arr[right]=2, the minimum element must be in the right half. Set left = mid + 1 = 4.",
+                left: 4,
+                right: 6,
+                mid: 3,
+                highlight: [4, 6],
+                comparison: "arr[mid]=7 > arr[right]=2, so search right half"
+            },
+            {
+                text: "Calculate new mid = Math.floor((4 + 6) / 2) = 5.",
+                left: 4,
+                right: 6,
+                mid: 5,
+                highlight: [4, 6, 5],
+                comparison: "Compare arr[mid]=1 with arr[right]=2"
+            },
+            {
+                text: "Since arr[mid]=1 < arr[right]=2, the minimum might be arr[mid] or in the left half. Set right = mid = 5.",
+                left: 4,
+                right: 5,
+                mid: 5,
+                highlight: [4, 5],
+                comparison: "arr[mid]=1 < arr[right]=2, so search left half including mid"
+            },
+            {
+                text: "Calculate new mid = Math.floor((4 + 5) / 2) = 4.",
+                left: 4,
+                right: 5,
+                mid: 4,
+                highlight: [4, 5, 4],
+                comparison: "Compare arr[mid]=0 with arr[right]=1"
+            },
+            {
+                text: "Since arr[mid]=0 < arr[right]=1, the minimum might be arr[mid] or in the left half. Set right = mid = 4.",
+                left: 4,
+                right: 4,
+                mid: 4,
+                highlight: [4],
+                comparison: "arr[mid]=0 < arr[right]=1, so search left half (which is just mid)"
+            },
+            {
+                text: "Left and right pointers have converged to index 4 with value 0. This is our minimum element!",
+                left: 4,
+                right: 4,
+                mid: 4,
+                highlight: [4],
+                comparison: "We found the minimum element at index 4 with value 0",
+                finalResult: 4
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        // Update UI based on current step
+        function updateUI() {
+            // Update step counter
+            stepCounter.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+            
+            // Update explanation
+            explanationEl.textContent = steps[currentStep].text;
+            
+            // Draw the visualization
+            drawVisualization();
+        }
+        
+        // Draw the visualization
+        function drawVisualization() {
+            const step = steps[currentStep];
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const boxWidth = 60;
+            const boxHeight = 60;
+            const startX = (canvas.width - (arr.length * boxWidth)) / 2;
+            const startY = 50;
+            
+            // Draw array
+            for (let i = 0; i < arr.length; i++) {
+                const x = startX + i * boxWidth;
+                
+                // Box color logic
+                let fillColor = COLORS.white;
+                let strokeColor = COLORS.black;
+                let textColor = COLORS.black;
+                
+                if (step.highlight && step.highlight.includes(i)) {
+                    if (i === step.mid) {
+                        fillColor = COLORS.primary;
+                        textColor = COLORS.white;
+                    } else if (i === step.left || i === step.right) {
+                        fillColor = COLORS.secondary;
+                    }
+                }
+                
+                // Draw box
+                ctx.fillStyle = fillColor;
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, startY, boxWidth, boxHeight);
+                ctx.strokeRect(x, startY, boxWidth, boxHeight);
+                
+                // Draw value
+                ctx.fillStyle = textColor;
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(arr[i], x + boxWidth/2, startY + boxHeight/2);
+                
+                // Draw index
+                ctx.fillStyle = COLORS.black;
+                ctx.font = '16px Arial';
+                ctx.fillText(i, x + boxWidth/2, startY + boxHeight + 20);
+            }
+            
+            // Draw pointers
+            const pointerY = startY + boxHeight + 50;
+            
+            if (step.left !== null) {
+                drawPointer(startX + step.left * boxWidth + boxWidth/2, pointerY, "left");
+            }
+            
+            if (step.right !== null) {
+                drawPointer(startX + step.right * boxWidth + boxWidth/2, pointerY, "right");
+            }
+            
+            if (step.mid !== null) {
+                drawPointer(startX + step.mid * boxWidth + boxWidth/2, pointerY, "mid");
+            }
+            
+            // Draw comparison
+            if (step.comparison) {
+                ctx.fillStyle = COLORS.black;
+                ctx.font = '18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(step.comparison, canvas.width / 2, pointerY + 70);
+            }
+            
+            // Draw final result
+            if (step.finalResult !== undefined) {
+                const resultY = pointerY + 120;
+                ctx.fillStyle = COLORS.primary;
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Minimum element found: ${arr[step.finalResult]} at index ${step.finalResult}`, 
+                             canvas.width / 2, resultY);
+            }
+            
+            // Draw decision tree if needed
+            if (currentStep >= 1) {
+                drawDecisionTree();
+            }
+        }
+        
+        function drawPointer(x, y, label) {
+            ctx.fillStyle = COLORS.black;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 15);
+            ctx.lineTo(x - 10, y - 30);
+            ctx.lineTo(x + 10, y - 30);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y - 5);
+        }
+        
+        function drawDecisionTree() {
+            const treeStartX = canvas.width / 2;
+            const treeStartY = 280;
+            const levelHeight = 70;
+            const nodeRadius = 25;
+            
+            // Logic to draw decision tree based on current step
+            // Only show parts of the tree that have been reached in the current step
+            if (currentStep >= 1) {
+                // Root node
+                drawTreeNode(treeStartX, treeStartY, "mid=3\n(7)", currentStep >= 1);
+                
+                if (currentStep >= 2) {
+                    // Draw line to right subtree
+                    ctx.strokeStyle = COLORS.black;
+                    ctx.beginPath();
+                    ctx.moveTo(treeStartX + nodeRadius - 5, treeStartY + 5);
+                    ctx.lineTo(treeStartX + 100, treeStartY + levelHeight - nodeRadius);
+                    ctx.stroke();
+                    
+                    // Label the decision
+                    ctx.fillStyle = COLORS.primary;
+                    ctx.font = '12px Arial';
+                    ctx.fillText("7 > 2, go right", treeStartX + 50, treeStartY + 25);
+                }
+                
+                if (currentStep >= 3) {
+                    // Right child
+                    drawTreeNode(treeStartX + 100, treeStartY + levelHeight, "mid=5\n(1)", currentStep >= 3);
+                }
+                
+                if (currentStep >= 4) {
+                    // Draw line to left subtree of right child
+                    ctx.strokeStyle = COLORS.black;
+                    ctx.beginPath();
+                    ctx.moveTo(treeStartX + 100 - nodeRadius + 5, treeStartY + levelHeight + 5);
+                    ctx.lineTo(treeStartX + 50, treeStartY + 2 * levelHeight - nodeRadius);
+                    ctx.stroke();
+                    
+                    // Label the decision
+                    ctx.fillStyle = COLORS.primary;
+                    ctx.font = '12px Arial';
+                    ctx.fillText("1 < 2, go left", treeStartX + 50, treeStartY + levelHeight + 25);
+                }
+                
+                if (currentStep >= 5) {
+                    // Left child of right child
+                    drawTreeNode(treeStartX + 50, treeStartY + 2 * levelHeight, "mid=4\n(0)", currentStep >= 5);
+                }
+                
+                if (currentStep >= 7) {
+                    // Final result highlight
+                    ctx.strokeStyle = COLORS.primary;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(treeStartX + 50, treeStartY + 2 * levelHeight, nodeRadius + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = COLORS.primary;
+                    ctx.font = '14px Arial';
+                    ctx.fillText("Found minimum!", treeStartX + 50, treeStartY + 2 * levelHeight + nodeRadius + 20);
+                }
+            }
+        }
+        
+        function drawTreeNode(x, y, text, isActive) {
+            // Node circle
+            ctx.fillStyle = isActive ? COLORS.secondary : COLORS.lowlight;
+            ctx.beginPath();
+            ctx.arc(x, y, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = COLORS.black;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Node text
+            ctx.fillStyle = COLORS.black;
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            
+            // Handle multi-line text
+            const lines = text.split('\n');
+            const lineHeight = 15;
+            let offsetY = y - ((lines.length - 1) * lineHeight / 2);
+            
+            lines.forEach(line => {
+                ctx.fillText(line, x, offsetY);
+                offsetY += lineHeight;
+            });
+        }
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        });
+        
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>
