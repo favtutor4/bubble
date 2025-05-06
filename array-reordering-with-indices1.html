@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Reordering Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #container {
+            width: 700px;
+            height: 400px;
+            position: relative;
+            margin: 20px auto;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 100px;
+        }
+        
+        .element-box {
+            width: 60px;
+            height: 60px;
+            margin: 0 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .original {
+            background-color: #FD9F78;
+            border: 2px solid #FF4800;
+        }
+        
+        .indices {
+            background-color: #FFFFFF;
+            border: 2px solid #000000;
+        }
+        
+        .reordered {
+            background-color: #FF4800;
+            border: 2px solid #000000;
+            color: #FFFFFF;
+            opacity: 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .arrow-line {
+            position: absolute;
+            background-color: #000000;
+            height: 2px;
+            transform-origin: left center;
+        }
+        
+        .arrow-head {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 6px 0 6px 12px;
+            border-color: transparent transparent transparent #000000;
+        }
+        
+        .step-description {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Array Reordering Visualization</h1>
+    
+    <div class="step-description" id="step-description">
+        Starting with our original array and indices array
+    </div>
+    
+    <div id="container">
+        <div class="array-container" id="originalArray">
+            <div class="element-box original" id="orig-0">10</div>
+            <div class="element-box original" id="orig-1">20</div>
+            <div class="element-box original" id="orig-2">30</div>
+            <div class="element-box original" id="orig-3">40</div>
+        </div>
+        
+        <div class="array-container" id="indicesArray">
+            <div class="element-box indices" id="idx-0">3</div>
+            <div class="element-box indices" id="idx-1">0</div>
+            <div class="element-box indices" id="idx-2">2</div>
+            <div class="element-box indices" id="idx-3">1</div>
+        </div>
+        
+        <div class="array-container" id="reorderedArray">
+            <div class="element-box reordered" id="reord-0">20</div>
+            <div class="element-box reordered" id="reord-1">40</div>
+            <div class="element-box reordered" id="reord-2">30</div>
+            <div class="element-box reordered" id="reord-3">10</div>
+        </div>
+    </div>
+    
+    <div class="nav-buttons">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn">Next</button>
+    </div>
+    
+    <script>
+        const originalArray = [10, 20, 30, 40];
+        const indicesArray = [3, 0, 2, 1];
+        const reorderedArray = [];
+        
+        // Calculate the reordered array
+        for(let i = 0; i < indicesArray.length; i++) {
+            reorderedArray[indicesArray[i]] = originalArray[i];
+        }
+        
+        const steps = [
+            {
+                description: "Starting with our original array and indices array",
+                action: () => {
+                    // Initial display, no action needed
+                }
+            },
+            {
+                description: "The indices array tells us where each element should go in the new array",
+                action: () => {
+                    // Highlight the indices array
+                    for(let i = 0; i < indicesArray.length; i++) {
+                        document.getElementById(`idx-${i}`).style.backgroundColor = "#FF4800";
+                        document.getElementById(`idx-${i}`).style.color = "#FFFFFF";
+                    }
+                }
+            },
+            {
+                description: "Element 10 (index 0) should go to position 3 in the new array",
+                action: () => {
+                    // Reset previous highlights
+                    resetHighlights();
+                    
+                    // Highlight the elements involved
+                    document.getElementById(`orig-0`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`orig-0`).style.color = "#FFFFFF";
+                    document.getElementById(`idx-0`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`idx-0`).style.color = "#FFFFFF";
+                    
+                    // Show the arrow
+                    createArrow("orig-0", "reord-3");
+                    
+                    // Show the destination
+                    document.getElementById(`reord-3`).style.opacity = "1";
+                }
+            },
+            {
+                description: "Element 20 (index 1) should go to position 0 in the new array",
+                action: () => {
+                    // Reset previous highlights
+                    resetHighlights();
+                    
+                    document.getElementById(`orig-1`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`orig-1`).style.color = "#FFFFFF";
+                    document.getElementById(`idx-1`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`idx-1`).style.color = "#FFFFFF";
+                    
+                    createArrow("orig-1", "reord-0");
+                    document.getElementById(`reord-0`).style.opacity = "1";
+                }
+            },
+            {
+                description: "Element 30 (index 2) should go to position 2 in the new array",
+                action: () => {
+                    // Reset previous highlights
+                    resetHighlights();
+                    
+                    document.getElementById(`orig-2`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`orig-2`).style.color = "#FFFFFF";
+                    document.getElementById(`idx-2`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`idx-2`).style.color = "#FFFFFF";
+                    
+                    createArrow("orig-2", "reord-2");
+                    document.getElementById(`reord-2`).style.opacity = "1";
+                }
+            },
+            {
+                description: "Element 40 (index 3) should go to position 1 in the new array",
+                action: () => {
+                    // Reset previous highlights
+                    resetHighlights();
+                    
+                    document.getElementById(`orig-3`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`orig-3`).style.color = "#FFFFFF";
+                    document.getElementById(`idx-3`).style.backgroundColor = "#FF4800";
+                    document.getElementById(`idx-3`).style.color = "#FFFFFF";
+                    
+                    createArrow("orig-3", "reord-1");
+                    document.getElementById(`reord-1`).style.opacity = "1";
+                }
+            },
+            {
+                description: "The final reordered array is [20, 40, 30, 10]",
+                action: () => {
+                    // Reset highlights and show all elements in final array
+                    resetHighlights();
+                    removeAllArrows();
+                    
+                    for(let i = 0; i < reorderedArray.length; i++) {
+                        document.getElementById(`reord-${i}`).style.opacity = "1";
+                    }
+                }
+            }
+        ];
+        
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepDescription = document.getElementById('step-description');
+        
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        function resetHighlights() {
+            // Reset original array highlights
+            for(let i = 0; i < originalArray.length; i++) {
+                document.getElementById(`orig-${i}`).style.backgroundColor = "#FD9F78";
+                document.getElementById(`orig-${i}`).style.color = "#000000";
+            }
+            
+            // Reset indices array highlights
+            for(let i = 0; i < indicesArray.length; i++) {
+                document.getElementById(`idx-${i}`).style.backgroundColor = "#FFFFFF";
+                document.getElementById(`idx-${i}`).style.color = "#000000";
+            }
+            
+            // Remove all arrows
+            removeAllArrows();
+        }
+        
+        function removeAllArrows() {
+            const arrows = document.querySelectorAll('.arrow');
+            arrows.forEach(arrow => {
+                arrow.remove();
+            });
+        }
+        
+        function createArrow(fromId, toId) {
+            removeAllArrows();
+            
+            const fromElement = document.getElementById(fromId);
+            const toElement = document.getElementById(toId);
+            
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            
+            const container = document.getElementById('container');
+            const containerRect = container.getBoundingClientRect();
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            container.appendChild(arrow);
+            
+            const fromX = fromRect.left + fromRect.width/2 - containerRect.left;
+            const fromY = fromRect.top + fromRect.height/2 - containerRect.top;
+            const toX = toRect.left + toRect.width/2 - containerRect.left;
+            const toY = toRect.top + toRect.height/2 - containerRect.top;
+            
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            const arrowLine = document.createElement('div');
+            arrowLine.className = 'arrow-line';
+            arrowLine.style.width = `${length - 10}px`;
+            arrowLine.style.transform = `translate(${fromX}px, ${fromY}px) rotate(${angle}deg)`;
+            arrowLine.style.top = '0';
+            arrowLine.style.left = '0';
+            
+            const arrowHead = document.createElement('div');
+            arrowHead.className = 'arrow-head';
+            arrowHead.style.transform = `translate(${toX - 12}px, ${toY - 6}px) rotate(${angle}deg)`;
+            arrowHead.style.top = '0';
+            arrowHead.style.left = '0';
+            
+            arrow.appendChild(arrowLine);
+            arrow.appendChild(arrowHead);
+            arrow.style.opacity = '1';
+        }
+        
+        function goToStep(step) {
+            // Update description
+            stepDescription.textContent = steps[step].description;
+            
+            // Execute step action
+            steps[step].action();
+            
+            // Update buttons
+            updateButtons();
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                goToStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                goToStep(currentStep);
+            }
+        });
+        
+        // Initialize the visualization
+        goToStep(0);
+    </script>
+</body>
+</html>
