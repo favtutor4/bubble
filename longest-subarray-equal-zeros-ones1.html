@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Array Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid #000000;
+            transition: all 0.5s ease;
+        }
+        .element-0 {
+            background-color: #FD9F78;
+        }
+        .element-1 {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .highlighted {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid #000000;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            text-align: left;
+            min-height: 120px;
+        }
+        .count-display {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .count-box {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .zeros-count {
+            background-color: #FD9F78;
+            border: 2px solid #FF4800;
+        }
+        .ones-count {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: 2px solid #FF4800;
+        }
+        .nav-buttons {
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Array Visualization</h1>
+        <div id="array-container" class="array-container"></div>
+        
+        <div class="count-display">
+            <div class="count-box zeros-count">Zeros: <span id="zeros-count">0</span></div>
+            <div class="count-box ones-count">Ones: <span id="ones-count">0</span></div>
+        </div>
+        
+        <div class="explanation" id="explanation"></div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 1/5</div>
+    </div>
+
+    <script>
+        const array = [0, 1, 0, 1, 1, 0, 0];
+        const longestSubarray = [1, 6]; // Start and end indices of the longest subarray
+        
+        let currentStep = 0;
+        const steps = [
+            {
+                title: "Original Array",
+                highlight: [],
+                explanation: "This is our binary array [0, 1, 0, 1, 1, 0, 0]. We want to find the longest subarray with an equal number of 0s and 1s.",
+                zeros: 0,
+                ones: 0
+            },
+            {
+                title: "Start Analyzing",
+                highlight: [0],
+                explanation: "Let's start analyzing the array from the first element. We'll track the count of 0s and 1s as we move through the array.",
+                zeros: 1,
+                ones: 0
+            },
+            {
+                title: "Check for Equal Counts",
+                highlight: [0, 1],
+                explanation: "We now have 1 zero and 1 one. This subarray [0, 1] has an equal count of 0s and 1s, making it a valid subarray.",
+                zeros: 1,
+                ones: 1
+            },
+            {
+                title: "Continue Checking",
+                highlight: [0, 1, 2, 3, 4, 5],
+                explanation: "As we continue, we find that the subarray from index 0 to 5 [0, 1, 0, 1, 1, 0] contains 3 zeros and 3 ones, making it a valid subarray with equal counts.",
+                zeros: 3,
+                ones: 3
+            },
+            {
+                title: "Final Result",
+                highlight: [0, 1, 2, 3, 4, 5],
+                explanation: "The longest subarray with an equal count of 0s and 1s is [0, 1, 0, 1, 1, 0] with a length of 6 elements. It contains exactly 3 zeros and 3 ones.",
+                zeros: 3,
+                ones: 3
+            }
+        ];
+        
+        function renderArray() {
+            const arrayContainer = document.getElementById('array-container');
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = `array-element element-${array[i]}`;
+                element.textContent = array[i];
+                
+                if (steps[currentStep].highlight.includes(i)) {
+                    element.classList.add('highlighted');
+                }
+                
+                arrayContainer.appendChild(element);
+            }
+            
+            document.getElementById('explanation').textContent = steps[currentStep].explanation;
+            document.getElementById('zeros-count').textContent = steps[currentStep].zeros;
+            document.getElementById('ones-count').textContent = steps[currentStep].ones;
+            document.getElementById('step-indicator').textContent = `Step ${currentStep + 1}/${steps.length}`;
+            
+            document.getElementById('prevBtn').disabled = (currentStep === 0);
+            document.getElementById('nextBtn').disabled = (currentStep === steps.length - 1);
+        }
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderArray();
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderArray();
+            }
+        });
+        
+        // Initial render
+        renderArray();
+    </script>
+</body>
+</html>
