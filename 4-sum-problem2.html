@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force vs. Optimized Approach Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 30px;
+        }
+        
+        .approach {
+            background-color: #FFFFFF;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            width: 45%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .approach h2 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .complexity {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #FF4800;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 300px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        canvas {
+            border: 1px solid #FD9F78;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            color: #000000;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Brute Force vs. Optimized Approach Comparison</h1>
+    
+    <div class="container">
+        <div class="approach">
+            <h2>Brute Force Approach</h2>
+            <div class="complexity">Time Complexity: O(n⁴)</div>
+            <div class="canvas-container">
+                <canvas id="bruteForceCanvas" width="500" height="300"></canvas>
+            </div>
+            <div class="explanation" id="bruteExplanation">
+                The brute force approach uses four nested loops to check all possible combinations. This results in a time complexity of O(n⁴), which becomes very slow for large inputs.
+            </div>
+        </div>
+        
+        <div class="approach">
+            <h2>Optimized Approach</h2>
+            <div class="complexity">Time Complexity: O(n³)</div>
+            <div class="canvas-container">
+                <canvas id="optimizedCanvas" width="500" height="300"></canvas>
+            </div>
+            <div class="explanation" id="optimizedExplanation">
+                The optimized approach uses two outer loops and a two-pointer technique for the inner operation, reducing the time complexity to O(n³), which is significantly faster.
+            </div>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+        <button id="nextBtn" class="nav-btn">Next</button>
+    </div>
+    
+    <div class="step-indicator" id="stepIndicator">Step 1 of 6</div>
+
+    <script>
+        // Canvas setup
+        const bfCanvas = document.getElementById('bruteForceCanvas');
+        const optCanvas = document.getElementById('optimizedCanvas');
+        const bfCtx = bfCanvas.getContext('2d');
+        const optCtx = optCanvas.getContext('2d');
+        
+        // Navigation elements
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const bruteExplanation = document.getElementById('bruteExplanation');
+        const optimizedExplanation = document.getElementById('optimizedExplanation');
+        
+        // Animation state
+        let currentStep = 1;
+        const totalSteps = 6;
+        
+        // Colors
+        const primaryColor = '#FF4800';
+        const secondaryColor = '#FD9F78';
+        const blackColor = '#000000';
+        const whiteColor = '#FFFFFF';
+        
+        // Update navigation buttons
+        function updateNavButtons() {
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+            stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+        
+        // Clear canvases
+        function clearCanvases() {
+            bfCtx.clearRect(0, 0, bfCanvas.width, bfCanvas.height);
+            optCtx.clearRect(0, 0, optCanvas.width, optCanvas.height);
+        }
+        
+        // Draw nested loops for brute force
+        function drawBruteForceLoops(activeLevel) {
+            const centerX = bfCanvas.width / 2;
+            const centerY = bfCanvas.height / 2;
+            const loopWidth = 80;
+            const loopHeight = 60;
+            const spacing = 40;
+            
+            // Draw 4 nested loops
+            for (let i = 0; i < 4; i++) {
+                const width = loopWidth + i * spacing;
+                const height = loopHeight + i * spacing;
+                const x = centerX - width / 2;
+                const y = centerY - height / 2;
+                
+                bfCtx.beginPath();
+                bfCtx.rect(x, y, width, height);
+                
+                if (i <= activeLevel) {
+                    bfCtx.fillStyle = i === activeLevel ? primaryColor : secondaryColor;
+                    bfCtx.fill();
+                    
+                    // Add loop label
+                    bfCtx.fillStyle = whiteColor;
+                    bfCtx.font = '14px Arial';
+                    bfCtx.textAlign = 'center';
+                    bfCtx.textBaseline = 'middle';
+                    bfCtx.fillText(`Loop ${i + 1}`, centerX, y + 15);
+                } else {
+                    bfCtx.strokeStyle = '#CCCCCC';
+                    bfCtx.stroke();
+                }
+            }
+            
+            // Draw complexity indicator
+            if (activeLevel === 3) {
+                bfCtx.fillStyle = blackColor;
+                bfCtx.font = 'bold 16px Arial';
+                bfCtx.textAlign = 'center';
+                bfCtx.fillText('4 nested loops = O(n⁴)', centerX, centerY + 120);
+            }
+        }
+        
+        // Draw optimized approach with two-pointer technique
+        function drawOptimizedApproach(activeLevel) {
+            const centerX = optCanvas.width / 2;
+            const centerY = optCanvas.height / 2;
+            const loopWidth = 80;
+            const loopHeight = 60;
+            const spacing = 40;
+            
+            // Draw 2 outer loops
+            for (let i = 0; i < 2; i++) {
+                const width = loopWidth + i * spacing;
+                const height = loopHeight + i * spacing;
+                const x = centerX - width / 2;
+                const y = centerY - height / 2 - 50;
+                
+                optCtx.beginPath();
+                optCtx.rect(x, y, width, height);
+                
+                if (i <= activeLevel || (activeLevel >= 2 && i < 2)) {
+                    optCtx.fillStyle = i === activeLevel ? primaryColor : secondaryColor;
+                    optCtx.fill();
+                    
+                    // Add loop label
+                    optCtx.fillStyle = whiteColor;
+                    optCtx.font = '14px Arial';
+                    optCtx.textAlign = 'center';
+                    optCtx.textBaseline = 'middle';
+                    optCtx.fillText(`Loop ${i + 1}`, centerX, y + 15);
+                } else {
+                    optCtx.strokeStyle = '#CCCCCC';
+                    optCtx.stroke();
+                }
+            }
+            
+            // Draw two-pointer technique
+            if (activeLevel >= 2) {
+                // Draw the array
+                const arrayWidth = 200;
+                const arrayHeight = 40;
+                const arrayX = centerX - arrayWidth / 2;
+                const arrayY = centerY + 30;
+                
+                optCtx.fillStyle = secondaryColor;
+                optCtx.fillRect(arrayX, arrayY, arrayWidth, arrayHeight);
+                
+                optCtx.fillStyle = blackColor;
+                optCtx.font = '14px Arial';
+                optCtx.textAlign = 'center';
+                optCtx.textBaseline = 'middle';
+                optCtx.fillText('Array', centerX, arrayY + arrayHeight / 2);
+                
+                // Draw pointers
+                if (activeLevel === 2) {
+                    // Initial position
+                    drawPointer(arrayX + 20, arrayY + arrayHeight + 15, "left");
+                    drawPointer(arrayX + arrayWidth - 20, arrayY + arrayHeight + 15, "right");
+                } else if (activeLevel >= 3) {
+                    // Moving pointers
+                    const leftPos = arrayX + 20 + (activeLevel - 3) * 40;
+                    const rightPos = arrayX + arrayWidth - 20 - (activeLevel - 3) * 40;
+                    
+                    drawPointer(leftPos, arrayY + arrayHeight + 15, "left");
+                    drawPointer(rightPos, arrayY + arrayHeight + 15, "right");
+                }
+                
+                // Draw complexity indicator
+                optCtx.fillStyle = blackColor;
+                optCtx.font = 'bold 16px Arial';
+                optCtx.textAlign = 'center';
+                optCtx.fillText('2 loops + 2-pointer = O(n³)', centerX, arrayY + arrayHeight + 50);
+            }
+        }
+        
+        function drawPointer(x, y, type) {
+            optCtx.fillStyle = primaryColor;
+            optCtx.beginPath();
+            optCtx.moveTo(x, y);
+            if (type === "left") {
+                optCtx.lineTo(x - 10, y + 10);
+                optCtx.lineTo(x + 10, y + 10);
+            } else {
+                optCtx.lineTo(x - 10, y + 10);
+                optCtx.lineTo(x + 10, y + 10);
+            }
+            optCtx.closePath();
+            optCtx.fill();
+            
+            optCtx.fillStyle = blackColor;
+            optCtx.font = '12px Arial';
+            optCtx.textAlign = 'center';
+            optCtx.fillText(type === "left" ? "Left" : "Right", x, y + 25);
+        }
+        
+        // Update explanations based on current step
+        function updateExplanations() {
+            switch (currentStep) {
+                case 1:
+                    bruteExplanation.innerHTML = "In the brute force approach, we start with the first loop (i) that iterates through all elements of the array.";
+                    optimizedExplanation.innerHTML = "Similarly, the optimized approach also starts with the first loop (i) to iterate through elements.";
+                    break;
+                case 2:
+                    bruteExplanation.innerHTML = "Then we add a second loop (j) inside the first loop, creating nested loops.";
+                    optimizedExplanation.innerHTML = "The optimized approach also uses a second loop (j) inside the first one.";
+                    break;
+                case 3:
+                    bruteExplanation.innerHTML = "A third loop (k) is added, further nesting the structure. This is getting complex.";
+                    optimizedExplanation.innerHTML = "Instead of more nested loops, the optimized approach uses a two-pointer technique. We initialize left and right pointers.";
+                    break;
+                case 4:
+                    bruteExplanation.innerHTML = "Finally, a fourth loop (l) is added. With 4 nested loops, the time complexity becomes O(n⁴).";
+                    optimizedExplanation.innerHTML = "The two pointers move toward each other, checking combinations in a single pass. The pointers start moving.";
+                    break;
+                case 5:
+                    bruteExplanation.innerHTML = "With 4 nested loops, we have to check every possible combination of 4 elements, leading to O(n⁴) time complexity, which is very inefficient for large inputs.";
+                    optimizedExplanation.innerHTML = "The pointers continue moving. This approach only requires O(n³) time complexity - one order of magnitude faster than brute force!";
+                    break;
+                case 6:
+                    bruteExplanation.innerHTML = "The brute force approach exhaustively checks all possibilities using four nested loops, resulting in O(n⁴) time complexity which becomes prohibitively slow for large datasets.";
+                    optimizedExplanation.innerHTML = "By using two outer loops and a two-pointer technique for the inner operation, the optimized approach achieves O(n³) time complexity, making it significantly faster and more scalable.";
+                    break;
+            }
+        }
+        
+        // Render the current step
+        function renderStep() {
+            clearCanvases();
+            
+            // Map steps to visualization levels
+            const bruteForceLevel = Math.min(currentStep - 1, 3);
+            const optimizedLevel = Math.min(currentStep - 1, 3);
+            
+            drawBruteForceLoops(bruteForceLevel);
+            drawOptimizedApproach(optimizedLevel);
+            updateExplanations();
+            updateNavButtons();
+        }
+        
+        // Navigation handlers
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                renderStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                renderStep();
+            }
+        });
+        
+        // Initial render
+        renderStep();
+    </script>
+</body>
+</html>
