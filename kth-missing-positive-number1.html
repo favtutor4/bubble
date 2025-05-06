@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Numbers Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .number-line {
+            position: relative;
+            height: 120px;
+            margin: 50px 0 80px;
+        }
+        
+        .line {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #000000;
+        }
+        
+        .number {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            transform: translateX(-50%);
+            transition: all 0.5s ease;
+        }
+        
+        .number.array {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            top: 0;
+        }
+        
+        .number.missing {
+            background-color: #FD9F78;
+            color: #000000;
+            opacity: 0;
+            top: 70px;
+        }
+        
+        .number.kth-missing {
+            background-color: #FF4800;
+            border: 3px solid #000000;
+            color: #FFFFFF;
+            top: 70px;
+            opacity: 0;
+            transform: translateX(-50%) scale(1.2);
+        }
+        
+        .description {
+            text-align: center;
+            margin: 30px 0;
+            min-height: 60px;
+            font-size: 18px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .legend-array {
+            background-color: #FF4800;
+        }
+        
+        .legend-missing {
+            background-color: #FD9F78;
+        }
+        
+        .legend-kth {
+            background-color: #FF4800;
+            border: 2px solid #000000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Missing Numbers Visualization</h1>
+    <div class="container">
+        <div class="description" id="description">
+            Let's visualize missing numbers in a sorted array.
+        </div>
+        
+        <div class="number-line">
+            <div class="line"></div>
+            <!-- Numbers will be added here dynamically -->
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-array"></div>
+                <span>Array Elements</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-missing"></div>
+                <span>Missing Numbers</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-kth"></div>
+                <span>Kth Missing Number</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const arr = [2, 3, 4, 7, 11];
+        const k = 5;
+        const numberLine = document.querySelector('.number-line');
+        const description = document.getElementById('description');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Calculate all numbers from 1 to max(arr)
+        const maxNum = arr[arr.length - 1];
+        const allNumbers = Array.from({length: maxNum}, (_, i) => i + 1);
+        
+        // Find missing numbers
+        const missingNumbers = allNumbers.filter(num => !arr.includes(num));
+        
+        // Animation steps
+        const steps = [
+            {
+                text: "We have a sorted array [2, 3, 4, 7, 11] and need to find the 5th missing number.",
+                action: () => {
+                    // Clear any existing elements
+                    numberLine.innerHTML = '<div class="line"></div>';
+                }
+            },
+            {
+                text: "Let's visualize the array elements on a number line.",
+                action: () => {
+                    // Show array elements
+                    arr.forEach(num => {
+                        const numElement = createNumberElement(num, 'array');
+                        numberLine.appendChild(numElement);
+                        
+                        // Position based on value
+                        setTimeout(() => {
+                            numElement.style.left = `${(num / (maxNum + 3)) * 100}%`;
+                            numElement.style.opacity = '1';
+                        }, 100);
+                    });
+                }
+            },
+            {
+                text: "Now let's identify the missing numbers in the sequence.",
+                action: () => {
+                    // Add all possible numbers to see gaps
+                    for (let i = 1; i <= maxNum; i++) {
+                        if (!arr.includes(i)) {
+                            const missingElement = createNumberElement(i, 'missing');
+                            numberLine.appendChild(missingElement);
+                            
+                            // Position based on value
+                            setTimeout(() => {
+                                missingElement.style.left = `${(i / (maxNum + 3)) * 100}%`;
+                            }, 100);
+                        }
+                    }
+                }
+            },
+            {
+                text: "The missing numbers are: 1, 5, 6, 8, 9, 10.",
+                action: () => {
+                    // Reveal missing numbers
+                    document.querySelectorAll('.number.missing').forEach(el => {
+                        setTimeout(() => {
+                            el.style.opacity = '1';
+                        }, 300);
+                    });
+                }
+            },
+            {
+                text: "We need to find the 5th missing number (k=5).",
+                action: () => {
+                    // Count and highlight the 5th missing number
+                    const fifthMissing = missingNumbers[k-1];
+                    
+                    // Create and add the special kth missing element
+                    const kthElement = createNumberElement(fifthMissing, 'kth-missing');
+                    numberLine.appendChild(kthElement);
+                    
+                    // Position it
+                    setTimeout(() => {
+                        kthElement.style.left = `${(fifthMissing / (maxNum + 3)) * 100}%`;
+                    }, 100);
+                }
+            },
+            {
+                text: "The 5th missing number is 9!",
+                action: () => {
+                    // Highlight the 5th missing number
+                    document.querySelector('.kth-missing').style.opacity = '1';
+                }
+            }
+        ];
+        
+        // Create number element
+        function createNumberElement(value, className) {
+            const numElement = document.createElement('div');
+            numElement.className = `number ${className}`;
+            numElement.textContent = value;
+            numElement.style.opacity = '0';
+            return numElement;
+        }
+        
+        // Navigation
+        let currentStep = 0;
+        
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        function goToStep(step) {
+            description.textContent = steps[step].text;
+            steps[step].action();
+            currentStep = step;
+            updateButtons();
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                goToStep(currentStep - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                goToStep(currentStep + 1);
+            }
+        });
+        
+        // Initialize
+        goToStep(0);
+    </script>
+</body>
+</html>
