@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadruple Search Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 800px;
+            max-width: 95%;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .selected {
+            background-color: #FF4800;
+            color: white;
+        }
+        .sum-display {
+            font-size: 22px;
+            margin: 20px 0;
+            text-align: center;
+            height: 30px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            text-align: center;
+            font-size: 18px;
+            margin: 15px 0;
+            height: 50px;
+            font-weight: bold;
+        }
+        .found {
+            color: #FF4800;
+        }
+        .not-found {
+            color: #000000;
+        }
+        .loop-indicators {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .loop-indicator {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #FD9F78;
+            width: 100px;
+        }
+        .combination-list {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #FD9F78;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .combination {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #FD9F78;
+        }
+        .current {
+            font-weight: bold;
+            background-color: #FD9F78;
+            border-radius: 3px;
+            padding: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quadruple Search Process</h1>
+        
+        <div class="explanation">
+            <p>This animation demonstrates the brute force approach to find four numbers in an array that sum to zero. 
+            We use four nested loops to check all possible combinations of four numbers from the array [1, 0, -1, 0, -2, 2].</p>
+        </div>
+        
+        <div class="array-container" id="array-container">
+            <!-- Array elements will be added here dynamically -->
+        </div>
+        
+        <div class="loop-indicators">
+            <div class="loop-indicator">i: <span id="i-value">0</span></div>
+            <div class="loop-indicator">j: <span id="j-value">1</span></div>
+            <div class="loop-indicator">k: <span id="k-value">2</span></div>
+            <div class="loop-indicator">l: <span id="l-value">3</span></div>
+        </div>
+        
+        <div class="sum-display" id="sum-display"></div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="combination-list" id="combination-list">
+            <div class="combination-header">Combinations checked:</div>
+            <!-- Combinations will be added here -->
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn">Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Animation data
+        const array = [1, 0, -1, 0, -2, 2];
+        let steps = [];
+        let currentStep = -1;
+        let foundCombinations = [];
+        
+        // Initialize the array display
+        function initializeArray() {
+            const arrayContainer = document.getElementById('array-container');
+            arrayContainer.innerHTML = '';
+            
+            array.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.id = `element-${index}`;
+                element.textContent = num;
+                arrayContainer.appendChild(element);
+            });
+        }
+        
+        // Generate all steps for the quadruple search
+        function generateSteps() {
+            steps = [];
+            
+            // Generate all combinations of 4 elements
+            for (let i = 0; i < array.length - 3; i++) {
+                for (let j = i + 1; j < array.length - 2; j++) {
+                    for (let k = j + 1; k < array.length - 1; k++) {
+                        for (let l = k + 1; l < array.length; l++) {
+                            const sum = array[i] + array[j] + array[k] + array[l];
+                            const isTarget = sum === 0;
+                            
+                            steps.push({
+                                indices: [i, j, k, l],
+                                values: [array[i], array[j], array[k], array[l]],
+                                sum: sum,
+                                isTarget: isTarget
+                            });
+                            
+                            if (isTarget) {
+                                foundCombinations.push([array[i], array[j], array[k], array[l]]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Update the display based on the current step
+        function updateDisplay() {
+            if (currentStep < 0 || currentStep >= steps.length) return;
+            
+            const step = steps[currentStep];
+            
+            // Reset all array elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.getElementById(`element-${i}`);
+                element.className = 'array-element';
+            }
+            
+            // Highlight the current elements
+            step.indices.forEach(index => {
+                const element = document.getElementById(`element-${index}`);
+                element.className = 'array-element selected';
+            });
+            
+            // Update loop indicators
+            document.getElementById('i-value').textContent = step.indices[0];
+            document.getElementById('j-value').textContent = step.indices[1];
+            document.getElementById('k-value').textContent = step.indices[2];
+            document.getElementById('l-value').textContent = step.indices[3];
+            
+            // Update sum display
+            document.getElementById('sum-display').textContent = `Sum: ${step.values.join(' + ')} = ${step.sum}`;
+            
+            // Update status
+            const statusElement = document.getElementById('status');
+            if (step.isTarget) {
+                statusElement.textContent = `Found a quadruple that sums to zero: [${step.values.join(', ')}]`;
+                statusElement.className = 'status found';
+            } else {
+                statusElement.textContent = `This combination doesn't sum to zero`;
+                statusElement.className = 'status not-found';
+            }
+            
+            // Update combination list
+            updateCombinationList();
+            
+            // Update buttons
+            document.getElementById('prev-btn').disabled = currentStep <= 0;
+            document.getElementById('next-btn').disabled = currentStep >= steps.length - 1;
+        }
+        
+        // Update the combinations list
+        function updateCombinationList() {
+            const listElement = document.getElementById('combination-list');
+            listElement.innerHTML = '<div class="combination-header">Combinations checked:</div>';
+            
+            // Show a window of combinations around the current step
+            const windowSize = 5;
+            const start = Math.max(0, currentStep - windowSize);
+            const end = Math.min(steps.length - 1, currentStep + windowSize);
+            
+            for (let i = start; i <= end; i++) {
+                const step = steps[i];
+                const combinationElement = document.createElement('div');
+                combinationElement.className = 'combination';
+                if (i === currentStep) {
+                    combinationElement.classList.add('current');
+                }
+                combinationElement.textContent = `[${step.values.join(', ')}] = ${step.sum} ${step.isTarget ? '✓' : ''}`;
+                listElement.appendChild(combinationElement);
+            }
+        }
+        
+        // Event listeners for buttons
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+        
+        // Initialize the animation
+        function initialize() {
+            initializeArray();
+            generateSteps();
+            currentStep = 0;
+            updateDisplay();
+        }
+        
+        // Start the animation when the page loads
+        window.onload = initialize;
+    </script>
+</body>
+</html>
