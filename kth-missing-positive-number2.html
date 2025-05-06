@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Process Diagram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background-color: #FFFFFF;
+        }
+        
+        .visualization {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .array-element {
+            width: 60px;
+            height: 60px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        
+        .array-index {
+            position: absolute;
+            width: 60px;
+            text-align: center;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .highlight {
+            background-color: #FD9F78;
+            transform: scale(1.1);
+        }
+        
+        .low-marker, .high-marker, .mid-marker {
+            position: absolute;
+            top: 110px;
+            font-size: 14px;
+            font-weight: bold;
+            transform: translateX(-50%);
+        }
+        
+        .low-marker {
+            color: #FF4800;
+        }
+        
+        .high-marker {
+            color: #FF4800;
+        }
+        
+        .mid-marker {
+            color: #000000;
+        }
+        
+        .pointer {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid;
+            transform: translateX(-50%);
+        }
+        
+        .low-pointer {
+            border-bottom-color: #FF4800;
+            top: 125px;
+        }
+        
+        .high-pointer {
+            border-bottom-color: #FF4800;
+            top: 125px;
+        }
+        
+        .mid-pointer {
+            border-bottom-color: #000000;
+            top: 125px;
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            color: #000000;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        .target {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .target span {
+            color: #FF4800;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-counter {
+            margin-top: 10px;
+            color: #000000;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Search Process Diagram</h1>
+        
+        <div class="target">Target value (k): <span>5</span></div>
+        
+        <div class="visualization">
+            <div class="array-container">
+                <div class="array-element" id="elem0">2</div>
+                <div class="array-element" id="elem1">3</div>
+                <div class="array-element" id="elem2">4</div>
+                <div class="array-element" id="elem3">7</div>
+                <div class="array-element" id="elem4">11</div>
+            </div>
+            
+            <div class="array-container" style="height: 20px; margin-top: 5px;">
+                <div class="array-index" style="left: calc(50% - 150px);">0</div>
+                <div class="array-index" style="left: calc(50% - 75px);">1</div>
+                <div class="array-index" style="left: calc(50% + 0px);">2</div>
+                <div class="array-index" style="left: calc(50% + 75px);">3</div>
+                <div class="array-index" style="left: calc(50% + 150px);">4</div>
+            </div>
+            
+            <div class="low-marker">low</div>
+            <div class="high-marker">high</div>
+            <div class="mid-marker">mid</div>
+            
+            <div class="pointer low-pointer"></div>
+            <div class="pointer high-pointer"></div>
+            <div class="pointer mid-pointer"></div>
+            
+            <div class="explanation" id="explanation">
+                Starting the binary search for target value k = 5 in the array [2, 3, 4, 7, 11].
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn">Previous</button>
+            <button class="nav-button" id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-counter" id="stepCounter">Step 0 of 3</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const array = [2, 3, 4, 7, 11];
+            const target = 5;
+            const steps = [
+                {
+                    low: 0,
+                    high: 4,
+                    mid: 2,
+                    midValue: 4,
+                    explanation: "Starting the binary search with low = 0, high = 4. The mid index is calculated as mid = Math.floor((0 + 4) / 2) = 2. The value at mid is 4, which is less than our target 5. So we need to search in the right half."
+                },
+                {
+                    low: 3,
+                    high: 4,
+                    mid: 3,
+                    midValue: 7,
+                    explanation: "Now low = 3, high = 4. The mid index is calculated as mid = Math.floor((3 + 4) / 2) = 3. The value at mid is 7, which is greater than our target 5. So we need to search in the left half."
+                },
+                {
+                    low: 3,
+                    high: 2,
+                    mid: null,
+                    midValue: null,
+                    explanation: "Now low = 3, high = 2. Since low > high, the binary search terminates. The target 5 is not found in the array. Based on our search, 5 should be at index 3, between values 4 and 7."
+                },
+                {
+                    low: null,
+                    high: null,
+                    mid: null,
+                    midValue: null,
+                    explanation: "Final result: The target value 5 is not present in the array. If we were to insert it while maintaining the sorted order, it would go at position 3, between 4 and 7."
+                }
+            ];
+            
+            let currentStep = 0;
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const stepCounter = document.getElementById('stepCounter');
+            
+            prevBtn.disabled = true;
+            
+            function updateVisualization() {
+                // Reset all highlights
+                document.querySelectorAll('.array-element').forEach(el => {
+                    el.classList.remove('highlight');
+                });
+                
+                const step = steps[currentStep];
+                const explanation = document.getElementById('explanation');
+                
+                // Update step counter
+                stepCounter.textContent = `Step ${currentStep} of ${steps.length - 1}`;
+                
+                // Update explanation
+                explanation.textContent = step.explanation;
+                
+                // Update pointers and markers
+                if (step.low !== null) {
+                    const lowMarker = document.querySelector('.low-marker');
+                    const lowPointer = document.querySelector('.low-pointer');
+                    lowMarker.style.left = `calc(50% - 150px + ${step.low * 75}px)`;
+                    lowPointer.style.left = `calc(50% - 150px + ${step.low * 75}px)`;
+                    lowMarker.style.display = 'block';
+                    lowPointer.style.display = 'block';
+                } else {
+                    document.querySelector('.low-marker').style.display = 'none';
+                    document.querySelector('.low-pointer').style.display = 'none';
+                }
+                
+                if (step.high !== null) {
+                    const highMarker = document.querySelector('.high-marker');
+                    const highPointer = document.querySelector('.high-pointer');
+                    highMarker.style.left = `calc(50% - 150px + ${step.high * 75}px)`;
+                    highPointer.style.left = `calc(50% - 150px + ${step.high * 75}px)`;
+                    highMarker.style.display = 'block';
+                    highPointer.style.display = 'block';
+                } else {
+                    document.querySelector('.high-marker').style.display = 'none';
+                    document.querySelector('.high-pointer').style.display = 'none';
+                }
+                
+                if (step.mid !== null) {
+                    const midMarker = document.querySelector('.mid-marker');
+                    const midPointer = document.querySelector('.mid-pointer');
+                    midMarker.style.left = `calc(50% - 150px + ${step.mid * 75}px)`;
+                    midPointer.style.left = `calc(50% - 150px + ${step.mid * 75}px)`;
+                    midMarker.style.display = 'block';
+                    midPointer.style.display = 'block';
+                    
+                    // Highlight the mid element
+                    document.getElementById(`elem${step.mid}`).classList.add('highlight');
+                } else {
+                    document.querySelector('.mid-marker').style.display = 'none';
+                    document.querySelector('.mid-pointer').style.display = 'none';
+                }
+                
+                // Update button states
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length - 1;
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+            
+            // Initialize
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
