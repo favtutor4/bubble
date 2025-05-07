@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Manipulation Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .stack-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 50px;
+        }
+        .stack {
+            width: 120px;
+            height: 300px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+            border: 3px solid #FF4800;
+            border-top: none;
+        }
+        .stack:before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 150px;
+            height: 10px;
+            background-color: #FF4800;
+        }
+        .stack-label {
+            position: absolute;
+            bottom: -40px;
+            font-weight: bold;
+            color: #FF4800;
+            width: 100%;
+            text-align: center;
+        }
+        .stack-item {
+            width: 80px;
+            height: 50px;
+            margin: 3px;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+        }
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 72, 0, 0.5);
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #FFF;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .step-counter {
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Manipulation: Finding the Middle Element</h1>
+        
+        <div class="step-counter">Step <span id="currentStep">1</span> of <span id="totalSteps">8</span></div>
+        
+        <div class="stack-container">
+            <div class="stack" id="originalStack">
+                <div class="stack-label">Original Stack</div>
+                <div class="stack-item" data-value="5">5</div>
+                <div class="stack-item" data-value="4">4</div>
+                <div class="stack-item" data-value="3">3</div>
+                <div class="stack-item" data-value="2">2</div>
+                <div class="stack-item" data-value="1">1</div>
+            </div>
+            
+            <div class="stack" id="tempStack">
+                <div class="stack-label">Temporary Stack</div>
+            </div>
+            
+            <div class="stack" id="finalStack">
+                <div class="stack-label">Final Stack</div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            We want to find the middle element of a stack. First, we need to transfer elements from the original stack to a temporary stack to access the middle.
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const originalStack = document.getElementById('originalStack');
+        const tempStack = document.getElementById('tempStack');
+        const finalStack = document.getElementById('finalStack');
+        const explanation = document.getElementById('explanation');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const currentStepEl = document.getElementById('currentStep');
+        const totalStepsEl = document.getElementById('totalSteps');
+
+        let currentStep = 1;
+        const totalSteps = 8;
+        totalStepsEl.textContent = totalSteps;
+
+        const steps = [
+            {
+                action: () => {
+                    // Initial state - nothing to do
+                },
+                explanation: "We want to find the middle element of a stack. First, we need to transfer elements from the original stack to a temporary stack to access the middle."
+            },
+            {
+                action: () => {
+                    moveItem(originalStack, tempStack, "5");
+                },
+                explanation: "Step 1: Pop the top element (5) from the original stack and push it onto the temporary stack."
+            },
+            {
+                action: () => {
+                    moveItem(originalStack, tempStack, "4");
+                },
+                explanation: "Step 2: Pop the next element (4) from the original stack and push it onto the temporary stack."
+            },
+            {
+                action: () => {
+                    const middleElement = originalStack.querySelector('[data-value="3"]');
+                    middleElement.classList.add('highlighted');
+                },
+                explanation: "Step 3: Now we can see the middle element (3) of our 5-element stack. In a brute force approach, we need to know the size of the stack beforehand to calculate the middle position."
+            },
+            {
+                action: () => {
+                    moveItem(originalStack, finalStack, "3");
+                },
+                explanation: "Step 4: Move the middle element (3) to our final stack. This is our target element."
+            },
+            {
+                action: () => {
+                    moveItem(originalStack, tempStack, "2");
+                    moveItem(originalStack, tempStack, "1");
+                },
+                explanation: "Step 5: Move the remaining elements (2 and 1) from the original stack to the temporary stack."
+            },
+            {
+                action: () => {
+                    moveItem(tempStack, finalStack, "1");
+                    moveItem(tempStack, finalStack, "2");
+                    moveItem(tempStack, finalStack, "4");
+                    moveItem(tempStack, finalStack, "5");
+                },
+                explanation: "Step 6: Restore the stack by moving all elements from the temporary stack back to the final stack in the correct order."
+            },
+            {
+                action: () => {
+                    const middleElement = finalStack.querySelector('[data-value="3"]');
+                    middleElement.classList.add('highlighted');
+                },
+                explanation: "Completed! We've successfully identified and retrieved the middle element (3) and restored the stack in its original order. The brute force approach requires us to know the stack size beforehand and involves transferring elements between stacks."
+            }
+        ];
+
+        function moveItem(fromStack, toStack, value) {
+            const item = fromStack.querySelector(`[data-value="${value}"]`);
+            if (item) {
+                const clone = item.cloneNode(true);
+                fromStack.removeChild(item);
+                toStack.appendChild(clone);
+            }
+        }
+
+        function updateStep(direction) {
+            if (direction === 'next') {
+                currentStep++;
+            } else {
+                currentStep--;
+            }
+            
+            currentStepEl.textContent = currentStep;
+            
+            if (currentStep === 1) {
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.disabled = false;
+            }
+            
+            if (currentStep === totalSteps) {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
+            
+            // Reset all stacks
+            resetStacks();
+            
+            // Replay all steps up to current step
+            for (let i = 0; i < currentStep; i++) {
+                steps[i].action();
+            }
+            
+            // Set explanation for current step
+            explanation.textContent = steps[currentStep - 1].explanation;
+        }
+
+        function resetStacks() {
+            originalStack.innerHTML = '<div class="stack-label">Original Stack</div>';
+            tempStack.innerHTML = '<div class="stack-label">Temporary Stack</div>';
+            finalStack.innerHTML = '<div class="stack-label">Final Stack</div>';
+            
+            // Recreate original stack
+            const stackValues = [5, 4, 3, 2, 1];
+            stackValues.forEach(value => {
+                const item = document.createElement('div');
+                item.className = 'stack-item';
+                item.setAttribute('data-value', value);
+                item.textContent = value;
+                originalStack.appendChild(item);
+            });
+        }
+
+        nextBtn.addEventListener('click', () => {
+            updateStep('next');
+        });
+
+        prevBtn.addEventListener('click', () => {
+            updateStep('prev');
+        });
+    </script>
+</body>
+</html>
