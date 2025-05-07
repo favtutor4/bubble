@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-Based Parentheses Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .animation-container {
+            margin: 30px 0;
+            position: relative;
+            height: 350px;
+        }
+        
+        .stack-container {
+            width: 200px;
+            height: 300px;
+            border: 3px solid #FF4800;
+            margin: 0 auto;
+            position: relative;
+            background-color: white;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .stack-item {
+            width: 80%;
+            height: 50px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FD9F78;
+            color: #000000;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .stack-label {
+            position: absolute;
+            top: -30px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .input-display {
+            margin: 20px 0;
+            font-size: 24px;
+        }
+        
+        .current-char {
+            display: inline-block;
+            font-size: 28px;
+            margin: 0 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .highlight {
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .operation {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #000000;
+            font-weight: bold;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 40px;
+            height: 100px;
+            right: -60px;
+            display: none;
+        }
+        
+        .arrow-stem {
+            width: 10px;
+            height: 80px;
+            background-color: #FF4800;
+            margin: 0 auto;
+        }
+        
+        .arrow-head {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid #FF4800;
+            margin: 0 auto;
+        }
+        
+        .push-arrow {
+            transform: rotate(90deg);
+            left: -60px;
+        }
+        
+        .pop-arrow {
+            transform: rotate(-90deg);
+            right: -60px;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: default;
+        }
+        
+        .step-counter {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #000000;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack-Based Parentheses Validation</h1>
+        
+        <div class="input-display">
+            Input: <span id="input-string">{[()]}</span>
+        </div>
+        
+        <div class="current-char">Current Character: <span id="current-char"></span></div>
+        
+        <div class="operation" id="operation">Step: Initialization</div>
+        
+        <div class="animation-container">
+            <div class="stack-container">
+                <div class="stack-label">Stack</div>
+                <!-- Stack items will be added here dynamically -->
+            </div>
+            
+            <div class="arrow push-arrow" id="push-arrow">
+                <div class="arrow-stem"></div>
+                <div class="arrow-head"></div>
+            </div>
+            
+            <div class="arrow pop-arrow" id="pop-arrow">
+                <div class="arrow-stem"></div>
+                <div class="arrow-head"></div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            We start with an empty stack. We'll process each character of the input "{[()]}" one by one.
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div class="step-counter">Step <span id="current-step">0</span> of <span id="total-steps">6</span></div>
+    </div>
+    
+    <script>
+        const inputString = '{[()]}';
+        let currentStep = 0;
+        const totalSteps = 6;
+        const stackContainer = document.querySelector('.stack-container');
+        const pushArrow = document.getElementById('push-arrow');
+        const popArrow = document.getElementById('pop-arrow');
+        const operationText = document.getElementById('operation');
+        const explanationText = document.getElementById('explanation');
+        const currentCharElement = document.getElementById('current-char');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentStepElement = document.getElementById('current-step');
+        
+        function updateButtonStates() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps;
+            currentStepElement.textContent = currentStep;
+        }
+        
+        function clearArrows() {
+            pushArrow.style.display = 'none';
+            popArrow.style.display = 'none';
+        }
+        
+        function highlightChar(index) {
+            const inputElement = document.getElementById('input-string');
+            let formattedString = '';
+            
+            for (let i = 0; i < inputString.length; i++) {
+                if (i === index) {
+                    formattedString += `<span class="highlight">${inputString[i]}</span>`;
+                } else {
+                    formattedString += inputString[i];
+                }
+            }
+            
+            inputElement.innerHTML = formattedString;
+            
+            if (index >= 0 && index < inputString.length) {
+                currentCharElement.textContent = inputString[index];
+            } else {
+                currentCharElement.textContent = "None";
+            }
+        }
+        
+        function renderStep(step) {
+            // Clear existing stack items
+            while (stackContainer.children.length > 1) { // Keep the label
+                stackContainer.removeChild(stackContainer.lastChild);
+            }
+            
+            clearArrows();
+            
+            // Render the appropriate step
+            switch (step) {
+                case 0:
+                    // Empty stack, initial state
+                    operationText.textContent = "Step: Initialization";
+                    explanationText.textContent = "We start with an empty stack. We'll process each character of the input \"{[()]}\" one by one.";
+                    highlightChar(-1);
+                    break;
+                    
+                case 1:
+                    // Push {
+                    operationText.textContent = "Step 1: Process '{'";
+                    const item1 = document.createElement('div');
+                    item1.className = 'stack-item';
+                    item1.textContent = '{';
+                    stackContainer.appendChild(item1);
+                    pushArrow.style.display = 'block';
+                    explanationText.textContent = "We encounter an opening brace '{'. We push it onto the stack.";
+                    highlightChar(0);
+                    break;
+                    
+                case 2:
+                    // Push [
+                    operationText.textContent = "Step 2: Process '['";
+                    const item1_2 = document.createElement('div');
+                    item1_2.className = 'stack-item';
+                    item1_2.textContent = '{';
+                    
+                    const item2 = document.createElement('div');
+                    item2.className = 'stack-item';
+                    item2.textContent = '[';
+                    
+                    stackContainer.appendChild(item1_2);
+                    stackContainer.appendChild(item2);
+                    
+                    pushArrow.style.display = 'block';
+                    explanationText.textContent = "We encounter an opening bracket '['. We push it onto the stack.";
+                    highlightChar(1);
+                    break;
+                    
+                case 3:
+                    // Push (
+                    operationText.textContent = "Step 3: Process '('";
+                    const item1_3 = document.createElement('div');
+                    item1_3.className = 'stack-item';
+                    item1_3.textContent = '{';
+                    
+                    const item2_3 = document.createElement('div');
+                    item2_3.className = 'stack-item';
+                    item2_3.textContent = '[';
+                    
+                    const item3 = document.createElement('div');
+                    item3.className = 'stack-item';
+                    item3.textContent = '(';
+                    
+                    stackContainer.appendChild(item1_3);
+                    stackContainer.appendChild(item2_3);
+                    stackContainer.appendChild(item3);
+                    
+                    pushArrow.style.display = 'block';
+                    explanationText.textContent = "We encounter an opening parenthesis '('. We push it onto the stack.";
+                    highlightChar(2);
+                    break;
+                    
+                case 4:
+                    // Pop (
+                    operationText.textContent = "Step 4: Process ')'";
+                    const item1_4 = document.createElement('div');
+                    item1_4.className = 'stack-item';
+                    item1_4.textContent = '{';
+                    
+                    const item2_4 = document.createElement('div');
+                    item2_4.className = 'stack-item';
+                    item2_4.textContent = '[';
+                    
+                    stackContainer.appendChild(item1_4);
+                    stackContainer.appendChild(item2_4);
+                    
+                    popArrow.style.display = 'block';
+                    explanationText.textContent = "We encounter a closing parenthesis ')'. We pop the top of the stack '(' which matches the current character.";
+                    highlightChar(3);
+                    break;
+                    
+                case 5:
+                    // Pop [
+                    operationText.textContent = "Step 5: Process ']'";
+                    const item1_5 = document.createElement('div');
+                    item1_5.className = 'stack-item';
+                    item1_5.textContent = '{';
+                    
+                    stackContainer.appendChild(item1_5);
+                    
+                    popArrow.style.display = 'block';
+                    explanationText.textContent = "We encounter a closing bracket ']'. We pop the top of the stack '[' which matches the current character.";
+                    highlightChar(4);
+                    break;
+                    
+                case 6:
+                    // Pop {
+                    operationText.textContent = "Step 6: Process '}'";
+                    popArrow.style.display = 'block';
+                    explanationText.textContent = "We encounter a closing brace '}'. We pop the top of the stack '{' which matches the current character. The stack is now empty, which means all parentheses are properly matched. The input string is valid!";
+                    highlightChar(5);
+                    break;
+            }
+            
+            updateButtonStates();
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                renderStep(currentStep);
+            }
+        });
+        
+        // Initialize the first step
+        renderStep(currentStep);
+    </script>
+</body>
+</html>
