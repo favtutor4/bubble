@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force Sorting Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 20px auto;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        
+        .visualization {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 300px;
+            margin: 30px 0;
+            gap: 10px;
+        }
+        
+        .bar {
+            width: 40px;
+            background-color: #FD9F78;
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s, background-color 0.5s;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 5px;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .bar.highlight {
+            background-color: #FF4800;
+        }
+        
+        .step-display {
+            font-size: 24px;
+            margin: 20px 0;
+            color: #000000;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .wave {
+            position: absolute;
+            top: -20px;
+            font-size: 24px;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force Sorting Visualization</h1>
+        
+        <div class="step-display">Step <span id="currentStep">1</span> of 3</div>
+        
+        <div class="visualization" id="array-container"></div>
+        
+        <div class="explanation" id="explanation">
+            This is the original unsorted array [10, 5, 6, 3, 2, 20, 100]. We'll visualize different sorting operations on this array.
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial array data
+        const originalArray = [10, 5, 6, 3, 2, 20, 100];
+        const sortedArray = [2, 3, 5, 6, 10, 20, 100];
+        const waveArray = [3, 2, 6, 5, 20, 10, 100];
+        
+        // Step explanations
+        const explanations = [
+            "This is the original unsorted array [10, 5, 6, 3, 2, 20, 100]. In brute force sorting, we'll compare each element with every other element to determine its position.",
+            
+            "After sorting, we get the array [2, 3, 5, 6, 10, 20, 100]. The elements are arranged in ascending order from smallest to largest. Brute force sorting typically uses nested loops to compare each element with every other element, resulting in a time complexity of O(n²).",
+            
+            "The wave pattern creates an alternating sequence of peaks and valleys in the array [3, 2, 6, 5, 20, 10, 100]. Notice how adjacent pairs have been swapped to create this wave-like pattern. This is often useful in specialized applications requiring alternating values."
+        ];
+        
+        let currentStep = 1;
+        const arrayContainer = document.getElementById('array-container');
+        const explanationEl = document.getElementById('explanation');
+        const currentStepEl = document.getElementById('currentStep');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Function to render array based on current step
+        function renderArray() {
+            arrayContainer.innerHTML = '';
+            
+            let arrayToRender;
+            switch(currentStep) {
+                case 1:
+                    arrayToRender = originalArray;
+                    break;
+                case 2:
+                    arrayToRender = sortedArray;
+                    break;
+                case 3:
+                    arrayToRender = waveArray;
+                    break;
+                default:
+                    arrayToRender = originalArray;
+            }
+            
+            // Find max value for scaling
+            const maxValue = Math.max(...originalArray, ...sortedArray, ...waveArray);
+            
+            // Create bars for each element
+            arrayToRender.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                
+                const height = (value / maxValue) * 250;
+                bar.style.height = `${height}px`;
+                bar.textContent = value;
+                
+                // Add highlighting for step 3 (wave pattern)
+                if (currentStep === 3) {
+                    if (index % 2 === 0 && index < arrayToRender.length - 1) {
+                        if (arrayToRender[index] > arrayToRender[index + 1]) {
+                            bar.classList.add('highlight');
+                            
+                            // Add wave indicator
+                            const wave = document.createElement('div');
+                            wave.className = 'wave';
+                            wave.innerHTML = '↑';
+                            bar.appendChild(wave);
+                        }
+                    } else if (index % 2 === 1) {
+                        if (index > 0 && arrayToRender[index] < arrayToRender[index - 1]) {
+                            bar.classList.add('highlight');
+                            
+                            // Add wave indicator
+                            const wave = document.createElement('div');
+                            wave.className = 'wave';
+                            wave.innerHTML = '↓';
+                            bar.appendChild(wave);
+                        }
+                    }
+                }
+                
+                arrayContainer.appendChild(bar);
+            });
+            
+            // Update explanation
+            explanationEl.textContent = explanations[currentStep - 1];
+            
+            // Update step display
+            currentStepEl.textContent = currentStep;
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === 3;
+        }
+        
+        // Event listeners for navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                renderArray();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < 3) {
+                currentStep++;
+                renderArray();
+            }
+        });
+        
+        // Initial render
+        renderArray();
+    </script>
+</body>
+</html>
