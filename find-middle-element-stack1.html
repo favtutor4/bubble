@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Visualization with Middle Element</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
+        
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        
+        .stack-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FF4800;
+            margin-bottom: 15px;
+        }
+        
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            width: 150px;
+            border: 3px solid #000000;
+            border-top: none;
+            position: relative;
+        }
+        
+        .element {
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top: 2px solid #000000;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            background-color: #FFFFFF;
+        }
+        
+        .highlight {
+            background-color: #FD9F78;
+            animation: pulse 2s infinite;
+        }
+        
+        .top-label {
+            position: absolute;
+            top: -35px;
+            right: -70px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .middle-label {
+            position: absolute;
+            left: -120px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #FD9F78;
+            margin-bottom: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        @keyframes pulse {
+            0% {
+                background-color: #FD9F78;
+            }
+            50% {
+                background-color: #FFD0BA;
+            }
+            100% {
+                background-color: #FD9F78;
+            }
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+        }
+
+        .active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stack Visualization with Middle Element</h1>
+    
+    <div class="slide active" id="slide1">
+        <div class="explanation">
+            <p>A stack is a data structure that follows the Last-In-First-Out (LIFO) principle. Elements are added to the "top" of the stack and can only be removed from the top. Here we're visualizing two stacks and highlighting their middle elements.</p>
+        </div>
+        
+        <div class="container">
+            <div class="stack-container">
+                <div class="stack-title">Stack with Odd Number of Elements</div>
+                <div class="stack stack1">
+                    <div class="element">1</div>
+                    <div class="element">2</div>
+                    <div class="element highlight">3</div>
+                    <div class="element">4</div>
+                    <div class="element">5</div>
+                    <div class="top-label">Top</div>
+                    <div class="middle-label" style="top: 125px;">Middle Element</div>
+                </div>
+            </div>
+            
+            <div class="stack-container">
+                <div class="stack-title">Stack with Even Number of Elements</div>
+                <div class="stack stack2">
+                    <div class="element">1</div>
+                    <div class="element highlight">2</div>
+                    <div class="element">3</div>
+                    <div class="element">4</div>
+                    <div class="top-label">Top</div>
+                    <div class="middle-label" style="top: 150px;">Middle Element</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide2">
+        <div class="explanation">
+            <p>Finding the middle element of a stack is not a straightforward operation with a standard stack implementation. 
+            For a stack with an odd number of elements, there's a clear middle (like element 3 in our first example). 
+            For a stack with an even number of elements, we can choose either of the two middle elements (we chose element 2 in our second example).</p>
+        </div>
+        
+        <div class="container">
+            <div class="stack-container">
+                <div class="stack-title">Middle Element Formula</div>
+                <div style="text-align: center; padding: 20px; border: 2px solid #FF4800; border-radius: 10px;">
+                    <p>For a stack of size n:</p>
+                    <p>If n is odd: middle = (n+1)/2</p>
+                    <p>If n is even: middle can be n/2 or (n/2)+1</p>
+                    <p>For example:</p>
+                    <p>Stack 1: size=5, middle=(5+1)/2=3</p>
+                    <p>Stack 2: size=4, middle=4/2=2</p>
+                </div>
+            </div>
+            
+            <div class="stack-container">
+                <div class="stack-title">Stack Applications</div>
+                <div style="text-align: center; padding: 20px; border: 2px solid #FF4800; border-radius: 10px;">
+                    <p>- Browser history (back button)</p>
+                    <p>- Undo functionality in text editors</p>
+                    <p>- Expression evaluation</p>
+                    <p>- Function call management</p>
+                    <p>- Backtracking algorithms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide3">
+        <div class="explanation">
+            <p>The middle element of a stack can be useful in various algorithms and applications, such as:</p>
+            <ul>
+                <li>Efficient deletion of the middle element</li>
+                <li>Finding median in a data stream</li>
+                <li>Implementing specific algorithms that need middle access</li>
+                <li>Balanced data processing</li>
+            </ul>
+            <p>However, standard stack implementations don't provide direct access to middle elements—you'd typically need additional data structures or operations to track or find the middle element efficiently.</p>
+        </div>
+        
+        <div class="container">
+            <div class="stack-container" style="width: 100%;">
+                <div class="stack-title">Animation of Stack Operations</div>
+                <div id="animation-container" style="width: 100%; height: 300px; border: 2px solid #FF4800; border-radius: 10px; display: flex; justify-content: center; align-items: center; position: relative;">
+                    <div id="animated-stack" style="width: 150px; position: relative;">
+                        <div class="element" style="border-top: 2px solid #000000;">1</div>
+                        <div class="element" style="border-top: 2px solid #000000;">2</div>
+                        <div class="element" style="border-top: 2px solid #000000;">3</div>
+                        <div class="element" style="border-top: 2px solid #000000;">4</div>
+                        <div class="element" style="border-top: 2px solid #000000; visibility: hidden;">5</div>
+                    </div>
+                    <div style="position: absolute; top: 10px; left: 10px;">
+                        <button id="push-btn">Push</button>
+                        <button id="pop-btn">Pop</button>
+                        <button id="highlight-btn">Highlight Middle</button>
+                        <button id="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <button id="prev-btn" disabled>Previous</button>
+        <button id="next-btn">Next</button>
+    </div>
+
+    <script>
+        // Navigation buttons functionality
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let currentSlide = 0;
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+            
+            currentSlide = index;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            }
+        });
+
+        // Animation for the interactive stack
+        document.addEventListener('DOMContentLoaded', function() {
+            const pushBtn = document.getElementById('push-btn');
+            const popBtn = document.getElementById('pop-btn');
+            const highlightBtn = document.getElementById('highlight-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const stack = document.getElementById('animated-stack');
+            const elements = stack.querySelectorAll('.element');
+            
+            let currentSize = 4;
+            
+            // Initialize
+            updateStackVisibility();
+            
+            pushBtn.addEventListener('click', () => {
+                if (currentSize < 5) {
+                    currentSize++;
+                    updateStackVisibility();
+                    
+                    // Flash the new top element
+                    const topElement = elements[currentSize - 1];
+                    topElement.style.backgroundColor = '#FF4800';
+                    setTimeout(() => {
+                        topElement.style.backgroundColor = '#FFFFFF';
+                    }, 500);
+                }
+            });
+            
+            popBtn.addEventListener('click', () => {
+                if (currentSize > 0) {
+                    // Flash the top element before removing
+                    const topElement = elements[currentSize - 1];
+                    topElement.style.backgroundColor = '#FF4800';
+                    setTimeout(() => {
+                        topElement.style.backgroundColor = '#FFFFFF';
+                        currentSize--;
+                        updateStackVisibility();
+                    }, 500);
+                }
+            });
+            
+            highlightBtn.addEventListener('click', () => {
+                // Remove all highlights first
+                elements.forEach(el => el.classList.remove('highlight'));
+                
+                if (currentSize > 0) {
+                    // Calculate middle element index
+                    let middleIndex;
+                    if (currentSize % 2 === 0) {
+                        // Even number of elements
+                        middleIndex = currentSize / 2 - 1;
+                    } else {
+                        // Odd number of elements
+                        middleIndex = Math.floor(currentSize / 2);
+                    }
+                    
+                    // Highlight the middle element
+                    elements[middleIndex].classList.add('highlight');
+                }
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                currentSize = 4;
+                updateStackVisibility();
+                elements.forEach(el => el.classList.remove('highlight'));
+            });
+            
+            function updateStackVisibility() {
+                elements.forEach((el, index) => {
+                    if (index < currentSize) {
+                        el.style.visibility = 'visible';
+                    } else {
+                        el.style.visibility = 'hidden';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
