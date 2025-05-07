@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Two Stacks Implementation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 80%;
+            max-width: 900px;
+        }
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .active-slide {
+            display: flex;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            position: relative;
+            height: 180px;
+        }
+        .array-cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0 2px;
+        }
+        .stack1 {
+            background-color: #FD9F78;
+        }
+        .stack2 {
+            background-color: #FF4800;
+            color: white;
+        }
+        .empty {
+            background-color: #f0f0f0;
+        }
+        .arrow {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+            font-weight: bold;
+        }
+        .arrow-line {
+            width: 2px;
+            height: 40px;
+            background-color: #000000;
+        }
+        .arrow-head {
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 10px solid #000000;
+        }
+        .explanation {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .nav-button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .dot {
+            height: 10px;
+            width: 10px;
+            background-color: #bbb;
+            border-radius: 50%;
+            margin: 0 5px;
+            display: inline-block;
+        }
+        .active-dot {
+            background-color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dynamic Two Stacks Implementation</h1>
+        
+        <div class="slide active-slide" id="slide1">
+            <div class="explanation">
+                <strong>Introduction to Dynamic Two Stacks</strong><br>
+                Dynamic Two Stacks implement two stacks in a single array efficiently. Instead of dividing the array in half, both stacks can grow dynamically toward each other.
+            </div>
+            <div class="array-container">
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+            </div>
+            <div class="explanation">
+                We start with an empty array where both stacks can grow. Stack 1 grows from left to right, and Stack 2 grows from right to left.
+            </div>
+        </div>
+
+        <div class="slide" id="slide2">
+            <div class="explanation">
+                <strong>Initializing the Stacks</strong><br>
+                Initially, top1 starts at -1 (left side) and top2 starts at array length (right side). Both stacks are empty at the beginning.
+            </div>
+            <div class="array-container">
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                
+                <div class="arrow" style="left: 0; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top1 = -1</div>
+                </div>
+                
+                <div class="arrow" style="right: 0; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top2 = 9</div>
+                </div>
+            </div>
+            <div class="explanation">
+                Both pointers are outside the array, indicating that both stacks are empty.
+            </div>
+        </div>
+
+        <div class="slide" id="slide3">
+            <div class="explanation">
+                <strong>Pushing Elements to Stack 1</strong><br>
+                Let's push elements 1, 2, and 3 to Stack 1 (which grows from left to right).
+            </div>
+            <div class="array-container">
+                <div class="array-cell stack1">1</div>
+                <div class="array-cell stack1">2</div>
+                <div class="array-cell stack1">3</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                
+                <div class="arrow" style="left: 56px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top1 = 2</div>
+                </div>
+                
+                <div class="arrow" style="right: 0; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top2 = 9</div>
+                </div>
+            </div>
+            <div class="explanation">
+                After pushing elements 1, 2, and 3 to Stack 1, top1 points to index 2 (the last inserted element).
+            </div>
+        </div>
+
+        <div class="slide" id="slide4">
+            <div class="explanation">
+                <strong>Pushing Elements to Stack 2</strong><br>
+                Now let's push elements 4, 5, and 6 to Stack 2 (which grows from right to left).
+            </div>
+            <div class="array-container">
+                <div class="array-cell stack1">1</div>
+                <div class="array-cell stack1">2</div>
+                <div class="array-cell stack1">3</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell stack2">6</div>
+                <div class="array-cell stack2">5</div>
+                <div class="array-cell stack2">4</div>
+                
+                <div class="arrow" style="left: 56px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top1 = 2</div>
+                </div>
+                
+                <div class="arrow" style="right: 160px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top2 = 6</div>
+                </div>
+            </div>
+            <div class="explanation">
+                After pushing elements 4, 5, and 6 to Stack 2, top2 points to index 6 (the last inserted element).
+                Notice how Stack 2 grows from right to left.
+            </div>
+        </div>
+
+        <div class="slide" id="slide5">
+            <div class="explanation">
+                <strong>Dynamic Growth</strong><br>
+                The benefit of this implementation is that both stacks can grow dynamically until they meet in the middle.
+            </div>
+            <div class="array-container">
+                <div class="array-cell stack1">1</div>
+                <div class="array-cell stack1">2</div>
+                <div class="array-cell stack1">3</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell stack2">6</div>
+                <div class="array-cell stack2">5</div>
+                <div class="array-cell stack2">4</div>
+                
+                <div class="arrow" style="left: 56px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top1 = 2</div>
+                </div>
+                
+                <div class="arrow" style="right: 160px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top2 = 6</div>
+                </div>
+            </div>
+            <div class="explanation">
+                The space between top1 and top2 is available for both stacks to grow. This is more efficient than dividing the array in half statically, as one stack can use more space if needed.
+            </div>
+        </div>
+
+        <div class="slide" id="slide6">
+            <div class="explanation">
+                <strong>Stack Overflow Condition</strong><br>
+                A stack overflow occurs only when both stacks meet in the middle (when top1 + 1 = top2).
+            </div>
+            <div class="array-container">
+                <div class="array-cell stack1">1</div>
+                <div class="array-cell stack1">2</div>
+                <div class="array-cell stack1">3</div>
+                <div class="array-cell stack1">7</div>
+                <div class="array-cell stack1">8</div>
+                <div class="array-cell stack2">9</div>
+                <div class="array-cell stack2">6</div>
+                <div class="array-cell stack2">5</div>
+                <div class="array-cell stack2">4</div>
+                
+                <div class="arrow" style="left: 110px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top1 = 4</div>
+                </div>
+                
+                <div class="arrow" style="right: 216px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top2 = 5</div>
+                </div>
+            </div>
+            <div class="explanation">
+                Here, both stacks have almost filled the array. If we try to push to either stack, it would cause a stack overflow because there's no more room to grow.
+            </div>
+        </div>
+
+        <div class="slide" id="slide7">
+            <div class="explanation">
+                <strong>Benefits of Dynamic Two Stacks</strong><br>
+                This implementation maximizes array usage by allowing both stacks to use space as needed.
+            </div>
+            <div class="array-container">
+                <div class="array-cell stack1">1</div>
+                <div class="array-cell stack1">2</div>
+                <div class="array-cell stack1">3</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell empty">[ ]</div>
+                <div class="array-cell stack2">6</div>
+                <div class="array-cell stack2">5</div>
+                <div class="array-cell stack2">4</div>
+                
+                <div class="arrow" style="left: 56px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top1 = 2</div>
+                </div>
+                
+                <div class="arrow" style="right: 160px; top: 80px;">
+                    <div class="arrow-head"></div>
+                    <div class="arrow-line"></div>
+                    <div>top2 = 6</div>
+                </div>
+            </div>
+            <div class="explanation">
+                The dynamic approach is efficient for:
+                <br>- Memory utilization (no wasted space)
+                <br>- Flexibility (stacks can grow as needed)
+                <br>- Space optimization (no fixed division)
+                <br>- Array reuse (single array for two stacks)
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="nav-button" id="prevBtn" disabled>Previous</button>
+            <button class="nav-button" id="nextBtn">Next</button>
+        </div>
+
+        <div class="indicator" id="indicator">
+            <!-- Dots will be added by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 7;
+        
+        // Initialize indicator dots
+        const indicatorContainer = document.getElementById('indicator');
+        for (let i = 1; i <= totalSlides; i++) {
+            const dot = document.createElement('span');
+            dot.className = i === 1 ? 'dot active-dot' : 'dot';
+            dot.dataset.slide = i;
+            dot.addEventListener('click', () => goToSlide(i));
+            indicatorContainer.appendChild(dot);
+        }
+        
+        // Navigation buttons functionality
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentSlide > 1) {
+                goToSlide(currentSlide - 1);
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                goToSlide(currentSlide + 1);
+            }
+        });
+        
+        function goToSlide(slideNumber) {
+            // Hide current slide
+            document.getElementById(`slide${currentSlide}`).classList.remove('active-slide');
+            document.querySelector(`.dot[data-slide="${currentSlide}"]`).classList.remove('active-dot');
+            
+            // Show new slide
+            currentSlide = slideNumber;
+            document.getElementById(`slide${currentSlide}`).classList.add('active-slide');
+            document.querySelector(`.dot[data-slide="${currentSlide}"]`).classList.add('active-dot');
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+        }
+    </script>
+</body>
+</html>
