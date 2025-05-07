@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .profit-container {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        canvas {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stock Price Visualization</h1>
+    <div class="container">
+        <div class="chart-container">
+            <div class="canvas-container">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF4800;"></div>
+                <span>Stock Price</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #00A300;"></div>
+                <span>Buy Point</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF0000;"></div>
+                <span>Sell Point</span>
+            </div>
+        </div>
+        <div class="explanation" id="explanation">
+            Looking at our stock price data [7, 1, 5, 3, 6, 4], we need to find the best times to buy and sell to maximize profit.
+        </div>
+        <div class="profit-container" id="profit">
+            Total Profit: $0
+        </div>
+    </div>
+    <div class="navigation">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        // Stock price data
+        const prices = [7, 1, 5, 3, 6, 4];
+        
+        // Canvas setup
+        const canvas = document.getElementById('stockChart');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.parentNode.offsetWidth;
+        canvas.height = canvas.parentNode.offsetHeight;
+        
+        // Chart properties
+        const padding = 40;
+        const chartWidth = canvas.width - 2 * padding;
+        const chartHeight = canvas.height - 2 * padding;
+        
+        // Tutorial steps
+        const steps = [
+            {
+                text: "Looking at our stock price data [7, 1, 5, 3, 6, 4], we need to find the best times to buy and sell to maximize profit.",
+                profit: 0,
+                highlightBuy: null,
+                highlightSell: null,
+                animate: false
+            },
+            {
+                text: "Step 1: We start by identifying potential buy points. The best time to buy is when the price is low before it rises.",
+                profit: 0,
+                highlightBuy: null,
+                highlightSell: null,
+                animate: false
+            },
+            {
+                text: "We see the price drops from 7 to 1 on day 2. This looks like a good potential buy point.",
+                profit: 0,
+                highlightBuy: 1,
+                highlightSell: null,
+                animate: false
+            },
+            {
+                text: "Step 2: After buying at 1, we look for a good time to sell. The price increases to 5 on day 3, which gives us a profit of 4.",
+                profit: 0,
+                highlightBuy: 1,
+                highlightSell: 2,
+                animate: true,
+                buyIndex: 1,
+                sellIndex: 2
+            },
+            {
+                text: "After selling at 5, we've made a profit of $4 (bought at 1, sold at 5).",
+                profit: 4,
+                highlightBuy: 1,
+                highlightSell: 2,
+                animate: false
+            },
+            {
+                text: "Step 3: We continue looking for more opportunities. The price drops to 3 on day 4, which could be another good buy point.",
+                profit: 4,
+                highlightBuy: 3,
+                highlightSell: 2,
+                animate: false
+            },
+            {
+                text: "Step 4: After buying at 3, the price rises to 6 on day 5. This is a good opportunity to sell.",
+                profit: 4,
+                highlightBuy: 3,
+                highlightSell: 4,
+                animate: true,
+                buyIndex: 3,
+                sellIndex: 4
+            },
+            {
+                text: "After our second transaction, we've made an additional profit of $3 (bought at 3, sold at 6).",
+                profit: 7,
+                highlightBuy: 3,
+                highlightSell: 4,
+                animate: false
+            },
+            {
+                text: "In total, we made a profit of $7 by making two transactions: buy at 1, sell at 5 (profit of $4), and buy at 3, sell at 6 (profit of $3).",
+                profit: 7,
+                highlightBuy: null,
+                highlightSell: null,
+                animate: false,
+                showAll: true
+            }
+        ];
+        
+        let currentStep = 0;
+        let animationId;
+        let animationProgress = 0;
+        
+        // DOM elements
+        const explanationEl = document.getElementById('explanation');
+        const profitEl = document.getElementById('profit');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Event listeners
+        prevBtn.addEventListener('click', previousStep);
+        nextBtn.addEventListener('click', nextStep);
+        
+        // Initial rendering
+        updateExplanation();
+        drawChart();
+        
+        function updateExplanation() {
+            explanationEl.textContent = steps[currentStep].text;
+            profitEl.textContent = `Total Profit: $${steps[currentStep].profit}`;
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        function drawChart() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate scales
+            const maxPrice = Math.max(...prices);
+            const minPrice = Math.min(...prices);
+            const range = maxPrice - minPrice;
+            const xStep = chartWidth / (prices.length - 1);
+            
+            // Draw axes
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            
+            // X axis
+            ctx.moveTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            
+            // Y axis
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Draw axis labels
+            ctx.fillStyle = '#000000';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            // X axis labels (days)
+            for (let i = 0; i < prices.length; i++) {
+                const x = padding + i * xStep;
+                const y = canvas.height - padding + 20;
+                ctx.fillText(`Day ${i+1}`, x, y);
+            }
+            
+            // Y axis labels (prices)
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const value = minPrice + (range * i / 4);
+                const y = canvas.height - padding - (chartHeight * (value - minPrice) / range);
+                ctx.fillText(value.toFixed(0), padding - 10, y + 4);
+            }
+            
+            // Draw price line
+            ctx.strokeStyle = '#FF4800';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < prices.length; i++) {
+                const x = padding + i * xStep;
+                const y = canvas.height - padding - (chartHeight * (prices[i] - minPrice) / range);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // Draw data points
+            for (let i = 0; i < prices.length; i++) {
+                const x = padding + i * xStep;
+                const y = canvas.height - padding - (chartHeight * (prices[i] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#FD9F78';
+                ctx.fill();
+                ctx.stroke();
+                
+                // Draw price labels
+                ctx.fillStyle = '#000000';
+                ctx.textAlign = 'center';
+                ctx.fillText('$' + prices[i], x, y - 15);
+            }
+            
+            const step = steps[currentStep];
+            
+            // Handle animation
+            if (step.animate && animationProgress < 1) {
+                // Draw animation of money flow from buy to sell
+                const buyIndex = step.buyIndex;
+                const sellIndex = step.sellIndex;
+                
+                const buyX = padding + buyIndex * xStep;
+                const buyY = canvas.height - padding - (chartHeight * (prices[buyIndex] - minPrice) / range);
+                
+                const sellX = padding + sellIndex * xStep;
+                const sellY = canvas.height - padding - (chartHeight * (prices[sellIndex] - minPrice) / range);
+                
+                // Animation path (curved line)
+                const controlX = (buyX + sellX) / 2;
+                const controlY = Math.min(buyY, sellY) - 50;
+                
+                // Calculate position along the curve
+                const t = animationProgress;
+                const xt = (1-t)*(1-t)*buyX + 2*(1-t)*t*controlX + t*t*sellX;
+                const yt = (1-t)*(1-t)*buyY + 2*(1-t)*t*controlY + t*t*sellY;
+                
+                // Draw animation dot
+                ctx.beginPath();
+                ctx.arc(xt, yt, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#FD9F78';
+                ctx.fill();
+                ctx.strokeStyle = '#FF4800';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Progress animation
+                animationProgress += 0.01;
+                if (animationProgress < 1) {
+                    animationId = requestAnimationFrame(drawChart);
+                } else {
+                    animationProgress = 0;
+                }
+            }
+            
+            // Highlight buy points
+            if (step.highlightBuy !== null) {
+                const x = padding + step.highlightBuy * xStep;
+                const y = canvas.height - padding - (chartHeight * (prices[step.highlightBuy] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00A300';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('BUY', x, y - 20);
+            }
+            
+            // Highlight sell points
+            if (step.highlightSell !== null) {
+                const x = padding + step.highlightSell * xStep;
+                const y = canvas.height - padding - (chartHeight * (prices[step.highlightSell] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#FF0000';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('SELL', x, y - 20);
+            }
+            
+            // Show all buy and sell points in final step
+            if (step.showAll) {
+                // First transaction
+                let x = padding + 1 * xStep;
+                let y = canvas.height - padding - (chartHeight * (prices[1] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00A300';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('BUY $1', x, y - 20);
+                
+                x = padding + 2 * xStep;
+                y = canvas.height - padding - (chartHeight * (prices[2] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#FF0000';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('SELL $5', x, y - 20);
+                
+                // Second transaction
+                x = padding + 3 * xStep;
+                y = canvas.height - padding - (chartHeight * (prices[3] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00A300';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('BUY $3', x, y - 20);
+                
+                x = padding + 4 * xStep;
+                y = canvas.height - padding - (chartHeight * (prices[4] - minPrice) / range);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#FF0000';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('SELL $6', x, y - 20);
+                
+                // Draw profit arrows
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#FF4800';
+                
+                // First transaction profit
+                const profit1X = (padding + 1 * xStep + padding + 2 * xStep) / 2;
+                ctx.textAlign = 'center';
+                ctx.fillText('Profit: $4', profit1X, canvas.height - padding - chartHeight - 20);
+                
+                // Second transaction profit
+                const profit2X = (padding + 3 * xStep + padding + 4 * xStep) / 2;
+                ctx.fillText('Profit: $3', profit2X, canvas.height - padding - chartHeight - 20);
+            }
+        }
+        
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                // Cancel any ongoing animations
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                animationProgress = 0;
+                currentStep++;
+                updateExplanation();
+                drawChart();
+            }
+        }
+        
+        function previousStep() {
+            if (currentStep > 0) {
+                // Cancel any ongoing animations
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                animationProgress = 0;
+                currentStep--;
+                updateExplanation();
+                drawChart();
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            canvas.width = canvas.parentNode.offsetWidth;
+            canvas.height = canvas.parentNode.offsetHeight;
+            drawChart();
+        });
+    </script>
+</body>
+</html>
