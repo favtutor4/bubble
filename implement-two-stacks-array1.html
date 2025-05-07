@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Partition Two Stacks Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .array-container {
+            display: flex;
+            margin: 50px 0;
+            position: relative;
+            height: 100px;
+            width: 100%;
+        }
+        .array-cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #FFFFFF;
+            font-weight: bold;
+        }
+        .stack1-cell {
+            background-color: #FD9F78;
+        }
+        .stack2-cell {
+            background-color: #FD9F78;
+        }
+        .index-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+        }
+        .stack-label {
+            position: absolute;
+            top: -35px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .arrows {
+            position: absolute;
+            top: 80px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+        .arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 200px;
+        }
+        .arrow-text {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #FF4800;
+        }
+        .arrow-line {
+            position: relative;
+            width: 200px;
+            height: 30px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 250px;
+            margin-top: 40px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 40px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .step-indicator {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fixed Partition Two Stacks Visualization</h1>
+        
+        <div class="array-container" id="arrayContainer">
+            <!-- Cells will be added by JavaScript -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>This is a visual representation of two stacks implemented in a single array with fixed partition.</p>
+            <p>The array is divided into two parts: positions 0-4 for Stack 1 and positions 5-9 for Stack 2.</p>
+            <p>Stack 1 grows from left to right (from index 0 towards index 4).</p>
+            <p>Stack 2 grows from right to left (from index 9 towards index 5).</p>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 1 of 5</div>
+        
+        <div class="nav-buttons">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const arrayContainer = document.getElementById('arrayContainer');
+            const explanation = document.getElementById('explanation');
+            const stepIndicator = document.getElementById('stepIndicator');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            let currentStep = 1;
+            const totalSteps = 5;
+            
+            // Initialize array
+            function initializeArray() {
+                arrayContainer.innerHTML = '';
+                
+                // Create the array cells
+                for (let i = 0; i < 10; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'array-cell';
+                    cell.id = `cell-${i}`;
+                    
+                    // Add index labels
+                    const indexLabel = document.createElement('div');
+                    indexLabel.className = 'index-label';
+                    indexLabel.textContent = i;
+                    cell.appendChild(indexLabel);
+                    
+                    arrayContainer.appendChild(cell);
+                }
+                
+                // Add stack labels
+                const stack1Label = document.createElement('div');
+                stack1Label.className = 'stack-label';
+                stack1Label.textContent = 'Stack 1';
+                stack1Label.style.left = '125px';
+                arrayContainer.appendChild(stack1Label);
+                
+                const stack2Label = document.createElement('div');
+                stack2Label.className = 'stack-label';
+                stack2Label.textContent = 'Stack 2';
+                stack2Label.style.right = '125px';
+                arrayContainer.appendChild(stack2Label);
+                
+                // Create arrows to show growth direction
+                const arrows = document.createElement('div');
+                arrows.className = 'arrows';
+                
+                const arrow1 = document.createElement('div');
+                arrow1.className = 'arrow';
+                arrow1.innerHTML = `
+                    <svg class="arrow-line" viewBox="0 0 200 30">
+                        <defs>
+                            <marker id="arrowhead1" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#FF4800" />
+                            </marker>
+                        </defs>
+                        <line x1="0" y1="15" x2="180" y2="15" stroke="#FF4800" stroke-width="2" marker-end="url(#arrowhead1)" />
+                    </svg>
+                    <div class="arrow-text">Stack 1 Growth</div>
+                `;
+                
+                const arrow2 = document.createElement('div');
+                arrow2.className = 'arrow';
+                arrow2.innerHTML = `
+                    <svg class="arrow-line" viewBox="0 0 200 30">
+                        <defs>
+                            <marker id="arrowhead2" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                <polygon points="10 0, 0 3.5, 10 7" fill="#FF4800" />
+                            </marker>
+                        </defs>
+                        <line x1="200" y1="15" x2="20" y2="15" stroke="#FF4800" stroke-width="2" marker-end="url(#arrowhead2)" />
+                    </svg>
+                    <div class="arrow-text">Stack 2 Growth</div>
+                `;
+                
+                arrows.appendChild(arrow1);
+                arrows.appendChild(arrow2);
+                arrayContainer.appendChild(arrows);
+            }
+            
+            // Update the visualization based on the current step
+            function updateVisualization() {
+                // Reset all cells
+                for (let i = 0; i < 10; i++) {
+                    const cell = document.getElementById(`cell-${i}`);
+                    cell.className = 'array-cell';
+                    cell.textContent = '';
+                }
+                
+                // Update step indicator
+                stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
+                
+                // Update buttons
+                prevBtn.disabled = currentStep === 1;
+                nextBtn.disabled = currentStep === totalSteps;
+                
+                // Update visualization based on current step
+                switch(currentStep) {
+                    case 1:
+                        // Initial state - empty stacks
+                        explanation.innerHTML = `
+                            <p>Initial State: Empty Stacks</p>
+                            <p>The array is divided into two fixed sections:</p>
+                            <p>• Indices 0-4 (first half) are reserved for Stack 1</p>
+                            <p>• Indices 5-9 (second half) are reserved for Stack 2</p>
+                            <p>This arrangement allows two separate stacks to share the same array.</p>
+                        `;
+                        break;
+                        
+                    case 2:
+                        // Add some elements to Stack 1
+                        for (let i = 0; i < 3; i++) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack1-cell';
+                            cell.textContent = `A${i+1}`;
+                        }
+                        explanation.innerHTML = `
+                            <p>Adding Elements to Stack 1</p>
+                            <p>Stack 1 now contains 3 elements (A1, A2, A3).</p>
+                            <p>• Elements are added from left to right</p>
+                            <p>• Stack 1 can hold up to 5 elements (indices 0-4)</p>
+                            <p>• Stack 1's top element is A3 at index 2</p>
+                        `;
+                        break;
+                        
+                    case 3:
+                        // Add some elements to Stack 1 and Stack 2
+                        for (let i = 0; i < 3; i++) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack1-cell';
+                            cell.textContent = `A${i+1}`;
+                        }
+                        for (let i = 9; i > 7; i--) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack2-cell';
+                            cell.textContent = `B${9-i+1}`;
+                        }
+                        explanation.innerHTML = `
+                            <p>Adding Elements to Stack 2</p>
+                            <p>Stack 1 has 3 elements (A1, A2, A3).</p>
+                            <p>Stack 2 now has 2 elements (B1, B2).</p>
+                            <p>• Stack 2 elements are added from right to left</p>
+                            <p>• Stack 2 can hold up to 5 elements (indices 5-9)</p>
+                            <p>• Stack 2's top element is B2 at index 8</p>
+                        `;
+                        break;
+                        
+                    case 4:
+                        // Both stacks with more elements
+                        for (let i = 0; i < 4; i++) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack1-cell';
+                            cell.textContent = `A${i+1}`;
+                        }
+                        for (let i = 9; i > 6; i--) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack2-cell';
+                            cell.textContent = `B${9-i+1}`;
+                        }
+                        explanation.innerHTML = `
+                            <p>Growing Both Stacks</p>
+                            <p>Stack 1 now has 4 elements (A1, A2, A3, A4).</p>
+                            <p>Stack 2 now has 3 elements (B1, B2, B3).</p>
+                            <p>Both stacks are growing toward the middle of the array.</p>
+                            <p>The fixed partition design ensures that neither stack can overflow into the other's space.</p>
+                        `;
+                        break;
+                        
+                    case 5:
+                        // Full stacks - limitation of fixed partition
+                        for (let i = 0; i < 5; i++) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack1-cell';
+                            cell.textContent = `A${i+1}`;
+                        }
+                        for (let i = 9; i > 4; i--) {
+                            const cell = document.getElementById(`cell-${i}`);
+                            cell.className = 'array-cell stack2-cell';
+                            cell.textContent = `B${9-i+1}`;
+                        }
+                        explanation.innerHTML = `
+                            <p>Limitation of Fixed Partition Approach</p>
+                            <p>Both stacks are now at their capacity:</p>
+                            <p>• Stack 1 has 5 elements (A1-A5), using its entire allocation</p>
+                            <p>• Stack 2 has 5 elements (B1-B5), using its entire allocation</p>
+                            <p>Limitation: Even if one stack is not full, the other stack cannot use the empty space. If Stack 1 has space but Stack 2 needs to grow beyond its allocation, we'll get a Stack Overflow error.</p>
+                            <p>This is why flexible partitioning might be preferable in some scenarios.</p>
+                        `;
+                        break;
+                }
+            }
+            
+            // Event listeners for navigation buttons
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+            
+            // Initialize the visualization
+            initializeArray();
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
