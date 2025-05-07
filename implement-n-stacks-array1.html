@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Division Approach Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .array-container {
+            display: flex;
+            margin: 40px 0;
+            position: relative;
+            height: 180px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            position: relative;
+        }
+        .cell-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+        }
+        .stack1 {
+            background-color: #FF4800;
+        }
+        .stack2 {
+            background-color: #FD9F78;
+        }
+        .stack3 {
+            background-color: #FFFFFF;
+            border-color: #FF4800;
+        }
+        .pointer {
+            position: absolute;
+            top: -80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+            font-weight: bold;
+        }
+        .arrow {
+            width: 2px;
+            height: 40px;
+            background-color: #000000;
+            margin-top: 5px;
+            position: relative;
+        }
+        .arrow:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -4px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 10px solid #000000;
+        }
+        .legend {
+            display: flex;
+            margin: 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #000000;
+        }
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+            text-align: center;
+            max-width: 700px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fixed Division Approach for Multiple Stacks</h1>
+        
+        <div class="explanation" id="explanation-1">
+            <p>The Fixed Division Approach divides an array into equal parts to implement multiple stacks in a single array.</p>
+            <p>In this example, we have an array of size 12 divided into 3 equal parts of 4 elements each.</p>
+        </div>
+        
+        <div class="explanation hidden" id="explanation-2">
+            <p>Each stack has a designated section in the array:</p>
+            <p>Stack 1 uses indices 0-3 (red)</p>
+            <p>Stack 2 uses indices 4-7 (orange)</p>
+            <p>Stack 3 uses indices 8-11 (white with red border)</p>
+        </div>
+        
+        <div class="explanation hidden" id="explanation-3">
+            <p>Each stack has its own "top" pointer that tracks the index of the top element.</p>
+            <p>When a stack is empty, its top pointer is set to -1 (indicating no elements).</p>
+        </div>
+        
+        <div class="explanation hidden" id="explanation-4">
+            <p>As elements are pushed onto a stack, its top pointer increases.</p>
+            <p>When elements are popped from a stack, its top pointer decreases.</p>
+        </div>
+        
+        <div class="explanation hidden" id="explanation-5">
+            <p>The main advantage is simplicity - each stack has a fixed size.</p>
+            <p>The main disadvantage is inefficiency - one stack might be full while others are empty, wasting space.</p>
+        </div>
+
+        <div class="array-container" id="array-container">
+            <!-- Array cells will be added via JavaScript -->
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color stack1"></div>
+                <span>Stack 1</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color stack2"></div>
+                <span>Stack 2</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color stack3"></div>
+                <span>Stack 3</span>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const arrayContainer = document.getElementById('array-container');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const explanations = document.querySelectorAll('.explanation');
+        
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        // Create the array
+        function createArray() {
+            arrayContainer.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const cell = document.createElement('div');
+                if (i < 4) {
+                    cell.className = 'cell stack1';
+                } else if (i < 8) {
+                    cell.className = 'cell stack2';
+                } else {
+                    cell.className = 'cell stack3';
+                }
+                
+                const index = document.createElement('div');
+                index.className = 'cell-index';
+                index.textContent = i;
+                
+                cell.appendChild(index);
+                arrayContainer.appendChild(cell);
+            }
+        }
+        
+        // Add pointers
+        function addPointers(step) {
+            // Clear existing pointers
+            const existingPointers = document.querySelectorAll('.pointer');
+            existingPointers.forEach(p => p.remove());
+            
+            if (step >= 3) {
+                // Stack 1 pointer (top at index 2)
+                const pointer1 = document.createElement('div');
+                pointer1.className = 'pointer';
+                pointer1.style.left = '75px'; // Position above the third cell (index 2)
+                pointer1.innerHTML = 'top1 = 2';
+                
+                const arrow1 = document.createElement('div');
+                arrow1.className = 'arrow';
+                pointer1.appendChild(arrow1);
+                arrayContainer.appendChild(pointer1);
+                
+                // Stack 2 pointer (top at index 4)
+                const pointer2 = document.createElement('div');
+                pointer2.className = 'pointer';
+                pointer2.style.left = '225px'; // Position above the fifth cell (index 4)
+                pointer2.innerHTML = 'top2 = 4';
+                
+                const arrow2 = document.createElement('div');
+                arrow2.className = 'arrow';
+                pointer2.appendChild(arrow2);
+                arrayContainer.appendChild(pointer2);
+                
+                // Stack 3 pointer (top at index 8)
+                const pointer3 = document.createElement('div');
+                pointer3.className = 'pointer';
+                pointer3.style.left = '425px'; // Position above the ninth cell (index 8)
+                pointer3.innerHTML = 'top3 = 8';
+                
+                const arrow3 = document.createElement('div');
+                arrow3.className = 'arrow';
+                pointer3.appendChild(arrow3);
+                arrayContainer.appendChild(pointer3);
+            }
+        }
+        
+        // Update the visualization based on the current step
+        function updateVisualization() {
+            // Hide all explanations
+            explanations.forEach(exp => exp.classList.add('hidden'));
+            
+            // Show the current explanation
+            document.getElementById(`explanation-${currentStep}`).classList.remove('hidden');
+            
+            // Update array visualization
+            createArray();
+            addPointers(currentStep);
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+        
+        // Event listeners for the buttons
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
