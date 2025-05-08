@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-Based Algorithm Execution</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        
+        .visual-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .array {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .element {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #FF4800;
+            margin: 0 5px;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .current {
+            background-color: #FD9F78;
+        }
+        
+        .element-inactive {
+            opacity: 0.5;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            min-height: 150px;
+            width: 60px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #FFFFFF;
+        }
+        
+        .stack-element {
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #FD9F78;
+            font-weight: bold;
+            animation: pop-in 0.5s ease;
+        }
+        
+        .result-element {
+            animation: fade-in 0.5s ease;
+        }
+        
+        .description {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            text-align: left;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        @keyframes pop-in {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack-Based Algorithm Execution</h1>
+        
+        <div class="visual-container">
+            <div class="section">
+                <div class="section-title">Input Array</div>
+                <div class="array" id="input-array"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Stack</div>
+                <div class="stack" id="stack-container"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Result Array</div>
+                <div class="array" id="result-array"></div>
+            </div>
+        </div>
+        
+        <div class="description" id="step-description"></div>
+        
+        <div class="nav-buttons">
+            <button id="prev-btn">Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 1 of 6</div>
+    </div>
+    
+    <script>
+        const inputArray = [4, 5, 2, 10, 8];
+        let stack = [];
+        let resultArray = new Array(inputArray.length).fill(-1);
+        let currentStep = 0;
+        
+        const steps = [
+            {
+                description: "We start with an input array [4, 5, 2, 10, 8]. We'll process this array from right to left (starting with index 4, value 8). We aim to find the next greater element to the right for each element. If there is no greater element, we'll mark it as -1.",
+                currentIndex: -1,
+                stack: [],
+                result: [-1, -1, -1, -1, -1]
+            },
+            {
+                description: "Step 1: Process the rightmost element 8 (index 4). Since there's no element to its right, we push 8 onto the stack. The result for 8 remains -1 (no greater element to the right).",
+                currentIndex: 4,
+                stack: [8],
+                result: [-1, -1, -1, -1, -1]
+            },
+            {
+                description: "Step 2: Process 10 (index 3). Compare 10 with the top of stack (8). Since 10 > 8, pop 8 from the stack. Now the stack is empty, so push 10 onto the stack. The result for 10 remains -1.",
+                currentIndex: 3,
+                stack: [10],
+                result: [-1, -1, -1, -1, -1]
+            },
+            {
+                description: "Step 3: Process 2 (index 2). Compare 2 with the top of stack (10). Since 2 < 10, the next greater element for 2 is 10. Push 2 onto the stack. The result for 2 becomes 10.",
+                currentIndex: 2,
+                stack: [10, 2],
+                result: [-1, -1, 10, -1, -1]
+            },
+            {
+                description: "Step 4: Process 5 (index 1). Compare 5 with the top of stack (2). Since 5 > 2, pop 2 from the stack. Now compare 5 with 10. Since 5 < 10, the next greater element for 5 is 10. Push 5 onto the stack. The result for 5 becomes 10.",
+                currentIndex: 1,
+                stack: [10, 5],
+                result: [-1, 10, 10, -1, -1]
+            },
+            {
+                description: "Step 5: Process 4 (index 0). Compare 4 with the top of stack (5). Since 4 < 5, the next greater element for 4 is 5. Push 4 onto the stack. The result for 4 becomes 5.",
+                currentIndex: 0,
+                stack: [10, 5, 4],
+                result: [5, 10, 10, -1, -1]
+            },
+            {
+                description: "Final Result: We've processed all elements in the array. The final result array shows the next greater element for each position. The result [5, 10, 10, -1, -1] means:\n\n- For 4 (index 0): Next greater element is 5\n- For 5 (index 1): Next greater element is 10\n- For 2 (index 2): Next greater element is 10\n- For 10 (index 3): No greater element, so -1\n- For 8 (index 4): No greater element, so -1",
+                currentIndex: -1,
+                stack: [10, 5, 4],
+                result: [5, 10, 10, -1, -1]
+            }
+        ];
+        
+        // Initialize the visualization
+        function initVisualization() {
+            renderInputArray();
+            updateVisualization();
+        }
+        
+        // Render the input array
+        function renderInputArray() {
+            const inputArrayContainer = document.getElementById('input-array');
+            inputArrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < inputArray.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = inputArray[i];
+                element.id = `input-${i}`;
+                inputArrayContainer.appendChild(element);
+            }
+        }
+        
+        // Update visualization based on current step
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Update step indicator
+            document.getElementById('step-indicator').textContent = `Step ${currentStep} of ${steps.length - 1}`;
+            
+            // Update description
+            document.getElementById('step-description').textContent = step.description;
+            
+            // Update input array highlighting
+            for (let i = 0; i < inputArray.length; i++) {
+                const element = document.getElementById(`input-${i}`);
+                element.className = 'element';
+                
+                if (i === step.currentIndex) {
+                    element.className += ' current';
+                    element.innerHTML = `${inputArray[i]}<div class="pointer">↑</div>`;
+                } else if (i > step.currentIndex && step.currentIndex !== -1) {
+                    element.className += ' element-inactive';
+                }
+            }
+            
+            // Update stack
+            const stackContainer = document.getElementById('stack-container');
+            stackContainer.innerHTML = '';
+            
+            for (let i = 0; i < step.stack.length; i++) {
+                const stackElement = document.createElement('div');
+                stackElement.className = 'stack-element';
+                stackElement.textContent = step.stack[i];
+                stackContainer.appendChild(stackElement);
+            }
+            
+            // Update result array
+            const resultArrayContainer = document.getElementById('result-array');
+            resultArrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < step.result.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'element result-element';
+                element.textContent = step.result[i];
+                resultArrayContainer.appendChild(element);
+            }
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        document.getElementById('prev-btn').addEventListener('click', function() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', function() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization when the page loads
+        window.onload = initVisualization;
+    </script>
+</body>
+</html>
