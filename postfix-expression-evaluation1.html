@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postfix Evaluation Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .visualization {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .expression-container {
+            width: 60%;
+        }
+        .stack-container {
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .expression {
+            display: flex;
+            margin-bottom: 20px;
+            font-size: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .char {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            border: 2px solid #000000;
+            border-radius: 5px;
+        }
+        .current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .processed {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+        }
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            min-height: 200px;
+            width: 80px;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .stack::before {
+            content: "STACK";
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .stack-item {
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            border-bottom: 1px solid #000000;
+            font-size: 20px;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-40px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 30px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid #FF4800;
+        }
+        .operation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 24px;
+            color: #FF4800;
+            font-weight: bold;
+            min-height: 40px;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            min-height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Postfix Evaluation Process Visualization</h1>
+        
+        <div class="visualization">
+            <div class="expression-container">
+                <div class="expression" id="expression">
+                    <div class="char" data-char="9">9</div>
+                    <div class="char" data-char="2">2</div>
+                    <div class="char" data-char="3">3</div>
+                    <div class="char" data-char="*">*</div>
+                    <div class="char" data-char="-">-</div>
+                </div>
+                <div class="operation" id="operation"></div>
+                <div class="result" id="result"></div>
+            </div>
+            <div class="stack-container">
+                <div class="stack" id="stack"></div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Click "Next" to start the visualization of evaluating the postfix expression: 923*-
+        </div>
+        
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const expression = "923*-";
+        const steps = [
+            {
+                highlightIndex: 0,
+                stack: [],
+                operation: "",
+                explanation: "We start with an empty stack and process the expression from left to right.",
+                result: ""
+            },
+            {
+                highlightIndex: 0,
+                stack: ["9"],
+                operation: "Push 9 onto the stack",
+                explanation: "We encounter '9'. Since it's an operand (number), we push it onto the stack.",
+                result: ""
+            },
+            {
+                highlightIndex: 1,
+                stack: ["9", "2"],
+                operation: "Push 2 onto the stack",
+                explanation: "We encounter '2'. Since it's an operand, we push it onto the stack.",
+                result: ""
+            },
+            {
+                highlightIndex: 2,
+                stack: ["9", "2", "3"],
+                operation: "Push 3 onto the stack",
+                explanation: "We encounter '3'. Since it's an operand, we push it onto the stack.",
+                result: ""
+            },
+            {
+                highlightIndex: 3,
+                stack: ["9", "6"],
+                operation: "Pop 3, Pop 2, Calculate 2*3=6, Push 6",
+                explanation: "We encounter '*'. Since it's an operator, we pop the top two elements (3 and 2), perform 2*3=6, and push the result back onto the stack.",
+                result: ""
+            },
+            {
+                highlightIndex: 4,
+                stack: ["3"],
+                operation: "Pop 6, Pop 9, Calculate 9-6=3, Push 3",
+                explanation: "We encounter '-'. Since it's an operator, we pop the top two elements (6 and 9), perform 9-6=3, and push the result back onto the stack.",
+                result: ""
+            },
+            {
+                highlightIndex: 5,
+                stack: ["3"],
+                operation: "End of expression",
+                explanation: "We've processed the entire expression. The final result is the value at the top of the stack.",
+                result: "Final result: 3"
+            }
+        ];
+
+        let currentStep = 0;
+        const expressionChars = document.querySelectorAll('.char');
+        const stackEl = document.getElementById('stack');
+        const explanationEl = document.getElementById('explanation');
+        const operationEl = document.getElementById('operation');
+        const resultEl = document.getElementById('result');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function updateVisualization() {
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+            
+            const step = steps[currentStep];
+            
+            // Update expression highlighting
+            expressionChars.forEach((char, index) => {
+                char.classList.remove('current', 'processed');
+                if (index === step.highlightIndex) {
+                    char.classList.add('current');
+                } else if (index < step.highlightIndex) {
+                    char.classList.add('processed');
+                }
+            });
+            
+            // Update stack
+            stackEl.innerHTML = '';
+            step.stack.forEach(item => {
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-item';
+                stackItem.textContent = item;
+                stackEl.appendChild(stackItem);
+            });
+            
+            // Update explanation
+            explanationEl.textContent = step.explanation;
+            
+            // Update operation and result
+            operationEl.textContent = step.operation;
+            resultEl.textContent = step.result;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+
+        // Initialize
+        updateVisualization();
+    </script>
+</body>
+</html>
