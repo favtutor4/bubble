@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-Based Expression Evaluation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 30px 0;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .step.active {
+            display: flex;
+        }
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            width: 120px;
+            height: 300px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            position: relative;
+            background-color: #FFFFFF;
+        }
+        .stack-title {
+            position: absolute;
+            top: -30px;
+            width: 100%;
+            text-align: center;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .stack-item {
+            width: 80px;
+            height: 40px;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #FD9F78;
+            color: #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .expression {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #FF4800;
+        }
+        .highlight {
+            color: #FF4800;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            color: #000000;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack-Based Expression Evaluation</h1>
+        
+        <div class="expression">
+            Expression: <span id="current-expression">3 + 4 * 2</span>
+        </div>
+
+        <div class="animation-container">
+            <!-- Step 1 -->
+            <div class="step active" id="step1">
+                <div class="stack">
+                    <div class="stack-title">Values Stack</div>
+                    <div class="stack-item">3</div>
+                    <div class="stack-item">4</div>
+                </div>
+
+                <div class="stack">
+                    <div class="stack-title">Operators Stack</div>
+                    <div class="stack-item">+</div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step" id="step2">
+                <div class="stack">
+                    <div class="stack-title">Values Stack</div>
+                    <div class="stack-item">3</div>
+                    <div class="stack-item">4</div>
+                </div>
+
+                <div class="stack">
+                    <div class="stack-title">Operators Stack</div>
+                    <div class="stack-item">+</div>
+                    <div class="stack-item">*</div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step" id="step3">
+                <div class="stack">
+                    <div class="stack-title">Values Stack</div>
+                    <div class="stack-item">3</div>
+                    <div class="stack-item">4</div>
+                    <div class="stack-item">2</div>
+                </div>
+
+                <div class="stack">
+                    <div class="stack-title">Operators Stack</div>
+                    <div class="stack-item">+</div>
+                    <div class="stack-item">*</div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step" id="step4">
+                <div class="stack">
+                    <div class="stack-title">Values Stack</div>
+                    <div class="stack-item">3</div>
+                    <div class="stack-item">8</div>
+                </div>
+
+                <div class="stack">
+                    <div class="stack-title">Operators Stack</div>
+                    <div class="stack-item">+</div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step" id="step5">
+                <div class="stack">
+                    <div class="stack-title">Values Stack</div>
+                    <div class="stack-item">11</div>
+                </div>
+
+                <div class="stack">
+                    <div class="stack-title">Operators Stack</div>
+                    <!-- Empty -->
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation" id="explanation">
+            <p><strong>Step 1:</strong> We've processed the expression "3 + 4" so far. The value "3" and "4" are pushed onto the values stack, and "+" is pushed onto the operators stack.</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = document.querySelectorAll('.step');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanation = document.getElementById('explanation');
+        
+        let currentStep = 1;
+        
+        const explanations = [
+            "<p><strong>Step 1:</strong> We've processed the expression \"3 + 4\" so far. The value \"3\" and \"4\" are pushed onto the values stack, and \"+\" is pushed onto the operators stack.</p>",
+            
+            "<p><strong>Step 2:</strong> When we encounter the \"*\" operator, we push it onto the operators stack. Now we have \"+\" and \"*\" in the operators stack, and the values stack remains the same with \"3\" and \"4\".</p>",
+            
+            "<p><strong>Step 3:</strong> When we process \"2\", we push it onto the values stack. Now the values stack contains \"3\", \"4\", and \"2\", and the operators stack contains \"+\" and \"*\".</p>",
+            
+            "<p><strong>Step 4:</strong> Since we've reached the end of the expression, we begin evaluation. The top operator is \"*\", which we apply to the top two values in the values stack (4 and 2). We pop these values and the operator, compute 4 * 2 = 8, and push the result back onto the values stack. Now the values stack contains \"3\" and \"8\", and the operators stack contains \"+\".</p>",
+            
+            "<p><strong>Step 5:</strong> We continue evaluation with the remaining operator. The top operator is \"+\", which we apply to the top two values (3 and 8). We compute 3 + 8 = 11 and push the result onto the values stack. Now the values stack contains only \"11\", and the operators stack is empty. This is our final result: 3 + 4 * 2 = 11.</p>"
+        ];
+
+        function updateStep() {
+            // Hide all steps
+            steps.forEach(step => step.classList.remove('active'));
+            
+            // Show current step
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            
+            // Update explanation
+            explanation.innerHTML = explanations[currentStep - 1];
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === steps.length;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length) {
+                currentStep++;
+                updateStep();
+            }
+        });
+    </script>
+</body>
+</html>
