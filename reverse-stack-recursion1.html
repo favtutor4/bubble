@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Reversal Process Illustration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        
+        .stack-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        
+        .stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 120px;
+            position: relative;
+        }
+        
+        .stack:after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            width: 140px;
+            height: 5px;
+            background-color: #000000;
+        }
+        
+        .stack-item {
+            width: 80px;
+            height: 50px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FD9F78;
+            color: #000000;
+            font-weight: bold;
+            font-size: 24px;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+        }
+        
+        .stack-label {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .arrow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .arrow {
+            width: 100px;
+            height: 50px;
+            position: relative;
+        }
+        
+        .arrow:before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 70%;
+            height: 5px;
+            background-color: #FF4800;
+            transform: translateY(-50%);
+        }
+        
+        .arrow:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            width: 0;
+            height: 0;
+            border-left: 15px solid #FF4800;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            transform: translateY(-50%);
+        }
+        
+        .temp-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 120px;
+            position: relative;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .temp-stack:after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            width: 140px;
+            height: 5px;
+            background-color: #000000;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin: 30px 0;
+            text-align: left;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border-left: 5px solid #FF4800;
+        }
+        
+        .highlight {
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Reversal Process Illustration</h1>
+        
+        <div class="explanation" id="explanation">
+            <p>This animation demonstrates how to reverse a stack. In this example, we'll reverse the stack [1, 2, 3, 4] to get [4, 3, 2, 1].</p>
+            <p>The process involves popping elements from the original stack and pushing them into a new stack, naturally reversing their order.</p>
+        </div>
+        
+        <div class="stack-container">
+            <div class="stack" id="originalStack">
+                <div class="stack-label">Original Stack</div>
+            </div>
+            
+            <div class="arrow-container">
+                <div class="arrow"></div>
+            </div>
+            
+            <div class="temp-stack" id="tempStack">
+                <div class="stack-label">Temporary Stack</div>
+            </div>
+            
+            <div class="arrow-container">
+                <div class="arrow"></div>
+            </div>
+            
+            <div class="stack" id="reversedStack">
+                <div class="stack-label">Reversed Stack</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="prevBtn" disabled>Previous Step</button>
+            <button class="btn" id="nextBtn">Next Step</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const originalStack = document.getElementById('originalStack');
+            const tempStack = document.getElementById('tempStack');
+            const reversedStack = document.getElementById('reversedStack');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const explanation = document.getElementById('explanation');
+            
+            // Initial stacks
+            const originalItems = [1, 2, 3, 4];
+            let currentStep = 0;
+            const totalSteps = 9;
+            
+            // Initialize the original stack
+            function initializeStacks() {
+                // Clear stacks
+                originalStack.innerHTML = '<div class="stack-label">Original Stack</div>';
+                tempStack.innerHTML = '<div class="stack-label">Temporary Stack</div>';
+                reversedStack.innerHTML = '<div class="stack-label">Reversed Stack</div>';
+                
+                // Add items to the original stack
+                for (let i = 0; i < originalItems.length; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'stack-item';
+                    item.textContent = originalItems[i];
+                    originalStack.insertBefore(item, originalStack.firstChild);
+                }
+            }
+            
+            // Update the explanation based on the current step
+            function updateExplanation(step) {
+                let text = "";
+                switch(step) {
+                    case 0:
+                        text = "<p>We begin with our original stack [1, 2, 3, 4] with 4 at the top. Our goal is to reverse it so that 1 is at the top.</p>";
+                        break;
+                    case 1:
+                        text = "<p>Step 1: We <span class='highlight'>pop</span> the top element (4) from the original stack.</p>";
+                        break;
+                    case 2:
+                        text = "<p>Step 2: We <span class='highlight'>push</span> the popped element (4) onto the temporary stack.</p>";
+                        break;
+                    case 3:
+                        text = "<p>Step 3: We <span class='highlight'>pop</span> the next element (3) from the original stack.</p>";
+                        break;
+                    case 4:
+                        text = "<p>Step 4: We <span class='highlight'>push</span> the popped element (3) onto the temporary stack.</p>";
+                        break;
+                    case 5:
+                        text = "<p>Step 5: We <span class='highlight'>pop</span> the next element (2) from the original stack.</p>";
+                        break;
+                    case 6:
+                        text = "<p>Step 6: We <span class='highlight'>push</span> the popped element (2) onto the temporary stack.</p>";
+                        break;
+                    case 7:
+                        text = "<p>Step 7: We <span class='highlight'>pop</span> the last element (1) from the original stack.</p>";
+                        break;
+                    case 8:
+                        text = "<p>Step 8: We <span class='highlight'>push</span> the popped element (1) onto the temporary stack.</p>";
+                        break;
+                    case 9:
+                        text = "<p>The stack is now reversed! The temporary stack contains [4, 3, 2, 1] with 1 at the top.</p><p>This is our final reversed stack.</p>";
+                        break;
+                }
+                explanation.innerHTML = text;
+            }
+            
+            // Render the stacks based on the current step
+            function renderStep(step) {
+                initializeStacks();
+                
+                // Make temp stack visible after first step
+                if (step > 0) {
+                    tempStack.style.opacity = 1;
+                } else {
+                    tempStack.style.opacity = 0;
+                }
+                
+                // Remove elements from original stack based on step
+                for (let i = 0; i < Math.min(step, 4); i++) {
+                    if (originalStack.querySelector('.stack-item')) {
+                        originalStack.removeChild(originalStack.querySelector('.stack-item'));
+                    }
+                }
+                
+                // Add elements to temporary stack based on step
+                for (let i = 0; i < Math.min(step, 4); i++) {
+                    const item = document.createElement('div');
+                    item.className = 'stack-item';
+                    item.textContent = originalItems[originalItems.length - 1 - i];
+                    tempStack.insertBefore(item, tempStack.firstChild);
+                }
+                
+                // Transfer the temp stack to the reversed stack in the final step
+                if (step === totalSteps) {
+                    tempStack.style.opacity = 0;
+                    
+                    for (let i = 0; i < 4; i++) {
+                        const item = document.createElement('div');
+                        item.className = 'stack-item';
+                        item.textContent = originalItems[i];
+                        reversedStack.insertBefore(item, reversedStack.firstChild);
+                    }
+                }
+                
+                // Update button states
+                prevBtn.disabled = step === 0;
+                nextBtn.disabled = step === totalSteps;
+                
+                // Update explanation
+                updateExplanation(step);
+            }
+            
+            // Event listeners for navigation buttons
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    renderStep(currentStep);
+                }
+            });
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    renderStep(currentStep);
+                }
+            });
+            
+            // Initialize the visualization
+            renderStep(0);
+        });
+    </script>
+</body>
+</html>
