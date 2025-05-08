@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character-by-Character Reversal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .original-string, .reversed-string {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .char {
+            width: 40px;
+            height: 40px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .original-string .char {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .reversed-string .char {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            opacity: 0;
+        }
+        .pointer {
+            position: absolute;
+            font-size: 24px;
+            color: #FF4800;
+            font-weight: bold;
+            transition: left 0.5s;
+        }
+        .orig-pointer {
+            top: -30px;
+        }
+        .rev-pointer {
+            bottom: -30px;
+        }
+        .arrow {
+            position: absolute;
+            width: 80px;
+            height: 50px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        .arrow path {
+            stroke: #FF4800;
+            stroke-width: 2;
+            fill: none;
+        }
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin: 20px 0;
+            text-align: left;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            border-left: 5px solid #FF4800;
+        }
+        .index-labels {
+            display: flex;
+            justify-content: center;
+            margin: 5px 0;
+        }
+        .index-label {
+            width: 40px;
+            margin: 0 5px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Character-by-Character String Reversal</h1>
+        
+        <div class="explanation" id="explanation">
+            Welcome to string reversal animation! We'll reverse "hello" to "olleh" by reading characters from the end to the beginning.
+        </div>
+        
+        <div class="animation-container">
+            <div class="original-string">
+                <div class="pointer orig-pointer" id="origPointer">↓</div>
+                <div class="char" data-char="h">h</div>
+                <div class="char" data-char="e">e</div>
+                <div class="char" data-char="l">l</div>
+                <div class="char" data-char="l">l</div>
+                <div class="char" data-char="o">o</div>
+                
+                <svg class="arrow" id="arrow" viewBox="0 0 100 60">
+                    <path d="M10,10 Q50,50 90,10" id="curve"></path>
+                    <polygon points="85,10 90,15 95,10" fill="#FF4800"></polygon>
+                </svg>
+            </div>
+            
+            <div class="index-labels">
+                <div class="index-label">0</div>
+                <div class="index-label">1</div>
+                <div class="index-label">2</div>
+                <div class="index-label">3</div>
+                <div class="index-label">4</div>
+            </div>
+            
+            <div class="reversed-string">
+                <div class="pointer rev-pointer" id="revPointer">↑</div>
+                <div class="char" data-char="">_</div>
+                <div class="char" data-char="">_</div>
+                <div class="char" data-char="">_</div>
+                <div class="char" data-char="">_</div>
+                <div class="char" data-char="">_</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const originalChars = document.querySelectorAll('.original-string .char');
+        const reversedChars = document.querySelectorAll('.reversed-string .char');
+        const origPointer = document.getElementById('origPointer');
+        const revPointer = document.getElementById('revPointer');
+        const arrow = document.getElementById('arrow');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const explanation = document.getElementById('explanation');
+        
+        let currentStep = 0;
+        const totalSteps = originalChars.length + 1;
+        
+        const explanations = [
+            "Welcome to string reversal animation! We'll reverse \"hello\" to \"olleh\" by reading characters from the end to the beginning.",
+            "We start by looking at the last character 'o' (index 4) in the original string.",
+            "We place 'o' at the first position (index 0) of our reversed string.",
+            "Moving backwards, we look at the second-to-last character 'l' (index 3) in the original string.",
+            "We place 'l' at the second position (index 1) of our reversed string.",
+            "Continuing backwards, we look at the middle character 'l' (index 2) in the original string.",
+            "We place 'l' at the third position (index 2) of our reversed string.",
+            "Moving backwards again, we look at the character 'e' (index 1) in the original string.",
+            "We place 'e' at the fourth position (index 3) of our reversed string.",
+            "Finally, we look at the first character 'h' (index 0) in the original string.",
+            "We place 'h' at the last position (index 4) of our reversed string. The reversal is complete: 'hello' → 'olleh'!"
+        ];
+        
+        // Initial setup
+        resetAnimation();
+        
+        function updateStep(step) {
+            // Reset all styles
+            originalChars.forEach(char => {
+                char.style.backgroundColor = '#FD9F78';
+                char.style.color = '#000000';
+            });
+            
+            reversedChars.forEach(char => {
+                char.style.backgroundColor = '#FF4800';
+                char.textContent = '_';
+                char.style.opacity = '0.3';
+            });
+            
+            arrow.style.display = 'none';
+            
+            if (step === 0) {
+                // Initial state
+                origPointer.style.left = '-1000px';
+                revPointer.style.left = '-1000px';
+                explanation.textContent = explanations[0];
+            } else {
+                const origIndex = originalChars.length - step;
+                const revIndex = step - 1;
+                
+                // Position the pointers
+                const origChar = originalChars[origIndex];
+                const revChar = reversedChars[revIndex];
+                
+                const origRect = origChar.getBoundingClientRect();
+                const revRect = revChar.getBoundingClientRect();
+                const origContainerRect = origChar.parentElement.getBoundingClientRect();
+                
+                origPointer.style.left = (origChar.offsetLeft + origChar.offsetWidth/2) + 'px';
+                revPointer.style.left = (revChar.offsetLeft + revChar.offsetWidth/2) + 'px';
+                
+                // Highlight current characters
+                origChar.style.backgroundColor = '#FF4800';
+                origChar.style.color = '#FFFFFF';
+                
+                // Show character in reversed string
+                revChar.textContent = origChar.dataset.char;
+                revChar.style.opacity = '1';
+                
+                // Show arrow
+                arrow.style.display = 'block';
+                arrow.style.left = ((origChar.offsetLeft + revChar.offsetLeft) / 2 + origChar.offsetWidth/2) + 'px';
+                
+                // Update explanation
+                explanation.textContent = explanations[step];
+            }
+            
+            // Update button states
+            prevBtn.disabled = step === 0;
+            nextBtn.disabled = step === totalSteps;
+        }
+        
+        function resetAnimation() {
+            currentStep = 0;
+            updateStep(currentStep);
+        }
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStep(currentStep);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep(currentStep);
+            }
+        });
+    </script>
+</body>
+</html>
