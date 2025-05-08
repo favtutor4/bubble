@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Call Stack Visualization</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--white);
+            color: var(--black);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .step-description {
+            background-color: rgba(253, 159, 120, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            text-align: left;
+            min-height: 80px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .stack {
+            position: absolute;
+            width: 200px;
+            left: 50px;
+            top: 50px;
+            bottom: 50px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 2px;
+        }
+        
+        .stack-label {
+            position: absolute;
+            font-weight: bold;
+            bottom: 10px;
+            left: 90px;
+        }
+        
+        .stack-frame {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--secondary);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            text-align: left;
+            opacity: 0;
+            transition: all 0.5s ease;
+            transform: translateY(-20px);
+        }
+        
+        .stack-frame.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .array-container {
+            position: absolute;
+            right: 50px;
+            top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .array-box {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .array-label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .array-element {
+            width: 40px;
+            height: 40px;
+            background-color: var(--white);
+            border: 2px solid var(--black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .array-element.highlight {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background-color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .arrow:before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid var(--primary);
+            border-right: 2px solid var(--primary);
+            transform: rotate(45deg);
+        }
+        
+        .arrow.active {
+            opacity: 1;
+        }
+        
+        .result-container {
+            position: absolute;
+            right: 50px;
+            bottom: 50px;
+            text-align: center;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ddd;
+            transition: background-color 0.3s;
+        }
+        
+        .progress-dot.active {
+            background-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recursive Call Stack Visualization</h1>
+        <p>Reversing Array: [1, 2, 3, 4] using Recursion</p>
+        
+        <div class="progress-indicator" id="progressIndicator"></div>
+        
+        <div class="step-description" id="stepDescription">
+            Let's visualize how recursion works to reverse an array [1, 2, 3, 4] by following the call stack.
+        </div>
+        
+        <div class="animation-container">
+            <div class="stack">
+                <div class="stack-label">Call Stack</div>
+                <!-- Stack frames will be inserted here -->
+            </div>
+            
+            <div class="array-container">
+                <div>
+                    <div class="array-label">Original Array</div>
+                    <div class="array-box">
+                        <div class="array-element">1</div>
+                        <div class="array-element">2</div>
+                        <div class="array-element">3</div>
+                        <div class="array-element">4</div>
+                    </div>
+                </div>
+                
+                <div id="currentArrayContainer" style="opacity: 0;">
+                    <div class="array-label">Current Array</div>
+                    <div class="array-box" id="currentArray">
+                        <!-- Current array elements will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-container" id="resultContainer" style="opacity: 0;">
+                <div class="array-label">Reversed Array</div>
+                <div class="array-box">
+                    <div class="array-element">4</div>
+                    <div class="array-element">3</div>
+                    <div class="array-element">2</div>
+                    <div class="array-element">1</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const stepDescription = document.getElementById('stepDescription');
+            const stack = document.querySelector('.stack');
+            const currentArrayContainer = document.getElementById('currentArrayContainer');
+            const currentArray = document.getElementById('currentArray');
+            const resultContainer = document.getElementById('resultContainer');
+            const progressIndicator = document.getElementById('progressIndicator');
+            
+            const steps = [
+                {
+                    description: "Let's visualize how recursion works to reverse an array [1, 2, 3, 4] by following the call stack.",
+                    action: () => {}
+                },
+                {
+                    description: "We start by calling reverseArray([1, 2, 3, 4]). This is our first recursive call.",
+                    action: () => {
+                        const frame = createStackFrame("reverseArray([1, 2, 3, 4])", "Waiting for result");
+                        stack.appendChild(frame);
+                        setTimeout(() => frame.classList.add('active'), 50);
+                        
+                        updateCurrentArray([1, 2, 3, 4]);
+                        setTimeout(() => {
+                            currentArrayContainer.style.opacity = 1;
+                        }, 300);
+                    }
+                },
+                {
+                    description: "The base case is not met (array length > 1), so we make another recursive call with the rest of the array after removing the first element.",
+                    action: () => {
+                        const frame = createStackFrame("reverseArray([2, 3, 4])", "Waiting for result");
+                        stack.appendChild(frame);
+                        setTimeout(() => frame.classList.add('active'), 50);
+                        
+                        updateCurrentArray([2, 3, 4]);
+                    }
+                },
+                {
+                    description: "Again, the base case is not met, so we make another recursive call with the array [3, 4].",
+                    action: () => {
+                        const frame = createStackFrame("reverseArray([3, 4])", "Waiting for result");
+                        stack.appendChild(frame);
+                        setTimeout(() => frame.classList.add('active'), 50);
+                        
+                        updateCurrentArray([3, 4]);
+                    }
+                },
+                {
+                    description: "We continue with our recursive calls. Now we call reverseArray([4]).",
+                    action: () => {
+                        const frame = createStackFrame("reverseArray([4])", "Waiting for result");
+                        stack.appendChild(frame);
+                        setTimeout(() => frame.classList.add('active'), 50);
+                        
+                        updateCurrentArray([4]);
+                    }
+                },
+                {
+                    description: "Since the array has only one element [4], we've reached the base case. We return this array directly without further recursion.",
+                    action: () => {
+                        const frames = document.querySelectorAll('.stack-frame');
+                        frames[frames.length - 1].innerHTML = "reverseArray([4])<br><span style='color: green;'>Returns [4]</span>";
+                    }
+                },
+                {
+                    description: "Now we start returning back up the stack. For reverseArray([3, 4]), we get [4] from the recursive call and append 3 to get [4, 3].",
+                    action: () => {
+                        const frames = document.querySelectorAll('.stack-frame');
+                        frames[frames.length - 2].innerHTML = "reverseArray([3, 4])<br><span style='color: green;'>Returns [4, 3]</span>";
+                        updateCurrentArray([4, 3]);
+                    }
+                },
+                {
+                    description: "Moving up the stack to reverseArray([2, 3, 4]), we get [4, 3] from the recursive call and append 2 to get [4, 3, 2].",
+                    action: () => {
+                        const frames = document.querySelectorAll('.stack-frame');
+                        frames[frames.length - 3].innerHTML = "reverseArray([2, 3, 4])<br><span style='color: green;'>Returns [4, 3, 2]</span>";
+                        updateCurrentArray([4, 3, 2]);
+                    }
+                },
+                {
+                    description: "Finally, we return to our original call reverseArray([1, 2, 3, 4]). We get [4, 3, 2] from the recursive call and append 1 to get [4, 3, 2, 1].",
+                    action: () => {
+                        const frames = document.querySelectorAll('.stack-frame');
+                        frames[frames.length - 4].innerHTML = "reverseArray([1, 2, 3, 4])<br><span style='color: green;'>Returns [4, 3, 2, 1]</span>";
+                        updateCurrentArray([4, 3, 2, 1]);
+                    }
+                },
+                {
+                    description: "The recursion is complete! We've successfully reversed the array [1, 2, 3, 4] to [4, 3, 2, 1] using the recursive call stack as implicit storage.",
+                    action: () => {
+                        resultContainer.style.opacity = 1;
+                        currentArrayContainer.style.opacity = 0;
+                        
+                        // Clear the stack frames one by one
+                        const frames = document.querySelectorAll('.stack-frame');
+                        frames.forEach((frame, i) => {
+                            setTimeout(() => {
+                                frame.style.opacity = 0;
+                                frame.style.transform = 'translateY(-20px)';
+                            }, i * 200);
+                        });
+                    }
+                }
+            ];
+            
+            // Initialize progress dots
+            for (let i = 0; i < steps.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                if (i === 0) dot.classList.add('active');
+                progressIndicator.appendChild(dot);
+            }
+            
+            let currentStep = 0;
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    updateStep();
+                }
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateStep();
+                }
+            });
+            
+            function updateStep() {
+                // Update buttons
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length - 1;
+                
+                // Update description
+                stepDescription.innerHTML = steps[currentStep].description;
+                
+                // Execute the step's action
+                steps[currentStep].action();
+                
+                // Update progress dots
+                const dots = document.querySelectorAll('.progress-dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentStep);
+                });
+                
+                // If we're going backwards, we need to reset the visualization
+                if (currentStep === 0) {
+                    resetVisualization();
+                }
+            }
+            
+            function createStackFrame(functionCall, status) {
+                const frame = document.createElement('div');
+                frame.className = 'stack-frame';
+                frame.innerHTML = `${functionCall}<br>${status}`;
+                return frame;
+            }
+            
+            function updateCurrentArray(arr) {
+                currentArray.innerHTML = '';
+                arr.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'array-element';
+                    el.textContent = item;
+                    currentArray.appendChild(el);
+                });
+            }
+            
+            function resetVisualization() {
+                // Clear stack frames
+                stack.querySelectorAll('.stack-frame').forEach(frame => {
+                    frame.remove();
+                });
+                
+                // Reset arrays
+                currentArrayContainer.style.opacity = 0;
+                resultContainer.style.opacity = 0;
+            }
+        });
+    </script>
+</body>
+</html>
