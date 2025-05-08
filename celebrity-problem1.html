@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celebrity Definition Matrix Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .matrix-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(6, 60px);
+            grid-gap: 5px;
+            margin-top: 20px;
+        }
+
+        .matrix-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid #FF4800;
+            background-color: #FFFFFF;
+            transition: all 0.3s;
+        }
+
+        .matrix-header {
+            background-color: #FD9F78;
+            font-weight: bold;
+            border: 2px solid #FF4800;
+        }
+
+        .highlighted {
+            background-color: #FD9F78;
+        }
+
+        .explanation {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #FFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .step-counter {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Celebrity Definition Matrix Example</h1>
+        
+        <div class="matrix-container">
+            <div class="matrix" id="matrix">
+                <!-- Headers -->
+                <div class="matrix-cell matrix-header"></div>
+                <div class="matrix-cell matrix-header">P1</div>
+                <div class="matrix-cell matrix-header">P2</div>
+                <div class="matrix-cell matrix-header">P3</div>
+                <div class="matrix-cell matrix-header">P4</div>
+                <div class="matrix-cell matrix-header">P5</div>
+                
+                <!-- Row 1 -->
+                <div class="matrix-cell matrix-header">P1</div>
+                <div class="matrix-cell" id="cell-0-0">0</div>
+                <div class="matrix-cell" id="cell-0-1">1</div>
+                <div class="matrix-cell" id="cell-0-2">0</div>
+                <div class="matrix-cell" id="cell-0-3">0</div>
+                <div class="matrix-cell" id="cell-0-4">1</div>
+                
+                <!-- Row 2 -->
+                <div class="matrix-cell matrix-header">P2</div>
+                <div class="matrix-cell" id="cell-1-0">0</div>
+                <div class="matrix-cell" id="cell-1-1">0</div>
+                <div class="matrix-cell" id="cell-1-2">0</div>
+                <div class="matrix-cell" id="cell-1-3">0</div>
+                <div class="matrix-cell" id="cell-1-4">0</div>
+                
+                <!-- Row 3 -->
+                <div class="matrix-cell matrix-header">P3</div>
+                <div class="matrix-cell" id="cell-2-0">1</div>
+                <div class="matrix-cell" id="cell-2-1">1</div>
+                <div class="matrix-cell" id="cell-2-2">0</div>
+                <div class="matrix-cell" id="cell-2-3">0</div>
+                <div class="matrix-cell" id="cell-2-4">1</div>
+                
+                <!-- Row 4 -->
+                <div class="matrix-cell matrix-header">P4</div>
+                <div class="matrix-cell" id="cell-3-0">0</div>
+                <div class="matrix-cell" id="cell-3-1">1</div>
+                <div class="matrix-cell" id="cell-3-2">0</div>
+                <div class="matrix-cell" id="cell-3-3">0</div>
+                <div class="matrix-cell" id="cell-3-4">0</div>
+                
+                <!-- Row 5 -->
+                <div class="matrix-cell matrix-header">P5</div>
+                <div class="matrix-cell" id="cell-4-0">1</div>
+                <div class="matrix-cell" id="cell-4-1">1</div>
+                <div class="matrix-cell" id="cell-4-2">0</div>
+                <div class="matrix-cell" id="cell-4-3">1</div>
+                <div class="matrix-cell" id="cell-4-4">0</div>
+            </div>
+        </div>
+
+        <div class="explanation" id="explanation">
+            <p>In this 5×5 matrix, each cell [i,j] represents whether person i knows person j.</p>
+            <p>A value of 1 means "knows" and 0 means "doesn't know".</p>
+            <p>Click "Next" to start the animation showing why Person 2 is the celebrity.</p>
+        </div>
+
+        <div class="step-counter" id="step-counter">Step 0 of 3</div>
+
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                highlight: [], 
+                explanation: "In this 5×5 matrix, each cell [i,j] represents whether person i knows person j. A value of 1 means 'knows' and 0 means 'doesn't know'. Click 'Next' to start the animation showing why Person 2 is the celebrity."
+            },
+            {
+                highlight: ["cell-1-0", "cell-1-1", "cell-1-2", "cell-1-3", "cell-1-4"],
+                explanation: "A celebrity doesn't know anyone. Notice how Person 2's row (row 2) is all 0s, indicating that Person 2 doesn't know any other person. This is one requirement for being a celebrity."
+            },
+            {
+                highlight: ["cell-0-1", "cell-1-1", "cell-2-1", "cell-3-1", "cell-4-1"],
+                explanation: "Everyone else knows the celebrity. Notice how Person 2's column (column 2) has all 1s except at position [2,2], indicating that everyone else knows Person 2. This is the second requirement for being a celebrity."
+            },
+            {
+                highlight: ["cell-1-0", "cell-1-1", "cell-1-2", "cell-1-3", "cell-1-4", "cell-0-1", "cell-2-1", "cell-3-1", "cell-4-1"],
+                explanation: "Person 2 is the celebrity because they satisfy both conditions: they don't know anyone (row 2 has all 0s) and everyone else knows them (column 2 has all 1s except at position [2,2]). In a group, the celebrity is the person who doesn't know anyone but is known by everyone else."
+            }
+        ];
+
+        let currentStep = 0;
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const explanationDiv = document.getElementById("explanation");
+        const stepCounter = document.getElementById("step-counter");
+
+        function updateStep() {
+            // Clear previous highlights
+            document.querySelectorAll('.matrix-cell:not(.matrix-header)').forEach(cell => {
+                cell.classList.remove('highlighted');
+            });
+
+            // Apply new highlights
+            steps[currentStep].highlight.forEach(cellId => {
+                document.getElementById(cellId).classList.add('highlighted');
+            });
+
+            // Update explanation
+            explanationDiv.innerHTML = `<p>${steps[currentStep].explanation}</p>`;
+
+            // Update step counter
+            stepCounter.textContent = `Step ${currentStep} of ${steps.length - 1}`;
+
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+
+        // Initialize
+        updateStep();
+    </script>
+</body>
+</html>
