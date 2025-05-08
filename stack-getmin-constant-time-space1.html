@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinStack Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .explanation {
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+        
+        .visualization {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            position: relative;
+            height: 350px;
+        }
+        
+        .stack {
+            width: 120px;
+            margin: 0 30px;
+            position: relative;
+            background-color: rgba(253, 159, 120, 0.2);
+            border-radius: 8px;
+            height: 300px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            border: 2px solid #FD9F78;
+        }
+        
+        .stack-label {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .element {
+            width: 80px;
+            height: 40px;
+            background-color: #FF4800;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .operation-display {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #000000;
+            min-height: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .arrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #FF4800;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MinStack with Helper Stack Visualization</h1>
+        
+        <div class="explanation">
+            <p>A MinStack is a special stack data structure that supports standard stack operations (push, pop, top) 
+               and also provides a getMin() operation that returns the minimum element in the stack in O(1) time.
+               To achieve this efficiency, MinStack uses a helper stack (min_stack) to keep track of the minimum elements.</p>
+        </div>
+        
+        <div class="operation-display" id="operation-text">Let's see how MinStack works!</div>
+        
+        <div class="visualization">
+            <div>
+                <div class="stack-label">Main Stack</div>
+                <div class="stack" id="main-stack"></div>
+            </div>
+            
+            <div>
+                <div class="stack-label">Min Stack</div>
+                <div class="stack" id="min-stack"></div>
+            </div>
+            
+            <div class="arrow" id="arrow">→</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="prev-btn" disabled>Previous</button>
+            <button class="btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const operations = [
+            {
+                type: 'initial',
+                text: "Let's start by performing operations on our MinStack!",
+                mainStack: [],
+                minStack: []
+            },
+            {
+                type: 'push',
+                value: 3,
+                text: "push(3): We add 3 to the main stack. Since 3 is the first element, it's also the minimum so far, so we add it to min_stack too.",
+                mainStack: [3],
+                minStack: [3]
+            },
+            {
+                type: 'push',
+                value: 5,
+                text: "push(5): We add 5 to the main stack. Since 5 > 3, the minimum is still 3, so we don't add 5 to min_stack.",
+                mainStack: [3, 5],
+                minStack: [3]
+            },
+            {
+                type: 'push',
+                value: 2,
+                text: "push(2): We add 2 to the main stack. Since 2 < 3, 2 becomes the new minimum, so we add it to min_stack.",
+                mainStack: [3, 5, 2],
+                minStack: [3, 2]
+            },
+            {
+                type: 'getMin',
+                text: "getMin(): Looking at the top of min_stack, we can see the minimum element is 2. This operation takes O(1) time!",
+                mainStack: [3, 5, 2],
+                minStack: [3, 2],
+                highlight: 'min'
+            },
+            {
+                type: 'pop',
+                text: "pop(): We remove 2 from the main stack. Since 2 was also at the top of min_stack, we remove it from min_stack too.",
+                mainStack: [3, 5],
+                minStack: [3],
+                popped: 2
+            },
+            {
+                type: 'getMin',
+                text: "getMin(): Now the minimum is 3, which is at the top of min_stack. Again, O(1) time complexity!",
+                mainStack: [3, 5],
+                minStack: [3],
+                highlight: 'min'
+            },
+            {
+                type: 'push',
+                value: 1,
+                text: "push(1): We add 1 to the main stack. Since 1 < 3, 1 becomes the new minimum, so we add it to min_stack.",
+                mainStack: [3, 5, 1],
+                minStack: [3, 1]
+            },
+            {
+                type: 'getMin',
+                text: "getMin(): The minimum is now 1, which is at the top of min_stack.",
+                mainStack: [3, 5, 1],
+                minStack: [3, 1],
+                highlight: 'min'
+            },
+            {
+                type: 'pop',
+                text: "pop(): We remove 1 from the main stack. Since 1 was also at the top of min_stack, we remove it from min_stack too.",
+                mainStack: [3, 5],
+                minStack: [3],
+                popped: 1
+            },
+            {
+                type: 'summary',
+                text: "That's how MinStack works! It uses a helper stack to keep track of minimums, allowing O(1) time for all operations.",
+                mainStack: [3, 5],
+                minStack: [3]
+            }
+        ];
+
+        let currentStep = 0;
+        const mainStack = document.getElementById('main-stack');
+        const minStack = document.getElementById('min-stack');
+        const operationText = document.getElementById('operation-text');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const arrow = document.getElementById('arrow');
+
+        function updateVisualization() {
+            const operation = operations[currentStep];
+            
+            // Update operation text
+            operationText.textContent = operation.text;
+            
+            // Clear stacks
+            mainStack.innerHTML = '';
+            minStack.innerHTML = '';
+            
+            // Update main stack visualization
+            operation.mainStack.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                element.style.opacity = 1;
+                mainStack.appendChild(element);
+            });
+            
+            // Update min stack visualization
+            operation.minStack.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                element.style.opacity = 1;
+                minStack.appendChild(element);
+            });
+            
+            // Highlight for getMin operation
+            if (operation.type === 'getMin' && operation.highlight === 'min') {
+                if (minStack.lastChild) {
+                    minStack.lastChild.style.backgroundColor = '#000000';
+                }
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === operations.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < operations.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+
+        // Initialize visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
