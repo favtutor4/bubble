@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-digit Number Processing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            height: 400px;
+            background-color: #FFFFFF;
+            overflow: hidden;
+        }
+        .token {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 24px;
+            transition: all 0.5s ease-in-out;
+            position: absolute;
+        }
+        .expression {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .number {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .operator {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+        .result {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            font-size: 28px;
+        }
+        .explanation {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .control-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        .btn:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .stack-container {
+            position: absolute;
+            right: 50px;
+            top: 200px;
+            width: 100px;
+            height: 150px;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .stack-item {
+            width: 80px;
+            text-align: center;
+            padding: 5px 0;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .stack-label {
+            position: absolute;
+            bottom: -30px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Multi-digit Number Processing</h1>
+        
+        <div class="animation-container" id="animationContainer">
+            <div class="stack-container" id="stackContainer">
+                <div class="stack-label">Stack</div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Starting with the expression "12 3 +"
+        </div>
+        
+        <div class="control-buttons">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Animation states
+        const animationSteps = [
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 }
+                ],
+                explanation: "Starting with the expression \"12 3 +\"",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 50, y: 80 }
+                ],
+                explanation: "We scan the expression from left to right",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 50, y: 80 },
+                    { id: "digit1", type: "number", text: "1", x: 200, y: 150 }
+                ],
+                explanation: "We encounter the digit '1'",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 61, y: 80 },
+                    { id: "digit1", type: "number", text: "1", x: 200, y: 150 }
+                ],
+                explanation: "Moving to the next character",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 61, y: 80 },
+                    { id: "digit1", type: "number", text: "1", x: 200, y: 150 },
+                    { id: "digit2", type: "number", text: "2", x: 240, y: 150 }
+                ],
+                explanation: "We encounter the digit '2'",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 73, y: 80 },
+                    { id: "num1", type: "number", text: "12", x: 200, y: 150 }
+                ],
+                explanation: "We combine the digits to form the number '12'",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 73, y: 80 },
+                    { id: "num1", type: "number", text: "12", x: 200, y: 150 }
+                ],
+                explanation: "We encounter a space, which signals the end of a number",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 73, y: 80 },
+                    { id: "num1", type: "number", text: "12", x: 340, y: 250 }
+                ],
+                explanation: "We push the number '12' onto the stack",
+                stack: ["12"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 85, y: 80 }
+                ],
+                explanation: "Moving to the next character",
+                stack: ["12"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 85, y: 80 },
+                    { id: "digit3", type: "number", text: "3", x: 200, y: 150 }
+                ],
+                explanation: "We encounter the digit '3'",
+                stack: ["12"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 97, y: 80 },
+                    { id: "digit3", type: "number", text: "3", x: 200, y: 150 }
+                ],
+                explanation: "We encounter a space, which signals the end of a number",
+                stack: ["12"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 97, y: 80 },
+                    { id: "digit3", type: "number", text: "3", x: 340, y: 220 }
+                ],
+                explanation: "We push the number '3' onto the stack",
+                stack: ["12", "3"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 109, y: 80 }
+                ],
+                explanation: "Moving to the next character",
+                stack: ["12", "3"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "scan", type: "expression", text: "↑", x: 109, y: 80 },
+                    { id: "op", type: "operator", text: "+", x: 200, y: 150 }
+                ],
+                explanation: "We encounter the operator '+'",
+                stack: ["12", "3"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "op", type: "operator", text: "+", x: 200, y: 150 },
+                    { id: "num1_pop", type: "number", text: "3", x: 150, y: 220 },
+                    { id: "num2_pop", type: "number", text: "12", x: 150, y: 250 }
+                ],
+                explanation: "For the '+' operator, we pop the top two numbers from the stack",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "op", type: "operator", text: "+", x: 200, y: 150 },
+                    { id: "num1_pop", type: "number", text: "3", x: 180, y: 150 },
+                    { id: "num2_pop", type: "number", text: "12", x: 150, y: 150 }
+                ],
+                explanation: "We perform the operation: 12 + 3",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "result", type: "result", text: "15", x: 200, y: 150 }
+                ],
+                explanation: "We calculate the result: 12 + 3 = 15",
+                stack: []
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "result", type: "result", text: "15", x: 340, y: 250 }
+                ],
+                explanation: "We push the result '15' back onto the stack",
+                stack: ["15"]
+            },
+            {
+                elements: [
+                    { id: "expr", type: "expression", text: "12 3 +", x: 50, y: 50 },
+                    { id: "result", type: "result", text: "15", x: 340, y: 250 }
+                ],
+                explanation: "End of expression. The final result is 15",
+                stack: ["15"]
+            }
+        ];
+
+        let currentStep = 0;
+        const animationContainer = document.getElementById('animationContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stackContainer = document.getElementById('stackContainer');
+
+        function renderStep(step) {
+            // Clear current elements
+            animationContainer.innerHTML = '';
+            
+            // Add stack container
+            animationContainer.appendChild(stackContainer);
+            
+            // Render stack
+            stackContainer.innerHTML = '<div class="stack-label">Stack</div>';
+            stackContainer.style.opacity = step.stack.length > 0 ? '1' : '0';
+            
+            for (const item of step.stack) {
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-item number';
+                stackItem.textContent = item;
+                stackContainer.appendChild(stackItem);
+            }
+            
+            // Render elements
+            for (const element of step.elements) {
+                const el = document.createElement('div');
+                el.id = element.id;
+                el.className = `token ${element.type}`;
+                el.textContent = element.text;
+                el.style.left = `${element.x}px`;
+                el.style.top = `${element.y}px`;
+                animationContainer.appendChild(el);
+            }
+            
+            // Update explanation
+            explanation.textContent = step.explanation;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === animationSteps.length - 1;
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(animationSteps[currentStep]);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < animationSteps.length - 1) {
+                currentStep++;
+                renderStep(animationSteps[currentStep]);
+            }
+        });
+
+        // Initial render
+        renderStep(animationSteps[currentStep]);
+    </script>
+</body>
+</html>
