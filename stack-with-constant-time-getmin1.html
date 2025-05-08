@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auxiliary Stack Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .stacks-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            width: 45%;
+        }
+        
+        .stack-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .stack-element {
+            width: 80px;
+            height: 50px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+            background-color: #FFFFFF;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .stack-element.highlighted {
+            background-color: #FD9F78;
+            transform: scale(1.1);
+        }
+        
+        .explanation {
+            padding: 20px;
+            background-color: #FD9F78;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 100px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 200px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Auxiliary Stack Visualization</h1>
+        
+        <div class="stacks-container">
+            <div class="stack">
+                <div class="stack-title">Main Stack</div>
+                <div id="main-stack"></div>
+            </div>
+            
+            <div class="stack">
+                <div class="stack-title">Min Stack (Auxiliary)</div>
+                <div id="min-stack"></div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Auxiliary Stack visualization! This demonstration shows how an auxiliary stack helps track the minimum value in a stack at any point. Click 'Next' to begin.
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Stack data
+        const operations = [
+            {
+                action: "Initial state",
+                mainStack: [],
+                minStack: [],
+                explanation: "We start with two empty stacks: our main stack that will store all values, and an auxiliary stack (min stack) that will track minimum values."
+            },
+            {
+                action: "Push 5",
+                mainStack: [5],
+                minStack: [5],
+                explanation: "We push 5 to the main stack. Since it's the first element, it's also the minimum, so we push 5 to the min stack as well.",
+                highlight: {main: 0, min: 0}
+            },
+            {
+                action: "Push 2",
+                mainStack: [5, 2],
+                minStack: [5, 2],
+                explanation: "We push 2 to the main stack. Since 2 is less than the current minimum (5), we also push 2 to the min stack.",
+                highlight: {main: 1, min: 1}
+            },
+            {
+                action: "Push 4",
+                mainStack: [5, 2, 4],
+                minStack: [5, 2, 2],
+                explanation: "We push 4 to the main stack. Since 4 is greater than the current minimum (2), we duplicate the minimum (2) in the min stack.",
+                highlight: {main: 2, min: 2}
+            },
+            {
+                action: "Push 1",
+                mainStack: [5, 2, 4, 1],
+                minStack: [5, 2, 2, 1],
+                explanation: "We push 1 to the main stack. Since 1 is less than the current minimum (2), we push 1 to the min stack.",
+                highlight: {main: 3, min: 3}
+            },
+            {
+                action: "Push 3",
+                mainStack: [5, 2, 4, 1, 3],
+                minStack: [5, 2, 2, 1, 1],
+                explanation: "We push 3 to the main stack. Since 3 is greater than the current minimum (1), we duplicate the minimum (1) in the min stack.",
+                highlight: {main: 4, min: 4}
+            },
+            {
+                action: "Final State",
+                mainStack: [5, 2, 4, 1, 3],
+                minStack: [5, 2, 2, 1, 1],
+                explanation: "The auxiliary stack (min stack) now enables us to get the minimum value in O(1) time. The top of min stack (1) is the current minimum value in our main stack, no matter how many elements we have.",
+                highlight: {main: null, min: null}
+            }
+        ];
+
+        // DOM elements
+        const mainStackEl = document.getElementById('main-stack');
+        const minStackEl = document.getElementById('min-stack');
+        const explanationEl = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        // Current step
+        let currentStep = 0;
+
+        // Function to render stacks
+        function renderStacks() {
+            const operation = operations[currentStep];
+            
+            // Clear existing elements
+            mainStackEl.innerHTML = '';
+            minStackEl.innerHTML = '';
+            
+            // Render main stack
+            operation.mainStack.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = value;
+                
+                if (operation.highlight && operation.highlight.main === index) {
+                    element.classList.add('highlighted');
+                }
+                
+                mainStackEl.appendChild(element);
+                
+                // Trigger reflow for animation
+                void element.offsetWidth;
+                element.style.opacity = 1;
+            });
+            
+            // Render min stack
+            operation.minStack.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = value;
+                
+                if (operation.highlight && operation.highlight.min === index) {
+                    element.classList.add('highlighted');
+                }
+                
+                minStackEl.appendChild(element);
+                
+                // Trigger reflow for animation
+                void element.offsetWidth;
+                element.style.opacity = 1;
+            });
+            
+            // Update explanation
+            explanationEl.textContent = operation.explanation;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === operations.length - 1;
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStacks();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < operations.length - 1) {
+                currentStep++;
+                renderStacks();
+            }
+        });
+
+        // Initial render
+        renderStacks();
+    </script>
+</body>
+</html>
