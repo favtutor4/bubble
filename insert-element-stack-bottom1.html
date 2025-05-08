@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Visualization - Insertion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        
+        .stack-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #FF4800;
+        }
+        
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            border: 2px solid #000000;
+            border-top: none;
+            position: relative;
+            width: 100px;
+            min-height: 240px;
+        }
+        
+        .element {
+            height: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top: 2px solid #000000;
+            background-color: #FD9F78;
+            font-weight: bold;
+            font-size: 20px;
+            transition: all 0.5s ease;
+            opacity: 1;
+        }
+        
+        .element.new {
+            background-color: #FF4800;
+            color: white;
+        }
+        
+        .label {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .top-label {
+            top: -25px;
+            right: -60px;
+        }
+        
+        .bottom-label {
+            bottom: -25px;
+            right: -70px;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+        }
+        
+        .top-arrow {
+            top: -5px;
+            right: -25px;
+            border-bottom: 10px solid #FF4800;
+        }
+        
+        .bottom-arrow {
+            bottom: -5px;
+            right: -25px;
+            border-top: 10px solid #FF4800;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            max-width: 800px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        
+        .step-indicator {
+            font-weight: bold;
+            color: #FF4800;
+            margin-top: 20px;
+        }
+        
+        .animation-element {
+            position: absolute;
+            height: 50px;
+            width: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #FF4800;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            opacity: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stack Visualization - Insertion Operation</h1>
+    
+    <div class="container">
+        <div class="stack-container">
+            <div class="stack-title">Before Insertion</div>
+            <div class="stack" id="beforeStack">
+                <div class="element">1</div>
+                <div class="element">2</div>
+                <div class="element">3</div>
+                
+                <div class="label top-label">TOP</div>
+                <div class="arrow top-arrow"></div>
+                <div class="label bottom-label">BOTTOM</div>
+                <div class="arrow bottom-arrow"></div>
+            </div>
+        </div>
+        
+        <div class="stack-container">
+            <div class="stack-title">After Insertion</div>
+            <div class="stack" id="afterStack">
+                <div class="element">1</div>
+                <div class="element">2</div>
+                <div class="element">3</div>
+                <!-- The element '4' will be added here during animation -->
+                
+                <div class="label top-label">TOP</div>
+                <div class="arrow top-arrow"></div>
+                <div class="label bottom-label">BOTTOM</div>
+                <div class="arrow bottom-arrow"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="animationElement" class="animation-element">4</div>
+    
+    <div class="explanation" id="explanation">
+        A stack is a linear data structure that follows the Last In First Out (LIFO) principle.
+    </div>
+    
+    <div class="step-indicator" id="stepIndicator">Step 0/3</div>
+    
+    <div class="controls">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn">Next</button>
+    </div>
+    
+    <script>
+        const explanations = [
+            "A stack is a linear data structure that follows the Last In First Out (LIFO) principle. Here we have a stack with elements [3, 2, 1] with 1 at the top.",
+            "To insert element 4 at the bottom of the stack, we need to temporarily remove all existing elements.",
+            "The new element 4 is placed at the bottom of the stack.",
+            "All original elements are placed back in the same order, resulting in the new stack [4, 3, 2, 1] with 1 still at the top."
+        ];
+        
+        let currentStep = 0;
+        const totalSteps = explanations.length - 1;
+        
+        const beforeStack = document.getElementById('beforeStack');
+        const afterStack = document.getElementById('afterStack');
+        const explanation = document.getElementById('explanation');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const animationElement = document.getElementById('animationElement');
+        
+        function updateUI() {
+            explanation.textContent = explanations[currentStep];
+            stepIndicator.textContent = `Step ${currentStep}/${totalSteps}`;
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps;
+            
+            // Animation logic based on current step
+            if (currentStep === 0) {
+                resetAnimation();
+            } else if (currentStep === 1) {
+                // Show element 4 approaching
+                animationElement.style.opacity = '1';
+                animationElement.style.left = `${beforeStack.getBoundingClientRect().left}px`;
+                animationElement.style.bottom = `${beforeStack.getBoundingClientRect().top + beforeStack.offsetHeight + 20}px`;
+            } else if (currentStep === 2) {
+                // Place element 4 at the bottom of the after stack
+                animationElement.style.opacity = '0';
+                if (!afterStack.querySelector('.element.new')) {
+                    const newElement = document.createElement('div');
+                    newElement.className = 'element new';
+                    newElement.textContent = '4';
+                    afterStack.appendChild(newElement);
+                }
+            } else if (currentStep === 3) {
+                // Complete the animation
+                const newElement = afterStack.querySelector('.element.new');
+                if (newElement) {
+                    newElement.classList.remove('new');
+                }
+            }
+        }
+        
+        function resetAnimation() {
+            // Remove any new elements from the after stack
+            const newElement = afterStack.querySelector('.element.new');
+            if (newElement) {
+                afterStack.removeChild(newElement);
+            }
+            
+            // Reset animation element
+            animationElement.style.opacity = '0';
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            }
+        });
+        
+        // Initialize the UI
+        updateUI();
+    </script>
+</body>
+</html>
