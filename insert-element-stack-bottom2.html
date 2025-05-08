@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursion Call Stack Process</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 800px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .step-display {
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .visualization {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            height: 400px;
+            position: relative;
+        }
+        
+        .stack, .call-stack {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            width: 120px;
+            height: 350px;
+            background-color: #FFFFFF;
+            border: 2px solid #000000;
+            position: relative;
+        }
+        
+        .stack-label, .call-stack-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .stack-item {
+            width: 80px;
+            height: 80px;
+            margin: 5px auto;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all 0.5s ease;
+        }
+        
+        .stack-item.new {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        
+        .arrow {
+            position: absolute;
+            font-size: 40px;
+            color: #FF4800;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .description {
+            width: 100%;
+            padding: 20px;
+            background-color: #FFFFFF;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recursion Call Stack Process</h1>
+        
+        <div class="step-display">Step <span id="step-counter">1</span> of 4</div>
+        
+        <div class="visualization">
+            <div class="stack">
+                <div class="stack-label">Stack</div>
+                <!-- Stack elements will be added here -->
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="call-stack">
+                <div class="call-stack-label">Call Stack</div>
+                <!-- Call stack elements will be added here -->
+            </div>
+        </div>
+        
+        <div class="description" id="description">
+            <!-- Description will be updated dynamically -->
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-button" disabled>Previous</button>
+            <button id="next-btn" class="nav-button">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const stack = document.querySelector('.stack');
+        const callStack = document.querySelector('.call-stack');
+        const arrow = document.querySelector('.arrow');
+        const description = document.getElementById('description');
+        const stepCounter = document.getElementById('step-counter');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        // Initial setup
+        function initialize() {
+            // Clear any existing elements
+            clearStacks();
+            
+            // Create initial stack [3, 2, 1]
+            createStackItem(1, stack);
+            createStackItem(2, stack);
+            createStackItem(3, stack);
+            
+            updateDescription();
+        }
+        
+        function createStackItem(value, container, isNew = false) {
+            const item = document.createElement('div');
+            item.className = 'stack-item';
+            if (isNew) {
+                item.classList.add('new');
+            }
+            item.textContent = value;
+            container.appendChild(item);
+            return item;
+        }
+        
+        function clearStacks() {
+            // Clear both stacks but keep labels
+            const stackItems = stack.querySelectorAll('.stack-item');
+            const callStackItems = callStack.querySelectorAll('.stack-item');
+            
+            stackItems.forEach(item => item.remove());
+            callStackItems.forEach(item => item.remove());
+        }
+        
+        function updateDescription() {
+            switch(currentStep) {
+                case 1:
+                    description.textContent = "Step 1: Initial stack contains three elements [3, 2, 1]. In recursion, this would be our starting point. We'll simulate a recursive function that processes each element.";
+                    break;
+                case 2:
+                    description.textContent = "Step 2: During recursion, elements are popped from the stack and stored in the call stack. Each recursive call adds an element to the call stack until the base case is reached (empty stack).";
+                    break;
+                case 3:
+                    description.textContent = "Step 3: When the base case is reached (empty stack), we add a new element (4) to the empty stack. In recursion, this represents the return value from the base case.";
+                    break;
+                case 4:
+                    description.textContent = "Step 4: As recursive calls complete, elements from the call stack are pushed back onto the main stack in reverse order, resulting in [4, 3, 2, 1]. This demonstrates how recursion can reverse a stack.";
+                    break;
+            }
+        }
+        
+        function animateStep() {
+            switch(currentStep) {
+                case 1:
+                    // Initial state already set up
+                    break;
+                    
+                case 2:
+                    // Show arrow indicating movement
+                    arrow.style.opacity = '1';
+                    
+                    // Animate items moving from stack to call stack one by one
+                    const stackItems = document.querySelectorAll('.stack .stack-item');
+                    
+                    setTimeout(() => {
+                        if (stackItems.length > 0) {
+                            // Get the top item
+                            const item = stackItems[0];
+                            
+                            // Create a clone in the call stack
+                            createStackItem(item.textContent, callStack);
+                            
+                            // Remove from original stack
+                            item.remove();
+                        }
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        if (stackItems.length > 0) {
+                            // Get the top item (now the first one after previous removal)
+                            const item = stackItems[0];
+                            
+                            // Create a clone in the call stack
+                            createStackItem(item.textContent, callStack);
+                            
+                            // Remove from original stack
+                            item.remove();
+                        }
+                    }, 1000);
+                    
+                    setTimeout(() => {
+                        if (stackItems.length > 0) {
+                            // Get the top item (now the first one after previous removals)
+                            const item = stackItems[0];
+                            
+                            // Create a clone in the call stack
+                            createStackItem(item.textContent, callStack);
+                            
+                            // Remove from original stack
+                            item.remove();
+                        }
+                    }, 1500);
+                    break;
+                    
+                case 3:
+                    // Add new item 4 to empty stack
+                    arrow.style.opacity = '0';
+                    setTimeout(() => {
+                        createStackItem(4, stack, true);
+                    }, 500);
+                    break;
+                    
+                case 4:
+                    // Show arrow in reverse direction
+                    arrow.innerHTML = "←";
+                    arrow.style.opacity = '1';
+                    
+                    // Move items back from call stack to main stack
+                    const callStackItems = document.querySelectorAll('.call-stack .stack-item');
+                    
+                    setTimeout(() => {
+                        if (callStackItems.length > 0) {
+                            // Get the top item
+                            const item = callStackItems[0];
+                            
+                            // Create a clone in the main stack
+                            createStackItem(item.textContent, stack);
+                            
+                            // Remove from call stack
+                            item.remove();
+                        }
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        if (callStackItems.length > 0) {
+                            // Get the top item (now the first one after previous removal)
+                            const item = callStackItems[0];
+                            
+                            // Create a clone in the main stack
+                            createStackItem(item.textContent, stack);
+                            
+                            // Remove from call stack
+                            item.remove();
+                        }
+                    }, 1000);
+                    
+                    setTimeout(() => {
+                        if (callStackItems.length > 0) {
+                            // Get the top item (now the first one after previous removals)
+                            const item = callStackItems[0];
+                            
+                            // Create a clone in the main stack
+                            createStackItem(item.textContent, stack);
+                            
+                            // Remove from call stack
+                            item.remove();
+                        }
+                    }, 1500);
+                    break;
+            }
+        }
+        
+        function goToStep(step) {
+            currentStep = step;
+            stepCounter.textContent = currentStep;
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+            
+            // Reset and set up for the current step
+            clearStacks();
+            arrow.style.opacity = '0';
+            arrow.innerHTML = "→";
+            
+            // Set up appropriate state for each step
+            switch(currentStep) {
+                case 1:
+                    // Initial stack [3, 2, 1]
+                    createStackItem(1, stack);
+                    createStackItem(2, stack);
+                    createStackItem(3, stack);
+                    break;
+                case 2:
+                    // Empty stack, call stack has [3, 2, 1]
+                    createStackItem(1, callStack);
+                    createStackItem(2, callStack);
+                    createStackItem(3, callStack);
+                    arrow.style.opacity = '1';
+                    break;
+                case 3:
+                    // Stack has new item [4], call stack has [3, 2, 1]
+                    createStackItem(4, stack, true);
+                    createStackItem(1, callStack);
+                    createStackItem(2, callStack);
+                    createStackItem(3, callStack);
+                    break;
+                case 4:
+                    // Stack has [4, 3, 2, 1], call stack is empty
+                    createStackItem(1, stack);
+                    createStackItem(2, stack);
+                    createStackItem(3, stack);
+                    createStackItem(4, stack);
+                    arrow.innerHTML = "←";
+                    arrow.style.opacity = '1';
+                    break;
+            }
+            
+            updateDescription();
+            animateStep();
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                goToStep(currentStep + 1);
+            }
+        });
+        
+        // Initialize
+        initialize();
+    </script>
+</body>
+</html>
