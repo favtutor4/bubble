@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encoded Stack Mechanism</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .animation-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            height: 400px;
+            position: relative;
+        }
+        
+        .stack-container {
+            position: relative;
+            height: 350px;
+            width: 120px;
+            border: 3px solid #FF4800;
+            border-top: none;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .stack-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .stack-element {
+            width: 80px;
+            height: 50px;
+            background-color: #FD9F78;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            position: absolute;
+            bottom: 0;
+            opacity: 0;
+            transition: bottom 0.5s, opacity 0.5s;
+        }
+        
+        .info-panel {
+            width: 250px;
+            padding: 15px;
+            background-color: #FFFFFF;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            margin-left: 20px;
+        }
+        
+        .explanation {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .min-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #FF4800;
+            margin-top: 10px;
+        }
+        
+        .operation {
+            font-weight: bold;
+            font-size: 18px;
+            color: #000000;
+            margin-top: 10px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            margin: 0 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Encoded Stack Mechanism</h1>
+        
+        <div class="animation-container">
+            <div>
+                <div class="stack-label">Regular Stack</div>
+                <div class="stack-container" id="regular-stack"></div>
+            </div>
+            
+            <div>
+                <div class="stack-label">Encoded Stack</div>
+                <div class="stack-container" id="encoded-stack"></div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="operation" id="operation">Push 5</div>
+                <div class="explanation" id="explanation">
+                    In an encoded stack, we store values in a way that helps us track the minimum value efficiently.
+                </div>
+                <div class="min-value" id="min-value">Current Minimum: None</div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>Previous</button>
+            <div class="step-indicator" id="step-indicator">Step 1 of 5</div>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const regularStack = document.getElementById('regular-stack');
+            const encodedStack = document.getElementById('encoded-stack');
+            const explanation = document.getElementById('explanation');
+            const minValue = document.getElementById('min-value');
+            const operation = document.getElementById('operation');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const stepIndicator = document.getElementById('step-indicator');
+            
+            const pushValues = [5, 2, 4, 1, 3];
+            const steps = [
+                {
+                    value: 5,
+                    encoded: 5,
+                    min: 5,
+                    explanation: "First element (5) pushed. Since this is the first element, it's also the minimum. The encoded value is the same as the actual value when it's the first element."
+                },
+                {
+                    value: 2,
+                    encoded: -3, // 2 - 5 = -3
+                    min: 2,
+                    explanation: "Push 2: Since 2 < 5 (previous min), 2 becomes the new minimum. We encode 2 as (2 - 5) = -3. Negative encoded value indicates this element is a new minimum."
+                },
+                {
+                    value: 4,
+                    encoded: 2, // 4 - 2 = 2
+                    min: 2,
+                    explanation: "Push 4: Since 4 > 2 (current min), minimum remains 2. We encode 4 as (4 - 2) = 2. Positive encoded value indicates this is not a new minimum."
+                },
+                {
+                    value: 1,
+                    encoded: -1, // 1 - 2 = -1
+                    min: 1,
+                    explanation: "Push 1: Since 1 < 2 (previous min), 1 becomes the new minimum. We encode 1 as (1 - 2) = -1. Negative encoded value indicates this element is a new minimum."
+                },
+                {
+                    value: 3,
+                    encoded: 2, // 3 - 1 = 2
+                    min: 1,
+                    explanation: "Push 3: Since 3 > 1 (current min), minimum remains 1. We encode 3 as (3 - 1) = 2. Positive encoded value indicates this is not a new minimum."
+                }
+            ];
+            
+            let currentStep = 0;
+            const regularElements = [];
+            const encodedElements = [];
+            
+            function updateNavButtons() {
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length;
+                stepIndicator.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            }
+            
+            function createStackElement(value, isEncoded = false) {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = value;
+                
+                if (isEncoded && value < 0) {
+                    element.style.backgroundColor = '#FF4800';
+                    element.style.color = '#FFFFFF';
+                }
+                
+                return element;
+            }
+            
+            function animateStep() {
+                if (currentStep < steps.length) {
+                    const step = steps[currentStep];
+                    
+                    // Create and animate regular stack element
+                    const regularElement = createStackElement(step.value);
+                    regularStack.appendChild(regularElement);
+                    regularElements.push(regularElement);
+                    
+                    // Create and animate encoded stack element
+                    const encodedElement = createStackElement(step.encoded, true);
+                    encodedStack.appendChild(encodedElement);
+                    encodedElements.push(encodedElement);
+                    
+                    // Position elements with animation
+                    setTimeout(() => {
+                        positionStackElements(regularElements, regularStack);
+                        positionStackElements(encodedElements, encodedStack);
+                    }, 50);
+                    
+                    // Update information
+                    operation.textContent = `Push ${step.value}`;
+                    explanation.textContent = step.explanation;
+                    minValue.textContent = `Current Minimum: ${step.min}`;
+                    
+                    currentStep++;
+                    updateNavButtons();
+                }
+            }
+            
+            function goToPreviousStep() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    
+                    // Remove the last elements from stacks
+                    if (regularElements.length > 0) {
+                        const regularElement = regularElements.pop();
+                        regularStack.removeChild(regularElement);
+                    }
+                    
+                    if (encodedElements.length > 0) {
+                        const encodedElement = encodedElements.pop();
+                        encodedStack.removeChild(encodedElement);
+                    }
+                    
+                    // Update information based on current step
+                    if (currentStep > 0) {
+                        const step = steps[currentStep - 1];
+                        operation.textContent = `Push ${step.value}`;
+                        explanation.textContent = step.explanation;
+                        minValue.textContent = `Current Minimum: ${step.min}`;
+                    } else {
+                        operation.textContent = "Start";
+                        explanation.textContent = "In an encoded stack, we store values in a way that helps us track the minimum value efficiently.";
+                        minValue.textContent = "Current Minimum: None";
+                    }
+                    
+                    // Reposition remaining elements
+                    positionStackElements(regularElements, regularStack);
+                    positionStackElements(encodedElements, encodedStack);
+                    
+                    updateNavButtons();
+                }
+            }
+            
+            function positionStackElements(elements, container) {
+                const basePos = 10;
+                const height = 60;
+                
+                elements.forEach((el, index) => {
+                    el.style.opacity = '1';
+                    el.style.bottom = `${basePos + index * height}px`;
+                });
+            }
+            
+            // Initialize event listeners
+            nextBtn.addEventListener('click', animateStep);
+            prevBtn.addEventListener('click', goToPreviousStep);
+            
+            // Start with initial state
+            updateNavButtons();
+        });
+    </script>
+</body>
+</html>
