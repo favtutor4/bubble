@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Difference Encoding</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .animation-container {
+            margin: 30px auto;
+            position: relative;
+            height: 400px;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .stack {
+            width: 150px;
+            height: 300px;
+            border: 3px solid #FF4800;
+            position: absolute;
+            left: 100px;
+            bottom: 50px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            background-color: rgba(253, 159, 120, 0.1);
+        }
+        .stack-item {
+            width: 80%;
+            height: 40px;
+            margin: 5px;
+            background-color: #FD9F78;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            color: #000000;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        .min-value {
+            position: absolute;
+            right: 100px;
+            top: 150px;
+            width: 200px;
+            height: 60px;
+            border: 3px solid #FF4800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background-color: rgba(253, 159, 120, 0.1);
+        }
+        .min-value-text {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .explanation {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 16px;
+            padding: 10px;
+        }
+        .operation {
+            position: absolute;
+            right: 100px;
+            top: 50px;
+            width: 200px;
+            height: 60px;
+            border: 3px solid #FF4800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background-color: rgba(253, 159, 120, 0.1);
+            font-weight: bold;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .value-label {
+            position: absolute;
+            right: 310px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .arrow {
+            position: absolute;
+            right: 250px;
+            width: 50px;
+            height: 20px;
+        }
+        .step-counter {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Value Difference Encoding Technique</h1>
+        
+        <div class="animation-container">
+            <div class="stack"></div>
+            
+            <div class="operation">Operation: <span id="operation-text">Initial</span></div>
+            
+            <div class="min-value">
+                <div class="min-value-text">min_val = ∞</div>
+            </div>
+            
+            <div class="explanation" id="explanation">
+                Starting with an empty stack and min_val = ∞
+            </div>
+        </div>
+        
+        <div class="step-counter">Step <span id="current-step">1</span> of 4</div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-btn" disabled>Previous</button>
+            <button id="next-btn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                operation: "Initial",
+                stack: [],
+                minVal: "∞",
+                explanation: "Starting with an empty stack and min_val = ∞"
+            },
+            {
+                operation: "push(5)",
+                stack: ["0"],
+                values: ["5"],
+                minVal: "5",
+                explanation: "push(5): We store the difference (5-5=0) in stack. Update min_val to 5."
+            },
+            {
+                operation: "push(2)",
+                stack: ["0", "-3"],
+                values: ["5", "2"],
+                minVal: "2",
+                explanation: "push(2): Since 2 < min_val, we store (2-5=-3) in stack. Update min_val to 2."
+            },
+            {
+                operation: "push(6)",
+                stack: ["0", "-3", "4"],
+                values: ["5", "2", "6"],
+                minVal: "2",
+                explanation: "push(6): Since 6 > min_val, we store (6-2=4) in stack. min_val remains 2."
+            }
+        ];
+
+        let currentStep = 0;
+        const stackElement = document.querySelector('.stack');
+        const minValueText = document.querySelector('.min-value-text');
+        const operationText = document.getElementById('operation-text');
+        const explanationElement = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentStepEl = document.getElementById('current-step');
+
+        function renderStep(step) {
+            currentStepEl.textContent = currentStep + 1;
+            
+            // Update operation
+            operationText.textContent = step.operation;
+            
+            // Update min value
+            minValueText.textContent = `min_val = ${step.minVal}`;
+            
+            // Update explanation
+            explanationElement.textContent = step.explanation;
+            
+            // Clear stack
+            stackElement.innerHTML = '';
+
+            // Add items to stack
+            if (step.stack && step.stack.length > 0) {
+                for (let i = 0; i < step.stack.length; i++) {
+                    const stackItem = document.createElement('div');
+                    stackItem.className = 'stack-item';
+                    stackItem.textContent = step.stack[i];
+                    stackElement.appendChild(stackItem);
+                    
+                    // Add value label if available
+                    if (step.values && step.values[i]) {
+                        const valueLabel = document.createElement('div');
+                        valueLabel.className = 'value-label';
+                        valueLabel.textContent = `Actual: ${step.values[i]}`;
+                        valueLabel.style.top = `${stackElement.offsetHeight - (i + 1) * 50 + 10}px`;
+                        document.querySelector('.animation-container').appendChild(valueLabel);
+                        
+                        // Add arrow
+                        const arrow = document.createElement('div');
+                        arrow.className = 'arrow';
+                        arrow.style.top = `${stackElement.offsetHeight - (i + 1) * 50 + 20}px`;
+                        arrow.innerHTML = '→';
+                        document.querySelector('.animation-container').appendChild(arrow);
+                    }
+                    
+                    // Animate stack item appearance
+                    setTimeout(() => {
+                        stackItem.style.opacity = 1;
+                    }, i * 200);
+                }
+            }
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        // Event listeners for navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(steps[currentStep]);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(steps[currentStep]);
+            }
+        });
+
+        // Initial render
+        renderStep(steps[currentStep]);
+    </script>
+</body>
+</html>
