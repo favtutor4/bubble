@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stack Insertion Process Animation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #FFFFFF;
+      color: #000000;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    h1 {
+      color: #FF4800;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .description {
+      background-color: #FD9F78;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      color: #000000;
+    }
+    
+    .animation-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 30px 0;
+      height: 400px;
+      position: relative;
+    }
+    
+    .stack {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      height: 350px;
+      position: relative;
+      margin: 0 50px;
+    }
+    
+    .stack-label {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #FF4800;
+    }
+    
+    .stack-base {
+      width: 100px;
+      height: 5px;
+      background-color: #000000;
+      margin-top: 10px;
+    }
+    
+    .element {
+      width: 80px;
+      height: 40px;
+      background-color: #FD9F78;
+      border: 2px solid #FF4800;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin: 5px 0;
+      transition: all 0.5s ease;
+      position: relative;
+    }
+    
+    .element.highlight {
+      background-color: #FF4800;
+      color: #FFFFFF;
+      transform: scale(1.1);
+    }
+    
+    .element.new-element {
+      background-color: #FF4800;
+      color: #FFFFFF;
+    }
+    
+    .element.temp {
+      opacity: 0.7;
+    }
+    
+    .arrow {
+      position: absolute;
+      width: 100px;
+      height: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #FF4800;
+      font-weight: bold;
+    }
+    
+    .arrow::before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 15px solid #FF4800;
+      position: absolute;
+      right: 0;
+    }
+    
+    .arrow::after {
+      content: "";
+      position: absolute;
+      height: 2px;
+      background-color: #FF4800;
+      left: 0;
+      right: 15px;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    button {
+      background-color: #FF4800;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #FD9F78;
+    }
+    
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      text-align: center;
+      padding: 15px;
+      background-color: #FD9F78;
+      color: #000000;
+      border-radius: 5px;
+      margin: 20px 0;
+      min-height: 50px;
+    }
+    
+    .temp-container {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      height: 350px;
+      position: relative;
+    }
+    
+    .temp-label {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #FF4800;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Element Insertion Process in a Sorted Stack</h1>
+    
+    <div class="description">
+      <p>This animation demonstrates how the <strong>insertSorted</strong> function works when inserting a new element (31) into a partially sorted stack [3, 23, 34, 92, 98]. The process involves temporarily removing elements that are larger than the new element, inserting the new element, and then putting back the removed elements.</p>
+    </div>
+    
+    <div class="animation-container">
+      <div class="stack">
+        <div class="stack-label">Original Stack</div>
+        <div id="original-stack"></div>
+        <div class="stack-base"></div>
+      </div>
+      
+      <div class="temp-container">
+        <div class="temp-label">Temporary Storage</div>
+        <div id="temp-stack"></div>
+      </div>
+      
+      <div class="stack">
+        <div class="stack-label">Result Stack</div>
+        <div id="result-stack"></div>
+        <div class="stack-base"></div>
+      </div>
+    </div>
+    
+    <div class="status" id="status-text">
+      Starting with a partially sorted stack [3, 23, 34, 92, 98]. We want to insert 31 in the correct position.
+    </div>
+    
+    <div class="nav-buttons">
+      <button id="prev-btn" disabled>Previous</button>
+      <button id="next-btn">Next</button>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const originalStack = document.getElementById('original-stack');
+      const tempStack = document.getElementById('temp-stack');
+      const resultStack = document.getElementById('result-stack');
+      const statusText = document.getElementById('status-text');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      
+      const initialStack = [98, 92, 34, 23, 3]; // Stack values (bottom to top)
+      const newElement = 31;
+      
+      let currentStep = 0;
+      const totalSteps = 9;
+      
+      // Initial setup - render the original stack
+      function renderInitialStack() {
+        originalStack.innerHTML = '';
+        initialStack.forEach(value => {
+          const element = document.createElement('div');
+          element.className = 'element';
+          element.textContent = value;
+          originalStack.appendChild(element);
+        });
+      }
+      
+      renderInitialStack();
+      
+      // Animation steps
+      const steps = [
+        // Step 0: Initial state
+        function() {
+          resultStack.innerHTML = '';
+          tempStack.innerHTML = '';
+          const newElementDiv = document.createElement('div');
+          newElementDiv.className = 'element new-element';
+          newElementDiv.textContent = newElement;
+          newElementDiv.style.position = 'absolute';
+          newElementDiv.style.right = '-150px';
+          document.querySelector('.animation-container').appendChild(newElementDiv);
+          
+          statusText.innerHTML = `Starting with a sorted stack [3, 23, 34, 92, 98]. We want to insert ${newElement} in the correct position.`;
+        },
+        
+        // Step 1: Move first element (3) to result stack
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div>';
+          originalStack.innerHTML = '';
+          for (let i = 1; i < initialStack.length; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = initialStack[i];
+            originalStack.appendChild(element);
+          }
+          
+          const newElementDiv = document.querySelector('.new-element');
+          if (newElementDiv) newElementDiv.remove();
+          
+          statusText.innerHTML = `First, we check if ${initialStack[0]} < ${newElement}. Since ${initialStack[0]} < ${newElement}, we move ${initialStack[0]} to the result stack.`;
+        },
+        
+        // Step 2: Move second element (23) to result stack
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div>';
+          originalStack.innerHTML = '';
+          for (let i = 2; i < initialStack.length; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = initialStack[i];
+            originalStack.appendChild(element);
+          }
+          
+          statusText.innerHTML = `Next, we check if ${initialStack[1]} < ${newElement}. Since ${initialStack[1]} < ${newElement}, we move ${initialStack[1]} to the result stack.`;
+        },
+        
+        // Step 3: Compare 34 with 31, move 34 to temp
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div>';
+          originalStack.innerHTML = '';
+          for (let i = 3; i < initialStack.length; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = initialStack[i];
+            originalStack.appendChild(element);
+          }
+          
+          tempStack.innerHTML = '<div class="element temp">34</div>';
+          
+          statusText.innerHTML = `Now we check if ${initialStack[2]} < ${newElement}. Since ${initialStack[2]} > ${newElement}, we move ${initialStack[2]} to temporary storage.`;
+        },
+        
+        // Step 4: Insert the new element 31
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div><div class="element highlight">31</div>';
+          originalStack.innerHTML = '';
+          for (let i = 3; i < initialStack.length; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = initialStack[i];
+            originalStack.appendChild(element);
+          }
+          
+          tempStack.innerHTML = '<div class="element temp">34</div>';
+          
+          statusText.innerHTML = `Now that we've found the correct position, we insert ${newElement} onto the result stack.`;
+        },
+        
+        // Step 5: Move 34 back from temp to result
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div><div class="element">31</div><div class="element highlight">34</div>';
+          originalStack.innerHTML = '';
+          for (let i = 3; i < initialStack.length; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = initialStack[i];
+            originalStack.appendChild(element);
+          }
+          
+          tempStack.innerHTML = '';
+          
+          statusText.innerHTML = `Next, we move the element ${initialStack[2]} from temporary storage back to the result stack.`;
+        },
+        
+        // Step 6: Move 92 to the result stack
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div><div class="element">31</div><div class="element">34</div><div class="element highlight">92</div>';
+          originalStack.innerHTML = '';
+          for (let i = 4; i < initialStack.length; i++) {
+            const element = document.createElement('div');
+            element.className = 'element';
+            element.textContent = initialStack[i];
+            originalStack.appendChild(element);
+          }
+          
+          statusText.innerHTML = `We continue by moving ${initialStack[3]} to the result stack.`;
+        },
+        
+        // Step 7: Move 98 to the result stack
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div><div class="element">31</div><div class="element">34</div><div class="element">92</div><div class="element highlight">98</div>';
+          originalStack.innerHTML = '';
+          
+          statusText.innerHTML = `Finally, we move ${initialStack[4]} to the result stack.`;
+        },
+        
+        // Step 8: Final state
+        function() {
+          resultStack.innerHTML = '<div class="element">3</div><div class="element">23</div><div class="element">31</div><div class="element">34</div><div class="element">92</div><div class="element">98</div>';
+          
+          statusText.innerHTML = `The insertion is complete! We have successfully inserted ${newElement} into the sorted stack. The final sorted stack is [3, 23, 31, 34, 92, 98].`;
+        }
+      ];
+      
+      // Execute the first step
+      steps[currentStep]();
+      
+      // Event listeners for navigation buttons
+      nextBtn.addEventListener('click', function() {
+        if (currentStep < totalSteps - 1) {
+          currentStep++;
+          steps[currentStep]();
+          prevBtn.disabled = false;
+          
+          if (currentStep === totalSteps - 1) {
+            nextBtn.disabled = true;
+          }
+        }
+      });
+      
+      prevBtn.addEventListener('click', function() {
+        if (currentStep > 0) {
+          currentStep--;
+          steps[currentStep]();
+          nextBtn.disabled = false;
+          
+          if (currentStep === 0) {
+            prevBtn.disabled = true;
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
