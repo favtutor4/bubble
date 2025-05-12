@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force Algorithm for Valid Parentheses</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--white);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .visualization {
+            background-color: var(--white);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .string-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .char {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            font-size: 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .normal {
+            background-color: var(--white);
+            color: var(--black);
+            border: 1px solid var(--black);
+        }
+        
+        .checking {
+            background-color: var(--secondary);
+            color: var(--black);
+        }
+        
+        .valid {
+            background-color: lightgreen;
+            color: var(--black);
+        }
+        
+        .invalid {
+            background-color: lightcoral;
+            color: var(--black);
+        }
+        
+        .indicator {
+            display: flex;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .pointer {
+            width: 40px;
+            height: 20px;
+            margin: 0 5px;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            background-color: rgba(253, 159, 120, 0.1);
+            min-height: 100px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            min-height: 30px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .current-step {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--black);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force Algorithm for Valid Parentheses</h1>
+        <div class="current-step">Step <span id="stepNumber">1</span> of 10</div>
+        <div class="visualization">
+            <div class="string-container" id="string-container"></div>
+            <div class="indicator" id="indicator"></div>
+            <div class="explanation" id="explanation"></div>
+            <div class="status" id="status"></div>
+        </div>
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const inputString = ")()())";
+        let currentStep = 1;
+        const totalSteps = 10;
+        
+        // Initialize the string display
+        const stringContainer = document.getElementById('string-container');
+        const indicator = document.getElementById('indicator');
+        const explanation = document.getElementById('explanation');
+        const status = document.getElementById('status');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepNumber = document.getElementById('stepNumber');
+        
+        // Create character elements
+        function initializeString() {
+            stringContainer.innerHTML = '';
+            indicator.innerHTML = '';
+            
+            for (let i = 0; i < inputString.length; i++) {
+                const charDiv = document.createElement('div');
+                charDiv.classList.add('char', 'normal');
+                charDiv.textContent = inputString[i];
+                stringContainer.appendChild(charDiv);
+                
+                const pointerDiv = document.createElement('div');
+                pointerDiv.classList.add('pointer');
+                indicator.appendChild(pointerDiv);
+            }
+        }
+        
+        initializeString();
+        
+        // Update the visualization based on current step
+        function updateVisualization() {
+            // Reset all characters to normal first
+            const chars = document.querySelectorAll('.char');
+            chars.forEach(char => {
+                char.className = 'char normal';
+            });
+            
+            const pointers = document.querySelectorAll('.pointer');
+            pointers.forEach(pointer => {
+                pointer.innerHTML = '';
+            });
+            
+            stepNumber.textContent = currentStep;
+            
+            switch(currentStep) {
+                case 1:
+                    explanation.innerHTML = '<p>We are looking for the longest valid parentheses substring in ")()())".</p>' +
+                        '<p>In brute force, we will check all possible substrings to find valid parentheses strings.</p>';
+                    status.textContent = "Starting the brute force approach";
+                    break;
+                
+                case 2:
+                    chars[0].className = 'char checking';
+                    pointers[0].innerHTML = '↑';
+                    explanation.innerHTML = '<p>First, we check the substring of length 1: ")"</p>' +
+                        '<p>Is this a valid parentheses string? No, because it\'s a single closing parenthesis.</p>';
+                    status.textContent = 'Substring ")" is invalid';
+                    chars[0].className = 'char invalid';
+                    break;
+                
+                case 3:
+                    chars[1].className = 'char checking';
+                    pointers[1].innerHTML = '↑';
+                    explanation.innerHTML = '<p>Next, we check the substring of length 1: "("</p>' +
+                        '<p>Is this a valid parentheses string? No, because it\'s a single opening parenthesis.</p>';
+                    status.textContent = 'Substring "(" is invalid';
+                    chars[1].className = 'char invalid';
+                    break;
+                
+                case 4:
+                    chars[1].className = 'char checking';
+                    chars[2].className = 'char checking';
+                    pointers[1].innerHTML = '↑';
+                    pointers[2].innerHTML = '↑';
+                    explanation.innerHTML = '<p>Now we check the substring of length 2: "()"</p>' +
+                        '<p>Is this a valid parentheses string? Yes! It has a matching open and close parenthesis.</p>';
+                    status.textContent = 'Substring "()" is valid! Current max length: 2';
+                    chars[1].className = 'char valid';
+                    chars[2].className = 'char valid';
+                    break;
+                
+                case 5:
+                    chars[3].className = 'char checking';
+                    pointers[3].innerHTML = '↑';
+                    explanation.innerHTML = '<p>Next, we check the substring of length 1: "("</p>' +
+                        '<p>Is this a valid parentheses string? No, because it\'s a single opening parenthesis.</p>';
+                    status.textContent = 'Substring "(" is invalid';
+                    chars[3].className = 'char invalid';
+                    break;
+                
+                case 6:
+                    chars[3].className = 'char checking';
+                    chars[4].className = 'char checking';
+                    pointers[3].innerHTML = '↑';
+                    pointers[4].innerHTML = '↑';
+                    explanation.innerHTML = '<p>Now we check the substring of length 2: "()"</p>' +
+                        '<p>Is this a valid parentheses string? Yes! It has a matching open and close parenthesis.</p>';
+                    status.textContent = 'Substring "()" is valid! Current max length: 2';
+                    chars[3].className = 'char valid';
+                    chars[4].className = 'char valid';
+                    break;
+                
+                case 7:
+                    chars[1].className = 'char checking';
+                    chars[2].className = 'char checking';
+                    chars[3].className = 'char checking';
+                    chars[4].className = 'char checking';
+                    pointers[1].innerHTML = '↑';
+                    pointers[4].innerHTML = '↑';
+                    explanation.innerHTML = '<p>Now we check the substring of length 4: "()()"</p>' +
+                        '<p>Is this a valid parentheses string? Yes! It has balanced and correctly nested parentheses.</p>';
+                    status.textContent = 'Substring "()()" is valid! Current max length: 4';
+                    chars[1].className = 'char valid';
+                    chars[2].className = 'char valid';
+                    chars[3].className = 'char valid';
+                    chars[4].className = 'char valid';
+                    break;
+                
+                case 8:
+                    chars[0].className = 'char checking';
+                    chars[1].className = 'char checking';
+                    chars[2].className = 'char checking';
+                    chars[3].className = 'char checking';
+                    chars[4].className = 'char checking';
+                    pointers[0].innerHTML = '↑';
+                    pointers[4].innerHTML = '↑';
+                    explanation.innerHTML = '<p>We continue checking more substrings.</p>' +
+                        '<p>For example, the substring ")()()" is invalid since it starts with an unmatched closing parenthesis.</p>';
+                    status.textContent = 'Substring ")()()" is invalid';
+                    chars[0].className = 'char invalid';
+                    chars[1].className = 'char checking';
+                    chars[2].className = 'char checking';
+                    chars[3].className = 'char checking';
+                    chars[4].className = 'char checking';
+                    break;
+                
+                case 9:
+                    chars[0].className = 'char checking';
+                    chars[1].className = 'char checking';
+                    chars[2].className = 'char checking';
+                    chars[3].className = 'char checking';
+                    chars[4].className = 'char checking';
+                    chars[5].className = 'char checking';
+                    pointers[0].innerHTML = '↑';
+                    pointers[5].innerHTML = '↑';
+                    explanation.innerHTML = '<p>Similarly, the full string ")()())" is not valid because it starts with an unmatched closing parenthesis.</p>';
+                    status.textContent = 'Full string ")()())" is invalid';
+                    chars[0].className = 'char invalid';
+                    chars[1].className = 'char checking';
+                    chars[2].className = 'char checking';
+                    chars[3].className = 'char checking';
+                    chars[4].className = 'char checking';
+                    chars[5].className = 'char checking';
+                    break;
+                
+                case 10:
+                    chars[1].className = 'char valid';
+                    chars[2].className = 'char valid';
+                    chars[3].className = 'char valid';
+                    chars[4].className = 'char valid';
+                    explanation.innerHTML = '<p>After checking all possible substrings, we find that the longest valid parentheses substring is "()()" with length 4.</p>' +
+                        '<p>The brute force approach examines every possible substring and uses a stack or counter to validate parentheses.</p>';
+                    status.textContent = 'Final result: longest valid substring is "()()" with length 4';
+                    break;
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+        
+        // Initial render
+        updateVisualization();
+        
+        // Event listeners for navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+    </script>
+</body>
+</html>
