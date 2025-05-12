@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Intervals Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 800px;
+            height: 500px;
+            position: relative;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .step.active {
+            opacity: 1;
+        }
+        
+        .timeline {
+            width: 700px;
+            height: 100px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .interval {
+            position: absolute;
+            height: 50px;
+            background-color: #FF4800;
+            border-radius: 5px;
+            top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        
+        .explanation {
+            color: #000000;
+            text-align: center;
+            margin: 20px;
+            font-size: 18px;
+            max-width: 700px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #FD9F78;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        
+        .dot.active {
+            background-color: #FF4800;
+            transform: scale(1.2);
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 800px;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-title {
+            color: #FF4800;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Merge Intervals Visualization</h1>
+    
+    <div class="container">
+        <div class="step" id="step1">
+            <div class="step-title">Step 1: Original Intervals</div>
+            <div class="timeline" id="timeline1"></div>
+            <div class="explanation">
+                These are our original intervals: [1,3], [2,6], [8,10], [15,18]. 
+                Each interval represents a range with start and end points.
+            </div>
+        </div>
+        
+        <div class="step" id="step2">
+            <div class="step-title">Step 2: Sort Intervals by Start Time</div>
+            <div class="timeline" id="timeline2"></div>
+            <div class="explanation">
+                We sort the intervals by their start time. In this case, they were already sorted: 
+                [1,3], [2,6], [8,10], [15,18].
+            </div>
+        </div>
+        
+        <div class="step" id="step3">
+            <div class="step-title">Step 3: First Interval Added to Result</div>
+            <div class="timeline" id="timeline3"></div>
+            <div class="explanation">
+                We initialize our result with the first interval [1,3].
+            </div>
+        </div>
+        
+        <div class="step" id="step4">
+            <div class="step-title">Step 4: Second Interval Merged with First</div>
+            <div class="timeline" id="timeline4"></div>
+            <div class="explanation">
+                We see [2,6] overlaps with [1,3] (because 2 ≤ 3). 
+                So we merge them into [1,6] by taking the minimum start and maximum end.
+            </div>
+        </div>
+        
+        <div class="step" id="step5">
+            <div class="step-title">Step 5: Add Remaining Intervals</div>
+            <div class="timeline" id="timeline5"></div>
+            <div class="explanation">
+                [8,10] doesn't overlap with [1,6], so we add it as is.
+                [15,18] doesn't overlap with the previous interval, so we add it unchanged.
+                Final result: [1,6], [8,10], [15,18]
+            </div>
+        </div>
+    </div>
+    
+    <div class="step-indicator">
+        <div class="dot active" data-step="1"></div>
+        <div class="dot" data-step="2"></div>
+        <div class="dot" data-step="3"></div>
+        <div class="dot" data-step="4"></div>
+        <div class="dot" data-step="5"></div>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+        <button class="nav-btn" id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        // Initialize intervals
+        const intervals = [
+            {start: 1, end: 3},
+            {start: 2, end: 6},
+            {start: 8, end: 10},
+            {start: 15, end: 18}
+        ];
+        
+        // Initialize timelines
+        function drawIntervals() {
+            // Timeline 1 - Original intervals
+            const timeline1 = document.getElementById('timeline1');
+            intervals.forEach((interval, index) => {
+                createInterval(timeline1, interval.start, interval.end, index);
+            });
+            
+            // Timeline 2 - After sorting (same as original in this case)
+            const timeline2 = document.getElementById('timeline2');
+            intervals.forEach((interval, index) => {
+                createInterval(timeline2, interval.start, interval.end, index);
+            });
+            
+            // Timeline 3 - First interval
+            const timeline3 = document.getElementById('timeline3');
+            createInterval(timeline3, intervals[0].start, intervals[0].end, 0);
+            
+            // Timeline 4 - After merging first and second
+            const timeline4 = document.getElementById('timeline4');
+            createInterval(timeline4, 1, 6, 0);
+            
+            // Timeline 5 - Final result
+            const timeline5 = document.getElementById('timeline5');
+            createInterval(timeline5, 1, 6, 0);
+            createInterval(timeline5, 8, 10, 1);
+            createInterval(timeline5, 15, 18, 2);
+        }
+        
+        function createInterval(timeline, start, end, index) {
+            const interval = document.createElement('div');
+            interval.className = 'interval';
+            
+            // Calculate position and width
+            const timelineWidth = 700;
+            const scale = timelineWidth / 20; // Scale to fit timeline
+            const left = (start * scale);
+            const width = ((end - start) * scale);
+            
+            interval.style.left = left + 'px';
+            interval.style.width = width + 'px';
+            interval.textContent = `[${start},${end}]`;
+            
+            // Stagger intervals vertically if needed to prevent overlap
+            if (index % 2 === 1) {
+                interval.style.top = '15px';
+            } else {
+                interval.style.top = '35px';
+            }
+            
+            timeline.appendChild(interval);
+        }
+        
+        // Navigation functions
+        function showStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show current step
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Update dots
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                if (index + 1 === step) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = (step === 1);
+            document.getElementById('nextBtn').disabled = (step === totalSteps);
+        }
+        
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+        
+        // Initialize the visualization
+        window.onload = function() {
+            drawIntervals();
+            showStep(1);
+            
+            // Set up event listeners
+            document.getElementById('nextBtn').addEventListener('click', nextStep);
+            document.getElementById('prevBtn').addEventListener('click', prevStep);
+            
+            document.querySelectorAll('.dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    currentStep = parseInt(this.getAttribute('data-step'));
+                    showStep(currentStep);
+                });
+            });
+        };
+    </script>
+</body>
+</html>
