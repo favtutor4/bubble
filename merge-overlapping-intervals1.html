@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interval Merging Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timeline {
+            margin: 40px 0;
+            position: relative;
+            height: 200px;
+        }
+        
+        .axis {
+            position: relative;
+            height: 2px;
+            background-color: #000000;
+            margin: 30px 0;
+        }
+        
+        .tick {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: #000000;
+            bottom: 0;
+        }
+        
+        .tick-label {
+            position: absolute;
+            bottom: -25px;
+            transform: translateX(-50%);
+            font-size: 14px;
+        }
+        
+        .interval {
+            position: absolute;
+            height: 30px;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .interval.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .interval-original {
+            background-color: #FF4800;
+        }
+        
+        .interval-merged {
+            background-color: #FD9F78;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .explanation.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interval Merging Visualization</h1>
+    
+    <div class="container">
+        <div class="timeline">
+            <div class="axis"></div>
+        </div>
+        
+        <div class="explanation" id="explanation"></div>
+        
+        <div class="nav-buttons">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 1 of 5</div>
+    </div>
+    
+    <script>
+        // Timeline setup
+        const axisElement = document.querySelector('.axis');
+        const timelineElement = document.querySelector('.timeline');
+        const explanationElement = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        
+        const axisWidth = axisElement.offsetWidth;
+        const maxValue = 20;
+        
+        // Create ticks
+        for (let i = 0; i <= maxValue; i++) {
+            const tick = document.createElement('div');
+            tick.className = 'tick';
+            tick.style.left = `${(i / maxValue) * 100}%`;
+            axisElement.appendChild(tick);
+            
+            const tickLabel = document.createElement('div');
+            tickLabel.className = 'tick-label';
+            tickLabel.textContent = i;
+            tickLabel.style.left = `${(i / maxValue) * 100}%`;
+            axisElement.appendChild(tickLabel);
+        }
+        
+        // Interval data
+        const originalIntervals = [
+            { id: 'interval1', start: 1, end: 3, label: '[1,3]', top: -80 },
+            { id: 'interval2', start: 2, end: 6, label: '[2,6]', top: -40 },
+            { id: 'interval3', start: 8, end: 10, label: '[8,10]', top: -80 },
+            { id: 'interval4', start: 15, end: 18, label: '[15,18]', top: -40 }
+        ];
+        
+        const mergedIntervals = [
+            { id: 'merged1', start: 1, end: 6, label: '[1,6]', top: -60 },
+            { id: 'merged2', start: 8, end: 10, label: '[8,10]', top: -60 },
+            { id: 'merged3', start: 15, end: 18, label: '[15,18]', top: -60 }
+        ];
+        
+        // Create intervals
+        function createInterval(interval, className) {
+            const intervalElement = document.createElement('div');
+            intervalElement.id = interval.id;
+            intervalElement.className = `interval ${className}`;
+            intervalElement.textContent = interval.label;
+            intervalElement.style.left = `${(interval.start / maxValue) * 100}%`;
+            intervalElement.style.width = `${((interval.end - interval.start) / maxValue) * 100}%`;
+            intervalElement.style.top = `${interval.top}px`;
+            timelineElement.appendChild(intervalElement);
+            return intervalElement;
+        }
+        
+        // Create all interval elements
+        originalIntervals.forEach(interval => {
+            createInterval(interval, 'interval-original');
+        });
+        
+        mergedIntervals.forEach(interval => {
+            createInterval(interval, 'interval-merged');
+        });
+        
+        // Animation steps
+        const steps = [
+            {
+                explanation: "Let's understand interval merging with a visual example. We have four intervals: [1,3], [2,6], [8,10], and [15,18].",
+                show: ['interval1', 'interval2', 'interval3', 'interval4'],
+                hide: ['merged1', 'merged2', 'merged3']
+            },
+            {
+                explanation: "First, let's focus on the first two intervals: [1,3] and [2,6]. Notice that they overlap because the end of [1,3] is greater than the start of [2,6].",
+                show: ['interval1', 'interval2'],
+                hide: ['interval3', 'interval4', 'merged1', 'merged2', 'merged3']
+            },
+            {
+                explanation: "When we merge overlapping intervals, we take the minimum start value (1) and the maximum end value (6), resulting in the merged interval [1,6].",
+                show: ['interval1', 'interval2', 'merged1'],
+                hide: ['interval3', 'interval4', 'merged2', 'merged3']
+            },
+            {
+                explanation: "Let's look at the remaining intervals [8,10] and [15,18]. They don't overlap with each other or with [1,6] because there's a clear gap between them.",
+                show: ['merged1', 'interval3', 'interval4'],
+                hide: ['interval1', 'interval2', 'merged2', 'merged3']
+            },
+            {
+                explanation: "Since [8,10] and [15,18] don't overlap with any other interval, they remain unchanged in our final merged set. The final set of merged intervals is: [1,6], [8,10], and [15,18].",
+                show: ['merged1', 'merged2', 'merged3'],
+                hide: ['interval1', 'interval2', 'interval3', 'interval4']
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        // Update the visualization based on current step
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Update explanation
+            explanationElement.textContent = step.explanation;
+            explanationElement.classList.remove('active');
+            
+            // Force a reflow
+            void explanationElement.offsetWidth;
+            
+            explanationElement.classList.add('active');
+            
+            // Update intervals
+            document.querySelectorAll('.interval').forEach(element => {
+                element.classList.remove('active');
+            });
+            
+            step.show.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('active');
+                }
+            });
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Navigation handlers
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
