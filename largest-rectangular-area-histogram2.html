@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-Based Algorithm for Largest Rectangle in Histogram</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--white);
+            color: var(--black);
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .explanation {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .histogram-view {
+            display: flex;
+            align-items: flex-end;
+            height: 180px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .bar {
+            width: 40px;
+            background-color: var(--secondary);
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .bar-label {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
+        .stack-view {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .stack-title {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .stack-container {
+            width: 100px;
+            min-height: 150px;
+            border: 2px solid var(--primary);
+            display: flex;
+            flex-direction: column-reverse;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .stack-item {
+            width: 100%;
+            height: 30px;
+            background-color: var(--secondary);
+            color: var(--black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--white);
+            transition: all 0.3s;
+        }
+        
+        .stack-bottom {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .nav-button {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .highlight {
+            background-color: var(--primary);
+        }
+        
+        .step-counter {
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .step-description {
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            margin: 10px 0;
+            min-height: 80px;
+        }
+        
+        .rectangle {
+            position: absolute;
+            border: 2px dashed var(--primary);
+            background-color: rgba(255, 72, 0, 0.2);
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        
+        .area-calculation {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack-Based Algorithm for Largest Rectangle in Histogram</h1>
+        
+        <div class="explanation">
+            <p>This animation demonstrates how to find the largest rectangle area in a histogram using a stack-based approach. We process each bar and maintain a stack of increasing heights. When we find a shorter bar, we pop from the stack and calculate the area.</p>
+        </div>
+        
+        <div class="visualization-container">
+            <div class="histogram-view" id="histogram">
+                <!-- Bars will be added dynamically -->
+            </div>
+            
+            <div id="area-calculation" class="area-calculation"></div>
+            
+            <div class="stack-view">
+                <h3 class="stack-title">Stack</h3>
+                <div class="stack-container" id="stack">
+                    <div class="stack-bottom">Bottom</div>
+                    <!-- Stack items will be added dynamically -->
+                </div>
+            </div>
+            
+            <div class="step-counter" id="step-counter">Step 0/0</div>
+            
+            <div class="step-description" id="step-description">
+                Click "Next" to start the algorithm walkthrough.
+            </div>
+            
+            <div class="navigation">
+                <button class="nav-button" id="prev-btn" disabled>Previous</button>
+                <button class="nav-button" id="next-btn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Histogram data
+        const histogram = [2, 1, 5, 6, 2, 3];
+        let maxArea = 0;
+        let maxAreaBar = null;
+        
+        // Algorithm steps
+        const steps = [];
+        
+        // Initialize the visualization
+        function init() {
+            const histogramEl = document.getElementById('histogram');
+            
+            // Create histogram bars
+            histogram.forEach((height, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${height * 30}px`;
+                bar.dataset.index = index;
+                bar.dataset.height = height;
+                
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = height;
+                
+                bar.appendChild(label);
+                histogramEl.appendChild(bar);
+            });
+            
+            // Generate algorithm steps
+            generateSteps();
+            
+            // Update step counter
+            document.getElementById('step-counter').textContent = `Step 0/${steps.length - 1}`;
+        }
+        
+        // Generate algorithm steps
+        function generateSteps() {
+            // Initial state
+            steps.push({
+                description: "We start with an empty stack and process each bar from left to right.",
+                stack: [],
+                highlightIndex: -1,
+                popOperation: false,
+                areaCalculation: null,
+                rectangle: null
+            });
+            
+            // Simulate the stack algorithm
+            const stack = [];
+            let i = 0;
+            
+            while (i < histogram.length) {
+                if (stack.length === 0 || histogram[i] >= histogram[stack[stack.length - 1]]) {
+                    // Push to stack when empty or current bar is taller
+                    steps.push({
+                        description: `Bar ${i} with height ${histogram[i]} is pushed to the stack because it's greater than or equal to the top of the stack.`,
+                        stack: [...stack, i],
+                        highlightIndex: i,
+                        popOperation: false,
+                        areaCalculation: null,
+                        rectangle: null
+                    });
+                    
+                    stack.push(i);
+                    i++;
+                } else {
+                    // Pop from stack when current bar is shorter
+                    const poppedIndex = stack.pop();
+                    const height = histogram[poppedIndex];
+                    
+                    // Calculate width (if stack is empty, width is i, otherwise i - stack.top - 1)
+                    const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;
+                    const area = height * width;
+                    
+                    if (area > maxArea) {
+                        maxArea = area;
+                        maxAreaBar = { start: stack.length === 0 ? 0 : stack[stack.length - 1] + 1, end: i - 1, height, area };
+                    }
+                    
+                    const startIdx = stack.length === 0 ? 0 : stack[stack.length - 1] + 1;
+                    
+                    steps.push({
+                        description: `Pop bar at index ${poppedIndex} with height ${height}. Calculate area: ${height} × ${width} = ${area}`,
+                        stack: [...stack],
+                        highlightIndex: poppedIndex,
+                        popOperation: true,
+                        areaCalculation: { height, width, area },
+                        rectangle: { startIdx, endIdx: i - 1, height, width, area }
+                    });
+                }
+            }
+            
+            // Process remaining elements in stack
+            while (stack.length > 0) {
+                const poppedIndex = stack.pop();
+                const height = histogram[poppedIndex];
+                
+                // Calculate width
+                const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;
+                const area = height * width;
+                
+                if (area > maxArea) {
+                    maxArea = area;
+                    maxAreaBar = { start: stack.length === 0 ? 0 : stack[stack.length - 1] + 1, end: i - 1, height, area };
+                }
+                
+                const startIdx = stack.length === 0 ? 0 : stack[stack.length - 1] + 1;
+                
+                steps.push({
+                    description: `Pop bar at index ${poppedIndex} with height ${height}. Calculate area: ${height} × ${width} = ${area}`,
+                    stack: [...stack],
+                    highlightIndex: poppedIndex,
+                    popOperation: true,
+                    areaCalculation: { height, width, area },
+                    rectangle: { startIdx, endIdx: i - 1, height, width, area }
+                });
+            }
+            
+            // Final step - show the maximum area
+            steps.push({
+                description: `Algorithm completed. The largest rectangle area in the histogram is ${maxArea}.`,
+                stack: [],
+                highlightIndex: -1,
+                popOperation: false,
+                areaCalculation: { height: maxAreaBar.height, width: maxAreaBar.end - maxAreaBar.start + 1, area: maxArea },
+                rectangle: { 
+                    startIdx: maxAreaBar.start, 
+                    endIdx: maxAreaBar.end, 
+                    height: maxAreaBar.height, 
+                    width: maxAreaBar.end - maxAreaBar.start + 1, 
+                    area: maxArea 
+                },
+                final: true
+            });
+        }
+        
+        // Current step index
+        let currentStep = 0;
+        
+        // Update visualization based on current step
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Update step description
+            document.getElementById('step-description').textContent = step.description;
+            
+            // Update step counter
+            document.getElementById('step-counter').textContent = `Step ${currentStep}/${steps.length - 1}`;
+            
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+            
+            // Reset bar highlights
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach(bar => {
+                bar.classList.remove('highlight');
+            });
+            
+            // Highlight relevant bar if applicable
+            if (step.highlightIndex >= 0) {
+                bars[step.highlightIndex].classList.add('highlight');
+            }
+            
+            // Update stack visualization
+            updateStack(step.stack);
+            
+            // Remove any existing rectangles
+            const existingRects = document.querySelectorAll('.rectangle');
+            existingRects.forEach(rect => rect.remove());
+            
+            // Show area calculation if applicable
+            const areaCalcEl = document.getElementById('area-calculation');
+            if (step.areaCalculation) {
+                areaCalcEl.textContent = `Area Calculation: ${step.areaCalculation.height} × ${step.areaCalculation.width} = ${step.areaCalculation.area}`;
+                
+                // Draw rectangle
+                if (step.rectangle) {
+                    drawRectangle(step.rectangle, step.final);
+                }
+            } else {
+                areaCalcEl.textContent = '';
+            }
+        }
+        
+        // Update stack visualization
+        function updateStack(stackItems) {
+            const stackEl = document.getElementById('stack');
+            
+            // Remove existing stack items (except the bottom label)
+            while (stackEl.firstChild) {
+                if (stackEl.firstChild.className === 'stack-bottom') {
+                    break;
+                }
+                stackEl.removeChild(stackEl.firstChild);
+            }
+            
+            // Add new stack items
+            stackItems.reverse().forEach(index => {
+                const item = document.createElement('div');
+                item.className = 'stack-item';
+                item.textContent = index;
+                stackEl.appendChild(item);
+            });
+        }
+        
+        // Draw rectangle on histogram
+        function drawRectangle(rect, isFinal) {
+            const histogramEl = document.getElementById('histogram');
+            const rectangle = document.createElement('div');
+            rectangle.className = 'rectangle';
+            
+            // Calculate position and dimensions
+            const bars = document.querySelectorAll('.bar');
+            const startBar = bars[rect.startIdx];
+            const endBar = bars[rect.endIdx];
+            
+            const left = startBar.offsetLeft;
+            const width = (endBar.offsetLeft - startBar.offsetLeft) + endBar.offsetWidth;
+            const height = rect.height * 30; // 30px per unit height
+            const bottom = 0;
+            
+            rectangle.style.left = `${left}px`;
+            rectangle.style.width = `${width}px`;
+            rectangle.style.height = `${height}px`;
+            rectangle.style.bottom = `${bottom}px`;
+            
+            if (isFinal) {
+                rectangle.style.borderColor = '#FF4800';
+                rectangle.style.backgroundColor = 'rgba(255, 72, 0, 0.4)';
+                rectangle.style.borderWidth = '3px';
+            }
+            
+            histogramEl.appendChild(rectangle);
+        }
+        
+        // Event listeners for navigation buttons
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        init();
+        updateVisualization();
+    </script>
+</body>
+</html>
