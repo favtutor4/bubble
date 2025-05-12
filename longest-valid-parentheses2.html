@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-Based Solution for Valid Parentheses</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .animation-container {
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #FFFFFF;
+            position: relative;
+            height: 350px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #FD9F78;
+            color: #000000;
+            border-radius: 5px;
+        }
+        .parentheses {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .char {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stack {
+            width: 150px;
+            background-color: #F0F0F0;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stack-item {
+            width: 80%;
+            height: 40px;
+            margin: 5px 0;
+            background-color: #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.5s;
+        }
+        .stack-label {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .result {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .result-item {
+            padding: 5px 10px;
+            margin: 0 5px;
+            font-weight: bold;
+            border-radius: 5px;
+            color: #000000;
+        }
+        .valid {
+            background-color: rgba(0, 255, 0, 0.3);
+        }
+        .invalid {
+            background-color: rgba(255, 0, 0, 0.3);
+        }
+        .pushed {
+            animation: push 0.5s;
+        }
+        .popped {
+            animation: pop 0.5s;
+        }
+        @keyframes push {
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pop {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
+        .highlighted {
+            background-color: rgba(0, 255, 0, 0.3);
+            border: 2px solid green;
+        }
+        .step-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack-Based Solution for Valid Parentheses</h1>
+        
+        <div class="animation-container">
+            <div class="step-counter">Step: <span id="step-number">0</span></div>
+            <div class="parentheses" id="parentheses"></div>
+            <div class="stack-container">
+                <div class="stack-label">Stack</div>
+                <div class="stack" id="stack"></div>
+            </div>
+            <div class="result" id="result"></div>
+            <div class="explanation" id="explanation">
+                We'll use a stack-based approach to find the longest valid parentheses substring.
+                Press "Next" to start the visualization.
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const parenthesesString = ")()())";
+            const parenthesesDiv = document.getElementById('parentheses');
+            const stackDiv = document.getElementById('stack');
+            const resultDiv = document.getElementById('result');
+            const explanationDiv = document.getElementById('explanation');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const stepNumber = document.getElementById('step-number');
+            
+            // Initialize UI
+            let currentStep = 0;
+            let maxStep = parenthesesString.length + 2; // +2 for initialization and final result
+            
+            // Create the parentheses display
+            for (let i = 0; i < parenthesesString.length; i++) {
+                const charDiv = document.createElement('div');
+                charDiv.className = 'char';
+                charDiv.innerText = parenthesesString[i];
+                charDiv.id = `char-${i}`;
+                parenthesesDiv.appendChild(charDiv);
+            }
+            
+            // Create the result display
+            for (let i = 0; i < parenthesesString.length; i++) {
+                const resultItemDiv = document.createElement('div');
+                resultItemDiv.className = 'result-item';
+                resultItemDiv.innerText = i;
+                resultItemDiv.id = `result-${i}`;
+                resultDiv.appendChild(resultItemDiv);
+            }
+            
+            // Initialize the stack with -1
+            const initialStack = document.createElement('div');
+            initialStack.className = 'stack-item';
+            initialStack.innerText = '-1';
+            initialStack.id = 'stack-item--1';
+            stackDiv.appendChild(initialStack);
+            
+            // Steps for the animation
+            const steps = [
+                {
+                    explanation: "We start with a stack containing -1. This helps calculate the length of valid substrings.",
+                    stack: [-1],
+                    currentChar: -1,
+                    validRanges: []
+                },
+                {
+                    explanation: "Processing ')': We encounter a closing parenthesis without a matching opening one. Pop -1 from the stack and push the current index 0.",
+                    stack: [0],
+                    currentChar: 0,
+                    validRanges: []
+                },
+                {
+                    explanation: "Processing '(': We push the current index 1 onto the stack.",
+                    stack: [0, 1],
+                    currentChar: 1,
+                    validRanges: []
+                },
+                {
+                    explanation: "Processing ')': We found a matching pair! Pop index 1 from the stack. The valid substring length is (current index 2) - (top of stack 0) = 2.",
+                    stack: [0],
+                    currentChar: 2,
+                    validRanges: [[1, 2]]
+                },
+                {
+                    explanation: "Processing '(': We push the current index 3 onto the stack.",
+                    stack: [0, 3],
+                    currentChar: 3,
+                    validRanges: [[1, 2]]
+                },
+                {
+                    explanation: "Processing ')': We found a matching pair! Pop index 3 from the stack. The valid substring length is (current index 4) - (top of stack 0) = 4.",
+                    stack: [0],
+                    currentChar: 4,
+                    validRanges: [[1, 2], [3, 4]]
+                },
+                {
+                    explanation: "Processing ')': We encounter another closing parenthesis. Pop index 0 from the stack and push the current index 5.",
+                    stack: [5],
+                    currentChar: 5,
+                    validRanges: [[1, 2], [3, 4]]
+                },
+                {
+                    explanation: "Final result: The longest valid substring has length 2 (characters at positions 1-2 or 3-4).",
+                    stack: [5],
+                    currentChar: -1,
+                    validRanges: [[1, 2], [3, 4]]
+                }
+            ];
+            
+            function updateUI() {
+                // Update step number
+                stepNumber.innerText = currentStep;
+                
+                // Reset all characters
+                for (let i = 0; i < parenthesesString.length; i++) {
+                    const charDiv = document.getElementById(`char-${i}`);
+                    charDiv.className = 'char';
+                }
+                
+                // Reset all result items
+                for (let i = 0; i < parenthesesString.length; i++) {
+                    const resultItemDiv = document.getElementById(`result-${i}`);
+                    resultItemDiv.className = 'result-item';
+                }
+                
+                const step = steps[currentStep];
+                
+                // Highlight current character
+                if (step.currentChar >= 0) {
+                    const currentCharDiv = document.getElementById(`char-${step.currentChar}`);
+                    currentCharDiv.classList.add('current');
+                }
+                
+                // Update stack
+                stackDiv.innerHTML = '';
+                step.stack.forEach(index => {
+                    const stackItemDiv = document.createElement('div');
+                    stackItemDiv.className = 'stack-item';
+                    stackItemDiv.innerText = index;
+                    stackItemDiv.id = `stack-item-${index}`;
+                    stackDiv.appendChild(stackItemDiv);
+                });
+                
+                // Highlight valid ranges
+                step.validRanges.forEach(range => {
+                    for (let i = range[0]; i <= range[1]; i++) {
+                        const resultItemDiv = document.getElementById(`result-${i}`);
+                        resultItemDiv.classList.add('valid');
+                        const charDiv = document.getElementById(`char-${i}`);
+                        charDiv.classList.add('highlighted');
+                    }
+                });
+                
+                // Update explanation
+                explanationDiv.innerText = step.explanation;
+                
+                // Update buttons
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === maxStep - 1;
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateUI();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < maxStep - 1) {
+                    currentStep++;
+                    updateUI();
+                }
+            });
+            
+            // Initialize UI
+            updateUI();
+        });
+    </script>
+</body>
+</html>
