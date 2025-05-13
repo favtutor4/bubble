@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPN Expression Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .expression-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .expression {
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .arrow {
+            color: #FF4800;
+            font-size: 30px;
+            margin: 0 10px;
+        }
+        
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .token {
+            width: 50px;
+            height: 50px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            position: absolute;
+            transition: all 0.5s ease-in-out;
+        }
+        
+        .stack {
+            position: absolute;
+            border: 2px dashed #FD9F78;
+            width: 60px;
+            height: 250px;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-start;
+            align-items: center;
+            left: 150px;
+            padding: 5px;
+        }
+        
+        .stack-label {
+            position: absolute;
+            bottom: -30px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .output {
+            position: absolute;
+            border: 2px dashed #FD9F78;
+            width: 350px;
+            height: 60px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            right: 30px;
+            padding: 5px;
+            gap: 10px;
+        }
+        
+        .output-label {
+            position: absolute;
+            bottom: -30px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .explanation {
+            background-color: #FD9F78;
+            color: #000000;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #FD9F78;
+            border-radius: 50%;
+            margin: 0 5px;
+        }
+        
+        .step-dot.active {
+            background-color: #FF4800;
+        }
+        
+        .token-array {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .token-box {
+            width: 40px;
+            height: 40px;
+            background-color: #FFFFFF;
+            border: 2px solid #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            font-size: 18px;
+        }
+        
+        .token-box.active {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+        }
+        
+        .stack-item, .output-item {
+            width: 40px;
+            height: 40px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RPN Expression Visualization</h1>
+        
+        <div class="expression-container">
+            <div class="expression">
+                <span>(2 + 1) * 3</span>
+                <span class="arrow">→</span>
+                <span>2 1 + 3 *</span>
+            </div>
+        </div>
+        
+        <h3>Token Array:</h3>
+        <div class="token-array">
+            <div class="token-box" id="token0">2</div>
+            <div class="token-box" id="token1">1</div>
+            <div class="token-box" id="token2">+</div>
+            <div class="token-box" id="token3">3</div>
+            <div class="token-box" id="token4">*</div>
+        </div>
+        
+        <div class="animation-container">
+            <div class="stack">
+                <div class="stack-label">Stack</div>
+            </div>
+            <div class="output">
+                <div class="output-label">Output (Postfix)</div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>Welcome to RPN Expression Visualization! We'll transform (2 + 1) * 3 from infix to postfix notation.</p>
+            <p>Click "Next" to start the visualization step by step.</p>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <script>
+        const steps = [
+            {
+                explanation: "We'll convert the infix expression (2 + 1) * 3 to postfix notation. This is also known as Reverse Polish Notation (RPN). We'll process each token one by one.",
+                activeToken: -1,
+                stack: [],
+                output: []
+            },
+            {
+                explanation: "Processing '2': Since it's an operand, we directly add it to the output.",
+                activeToken: 0,
+                stack: [],
+                output: ["2"]
+            },
+            {
+                explanation: "Processing '1': It's also an operand, so we add it to the output.",
+                activeToken: 1,
+                stack: [],
+                output: ["2", "1"]
+            },
+            {
+                explanation: "Processing '+': It's an operator, so we push it onto the stack.",
+                activeToken: 2,
+                stack: ["+"],
+                output: ["2", "1"]
+            },
+            {
+                explanation: "Processing '3': It's an operand, so we add it to the output.",
+                activeToken: 3,
+                stack: ["+"],
+                output: ["2", "1", "3"]
+            },
+            {
+                explanation: "Processing '*': It's an operator with higher precedence than '+', so we pop the '+' from the stack to the output, then push '*' onto the stack.",
+                activeToken: 4,
+                stack: ["*"],
+                output: ["2", "1", "3", "+"]
+            },
+            {
+                explanation: "No more tokens to process. We pop the remaining operators from the stack to the output.",
+                activeToken: -1,
+                stack: [],
+                output: ["2", "1", "3", "+", "*"]
+            },
+            {
+                explanation: "The conversion is complete! The postfix expression is '2 1 + 3 *'. This notation removes the need for parentheses by relying on the order of operations.",
+                activeToken: -1,
+                stack: [],
+                output: ["2", "1", "+", "3", "*"]
+            }
+        ];
+        
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanationDiv = document.getElementById('explanation');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const stack = document.querySelector('.stack');
+        const output = document.querySelector('.output');
+        
+        // Create step indicators
+        for (let i = 0; i < steps.length; i++) {
+            const dot = document.createElement('div');
+            dot.className = i === 0 ? 'step-dot active' : 'step-dot';
+            stepIndicator.appendChild(dot);
+        }
+        
+        function updateUI() {
+            // Update explanation
+            explanationDiv.innerHTML = `<p>${steps[currentStep].explanation}</p>`;
+            
+            // Update token highlighting
+            document.querySelectorAll('.token-box').forEach((box, index) => {
+                if (index === steps[currentStep].activeToken) {
+                    box.classList.add('active');
+                } else {
+                    box.classList.remove('active');
+                }
+            });
+            
+            // Update stack
+            stack.innerHTML = '<div class="stack-label">Stack</div>';
+            steps[currentStep].stack.forEach(item => {
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-item';
+                stackItem.textContent = item;
+                stack.appendChild(stackItem);
+            });
+            
+            // Update output
+            output.innerHTML = '<div class="output-label">Output (Postfix)</div>';
+            steps[currentStep].output.forEach(item => {
+                const outputItem = document.createElement('div');
+                outputItem.className = 'output-item';
+                outputItem.textContent = item;
+                output.appendChild(outputItem);
+            });
+            
+            // Update step indicators
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                if (index === currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        });
+        
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>
