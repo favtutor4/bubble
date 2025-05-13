@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infix vs Postfix Comparison</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .explanation {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .expression-container {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f5f5f5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .active {
+            display: block;
+        }
+        .expression-title {
+            font-size: 24px;
+            color: #FF4800;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .visualization {
+            margin: 20px 0;
+            text-align: center;
+            min-height: 250px;
+            position: relative;
+        }
+        .table-container {
+            margin: 30px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .node {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            color: #000000;
+            text-align: center;
+            line-height: 50px;
+            font-weight: bold;
+            margin: 5px;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        .edge {
+            position: absolute;
+            background-color: #FF4800;
+            height: 2px;
+            transform-origin: left center;
+            transition: all 0.5s ease;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .operation {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .operand {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .highlight {
+            box-shadow: 0 0 10px 5px rgba(255, 72, 0, 0.5);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Infix vs Postfix Comparison</h1>
+        
+        <div class="explanation">
+            <p>Infix notation is the common way we write expressions with operators between operands (e.g., a + b). Postfix notation (also called Reverse Polish Notation) places operators after their operands (e.g., ab+). Postfix has the advantage of being unambiguous without needing parentheses and is easier for computers to evaluate.</p>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Infix Expression</th>
+                        <th>Postfix Expression</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>a + b</td>
+                        <td>ab+</td>
+                    </tr>
+                    <tr>
+                        <td>a + b * c</td>
+                        <td>abc*+</td>
+                    </tr>
+                    <tr>
+                        <td>(a + b) * c</td>
+                        <td>ab+c*</td>
+                    </tr>
+                    <tr>
+                        <td>a + b * (c - d)</td>
+                        <td>abcd-*+</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="step-indicator">Expression <span id="current-expr">1</span> of 4</div>
+        
+        <div id="expr1" class="expression-container active">
+            <div class="expression-title">Infix: a + b → Postfix: ab+</div>
+            <div class="visualization" id="visualization1"></div>
+            <p>In this simple expression, the operator "+" comes in between the operands "a" and "b" in infix. In postfix, both operands "a" and "b" come first, followed by the operator "+".</p>
+        </div>
+        
+        <div id="expr2" class="expression-container">
+            <div class="expression-title">Infix: a + b * c → Postfix: abc*+</div>
+            <div class="visualization" id="visualization2"></div>
+            <p>In this expression, we have operator precedence. In infix, multiplication has higher precedence, so "b * c" is evaluated first, then added to "a". In postfix, we write the operands first, then the multiplication operator "*", followed by the addition operator "+". This naturally encodes the precedence without needing parentheses.</p>
+        </div>
+        
+        <div id="expr3" class="expression-container">
+            <div class="expression-title">Infix: (a + b) * c → Postfix: ab+c*</div>
+            <div class="visualization" id="visualization3"></div>
+            <p>Here we use parentheses in infix to override the default precedence, forcing "a + b" to be evaluated first, then multiplied by "c". In postfix, this is naturally expressed as "ab+" (compute a+b first) followed by "c*" (multiply the result by c).</p>
+        </div>
+        
+        <div id="expr4" class="expression-container">
+            <div class="expression-title">Infix: a + b * (c - d) → Postfix: abcd-*+</div>
+            <div class="visualization" id="visualization4"></div>
+            <p>This complex expression shows nested operations. In infix, we evaluate "c - d" first (due to parentheses), then multiply by "b", and finally add "a". In postfix, we write all operands, then apply the operators in the correct sequence: first "-" to compute c-d, then "*" to multiply by b, and finally "+" to add a.</p>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-button" disabled>Previous</button>
+            <button id="next-btn" class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentExpr = 1;
+        const totalExpr = 4;
+        
+        // Node positions for each expression
+        const expressionLayouts = {
+            1: {
+                // a + b -> ab+
+                nodes: [
+                    { id: 'a', type: 'operand', infix: {x: 150, y: 125}, postfix: {x: 100, y: 125}},
+                    { id: '+', type: 'operation', infix: {x: 250, y: 125}, postfix: {x: 300, y: 125}},
+                    { id: 'b', type: 'operand', infix: {x: 350, y: 125}, postfix: {x: 200, y: 125}}
+                ],
+                edges: [
+                    { from: '+', to: 'a', infix: true },
+                    { from: '+', to: 'b', infix: true }
+                ]
+            },
+            2: {
+                // a + b * c -> abc*+
+                nodes: [
+                    { id: 'a', type: 'operand', infix: {x: 100, y: 125}, postfix: {x: 100, y: 125}},
+                    { id: '+', type: 'operation', infix: {x: 200, y: 125}, postfix: {x: 400, y: 125}},
+                    { id: 'b', type: 'operand', infix: {x: 300, y: 100}, postfix: {x: 200, y: 125}},
+                    { id: '*', type: 'operation', infix: {x: 350, y: 125}, postfix: {x: 300, y: 125}},
+                    { id: 'c', type: 'operand', infix: {x: 400, y: 150}, postfix: {x: 250, y: 125}}
+                ],
+                edges: [
+                    { from: '+', to: 'a', infix: true },
+                    { from: '+', to: '*', infix: true },
+                    { from: '*', to: 'b', infix: true },
+                    { from: '*', to: 'c', infix: true }
+                ]
+            },
+            3: {
+                // (a + b) * c -> ab+c*
+                nodes: [
+                    { id: 'a', type: 'operand', infix: {x: 150, y: 100}, postfix: {x: 100, y: 125}},
+                    { id: '+', type: 'operation', infix: {x: 200, y: 125}, postfix: {x: 200, y: 125}},
+                    { id: 'b', type: 'operand', infix: {x: 250, y: 150}, postfix: {x: 150, y: 125}},
+                    { id: '*', type: 'operation', infix: {x: 350, y: 125}, postfix: {x: 300, y: 125}},
+                    { id: 'c', type: 'operand', infix: {x: 450, y: 125}, postfix: {x: 250, y: 125}}
+                ],
+                edges: [
+                    { from: '*', to: '+', infix: true },
+                    { from: '*', to: 'c', infix: true },
+                    { from: '+', to: 'a', infix: true },
+                    { from: '+', to: 'b', infix: true }
+                ]
+            },
+            4: {
+                // a + b * (c - d) -> abcd-*+
+                nodes: [
+                    { id: 'a', type: 'operand', infix: {x: 100, y: 125}, postfix: {x: 50, y: 125}},
+                    { id: '+', type: 'operation', infix: {x: 150, y: 125}, postfix: {x: 350, y: 125}},
+                    { id: 'b', type: 'operand', infix: {x: 250, y: 100}, postfix: {x: 100, y: 125}},
+                    { id: '*', type: 'operation', infix: {x: 300, y: 125}, postfix: {x: 300, y: 125}},
+                    { id: 'c', type: 'operand', infix: {x: 400, y: 100}, postfix: {x: 150, y: 125}},
+                    { id: '-', type: 'operation', infix: {x: 450, y: 125}, postfix: {x: 250, y: 125}},
+                    { id: 'd', type: 'operand', infix: {x: 500, y: 150}, postfix: {x: 200, y: 125}}
+                ],
+                edges: [
+                    { from: '+', to: 'a', infix: true },
+                    { from: '+', to: '*', infix: true },
+                    { from: '*', to: 'b', infix: true },
+                    { from: '*', to: '-', infix: true },
+                    { from: '-', to: 'c', infix: true },
+                    { from: '-', to: 'd', infix: true }
+                ]
+            }
+        };
+        
+        // Initialize visualizations
+        function initVisualizations() {
+            for (let i = 1; i <= totalExpr; i++) {
+                createVisualization(i);
+            }
+        }
+        
+        function createVisualization(exprNum) {
+            const container = document.getElementById(`visualization${exprNum}`);
+            container.innerHTML = '';
+            
+            // Divide container into two sections
+            const infixSection = document.createElement('div');
+            infixSection.style.width = '50%';
+            infixSection.style.float = 'left';
+            infixSection.style.height = '250px';
+            infixSection.style.position = 'relative';
+            
+            const postfixSection = document.createElement('div');
+            postfixSection.style.width = '50%';
+            postfixSection.style.float = 'right';
+            postfixSection.style.height = '250px';
+            postfixSection.style.position = 'relative';
+            
+            // Add labels
+            const infixLabel = document.createElement('div');
+            infixLabel.innerText = 'Infix';
+            infixLabel.style.fontWeight = 'bold';
+            infixLabel.style.textAlign = 'center';
+            infixLabel.style.marginBottom = '10px';
+            
+            const postfixLabel = document.createElement('div');
+            postfixLabel.innerText = 'Postfix';
+            postfixLabel.style.fontWeight = 'bold';
+            postfixLabel.style.textAlign = 'center';
+            postfixLabel.style.marginBottom = '10px';
+            
+            infixSection.appendChild(infixLabel);
+            postfixSection.appendChild(postfixLabel);
+            
+            container.appendChild(infixSection);
+            container.appendChild(postfixSection);
+            
+            const layout = expressionLayouts[exprNum];
+            
+            // Create edges first (so they appear under nodes)
+            layout.edges.forEach(edge => {
+                if (edge.infix) {
+                    createEdge(edge.from, edge.to, infixSection, layout.nodes, true);
+                }
+            });
+            
+            // Create nodes with postfix positions initially (for animation)
+            layout.nodes.forEach(node => {
+                createNode(node, infixSection, true);
+                createNode(node, postfixSection, false);
+            });
+        }
+        
+        function createNode(node, container, isInfix) {
+            const position = isInfix ? node.infix : node.postfix;
+            
+            const nodeElement = document.createElement('div');
+            nodeElement.className = `node ${node.type}`;
+            nodeElement.id = `${isInfix ? 'infix' : 'postfix'}-${node.id}`;
+            nodeElement.innerText = node.id;
+            
+            nodeElement.style.left = `${position.x - 25}px`;
+            nodeElement.style.top = `${position.y - 25}px`;
+            
+            container.appendChild(nodeElement);
+        }
+        
+        function createEdge(fromId, toId, container, nodes, isInfix) {
+            const fromNode = nodes.find(n => n.id === fromId);
+            const toNode = nodes.find(n => n.id === toId);
+            
+            if (!fromNode || !toNode) return;
+            
+            const fromPos = isInfix ? fromNode.infix : fromNode.postfix;
+            const toPos = isInfix ? toNode.infix : toNode.postfix;
+            
+            const edge = document.createElement('div');
+            edge.className = 'edge';
+            
+            // Calculate length and angle
+            const dx = toPos.x - fromPos.x;
+            const dy = toPos.y - fromPos.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            edge.style.width = `${length}px`;
+            edge.style.left = `${fromPos.x}px`;
+            edge.style.top = `${fromPos.y}px`;
+            edge.style.transform = `rotate(${angle}deg)`;
+            
+            container.appendChild(edge);
+        }
+        
+        // Animation steps for each expression
+        const animateExpr = {
+            1: function() {
+                highlightElements(['infix-a', 'infix-b', 'infix-+']);
+                setTimeout(() => {
+                    highlightElements(['postfix-a']);
+                    setTimeout(() => {
+                        highlightElements(['postfix-b']);
+                        setTimeout(() => {
+                            highlightElements(['postfix-+']);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            },
+            2: function() {
+                highlightElements(['infix-a', 'infix-+']);
+                setTimeout(() => {
+                    highlightElements(['infix-b', 'infix-*', 'infix-c']);
+                    setTimeout(() => {
+                        highlightElements(['postfix-a']);
+                        setTimeout(() => {
+                            highlightElements(['postfix-b']);
+                            setTimeout(() => {
+                                highlightElements(['postfix-c']);
+                                setTimeout(() => {
+                                    highlightElements(['postfix-*']);
+                                    setTimeout(() => {
+                                        highlightElements(['postfix-+']);
+                                    }, 1000);
+                                }, 1000);
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            },
+            3: function() {
+                highlightElements(['infix-a', 'infix-+', 'infix-b']);
+                setTimeout(() => {
+                    highlightElements(['infix-*', 'infix-c']);
+                    setTimeout(() => {
+                        highlightElements(['postfix-a']);
+                        setTimeout(() => {
+                            highlightElements(['postfix-b']);
+                            setTimeout(() => {
+                                highlightElements(['postfix-+']);
+                                setTimeout(() => {
+                                    highlightElements(['postfix-c']);
+                                    setTimeout(() => {
+                                        highlightElements(['postfix-*']);
+                                    }, 1000);
+                                }, 1000);
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            },
+            4: function() {
+                highlightElements(['infix-a', 'infix-+']);
+                setTimeout(() => {
+                    highlightElements(['infix-b', 'infix-*']);
+                    setTimeout(() => {
+                        highlightElements(['infix-c', 'infix--', 'infix-d']);
+                        setTimeout(() => {
+                            highlightElements(['postfix-a']);
+                            setTimeout(() => {
+                                highlightElements(['postfix-b']);
+                                setTimeout(() => {
+                                    highlightElements(['postfix-c']);
+                                    setTimeout(() => {
+                                        highlightElements(['postfix-d']);
+                                        setTimeout(() => {
+                                            highlightElements(['postfix--']);
+                                            setTimeout(() => {
+                                                highlightElements(['postfix-*']);
+                                                setTimeout(() => {
+                                                    highlightElements(['postfix-+']);
+                                                }, 1000);
+                                            }, 1000);
+                                        }, 1000);
+                                    }, 1000);
+                                }, 1000);
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }
+        };
+        
+        function highlightElements(ids) {
+            // Remove all highlights first
+            document.querySelectorAll('.node').forEach(node => {
+                node.classList.remove('highlight');
+            });
+            
+            // Add new highlights
+            ids.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('highlight');
+                }
+            });
+        }
+        
+        function updateNavigation() {
+            document.getElementById('prev-btn').disabled = currentExpr === 1;
+            document.getElementById('next-btn').disabled = currentExpr === totalExpr;
+            document.getElementById('current-expr').textContent = currentExpr;
+        }
+        
+        function showExpression(exprNum) {
+            // Hide all expressions
+            document.querySelectorAll('.expression-container').forEach(expr => {
+                expr.classList.remove('active');
+            });
+            
+            // Show the selected expression
+            document.getElementById(`expr${exprNum}`).classList.add('active');
+            
+            // Reset and animate
+            createVisualization(exprNum);
+            
+            // Start animation with a slight delay
+            setTimeout(() => {
+                if (animateExpr[exprNum]) {
+                    animateExpr[exprNum]();
+                }
+            }, 500);
+        }
+        
+        document.getElementById('next-btn').addEventListener('click', function() {
+            if (currentExpr < totalExpr) {
+                currentExpr++;
+                showExpression(currentExpr);
+                updateNavigation();
+            }
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', function() {
+            if (currentExpr > 1) {
+                currentExpr--;
+                showExpression(currentExpr);
+                updateNavigation();
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initVisualizations();
+            showExpression(currentExpr);
+            updateNavigation();
+        });
+    </script>
+</body>
+</html>
