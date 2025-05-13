@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Inversion Counter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #1c1d20;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        h1 {
+            color: #ff4800;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .arrays-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        .array-section {
+            flex: 1;
+        }
+        .array-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .array {
+            display: flex;
+            gap: 10px;
+        }
+        .array-item {
+            width: 60px;
+            height: 60px;
+            background-color: #ff4800;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .array-index {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .merged-container {
+            margin-top: 40px;
+        }
+        .merged-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .merged-array {
+            display: flex;
+            gap: 10px;
+            min-height: 60px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ff4800;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .inversion-counter {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4800;
+        }
+        .comparison {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            min-height: 30px;
+        }
+        .highlighted {
+            border: 3px solid #1c1d20;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Merge Sort Inversion Counting</h1>
+        
+        <div class="arrays-container">
+            <div class="array-section">
+                <div class="array-title">Left Array:</div>
+                <div class="array" id="leftArray">
+                    <div>
+                        <div class="array-item">2</div>
+                        <div class="array-index">index: 0</div>
+                    </div>
+                    <div>
+                        <div class="array-item">4</div>
+                        <div class="array-index">index: 1</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="array-section">
+                <div class="array-title">Right Array:</div>
+                <div class="array" id="rightArray">
+                    <div>
+                        <div class="array-item">1</div>
+                        <div class="array-index">index: 0</div>
+                    </div>
+                    <div>
+                        <div class="array-item">3</div>
+                        <div class="array-index">index: 1</div>
+                    </div>
+                    <div>
+                        <div class="array-item">5</div>
+                        <div class="array-index">index: 2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="comparison" id="comparisonText"></div>
+        
+        <div class="merged-container">
+            <div class="merged-title">Merged Array:</div>
+            <div class="merged-array" id="mergedArray"></div>
+        </div>
+        
+        <div class="inversion-counter" id="inversionCounter">Total Inversions: 0</div>
+        
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial arrays
+        const leftArray = [2, 4];
+        const rightArray = [1, 3, 5];
+        const steps = [];
+        let currentStep = -1;
+        let totalInversions = 0;
+        
+        // Initialize the merged array
+        const mergedArray = [];
+        
+        // Generate all steps beforehand
+        function generateSteps() {
+            let i = 0;
+            let j = 0;
+            let step = 0;
+            let inversions = 0;
+            const tempMerged = [];
+            
+            while (i < leftArray.length && j < rightArray.length) {
+                const compareStep = {
+                    type: 'compare',
+                    leftIndex: i,
+                    rightIndex: j,
+                    merged: [...tempMerged],
+                    inversions: inversions,
+                    explanation: `Comparing Left[${i}]=${leftArray[i]} with Right[${j}]=${rightArray[j]}`
+                };
+                steps.push(compareStep);
+                
+                if (leftArray[i] <= rightArray[j]) {
+                    tempMerged.push(leftArray[i]);
+                    const addStep = {
+                        type: 'add',
+                        source: 'left',
+                        index: i,
+                        value: leftArray[i],
+                        merged: [...tempMerged],
+                        inversions: inversions,
+                        explanation: `Left[${i}]=${leftArray[i]} is smaller, adding to merged array`
+                    };
+                    steps.push(addStep);
+                    i++;
+                } else {
+                    // When right element is smaller, count inversions
+                    // Number of inversions = remaining elements in left array
+                    const newInversions = leftArray.length - i;
+                    inversions += newInversions;
+                    
+                    tempMerged.push(rightArray[j]);
+                    const addStep = {
+                        type: 'add',
+                        source: 'right',
+                        index: j,
+                        value: rightArray[j],
+                        merged: [...tempMerged],
+                        inversions: inversions,
+                        explanation: `Right[${j}]=${rightArray[j]} is smaller, adding to merged array. Found ${newInversions} inversions!`
+                    };
+                    steps.push(addStep);
+                    j++;
+                }
+            }
+            
+            // Add remaining elements from left array
+            while (i < leftArray.length) {
+                tempMerged.push(leftArray[i]);
+                const addStep = {
+                    type: 'add',
+                    source: 'left',
+                    index: i,
+                    value: leftArray[i],
+                    merged: [...tempMerged],
+                    inversions: inversions,
+                    explanation: `Adding remaining Left[${i}]=${leftArray[i]} to merged array`
+                };
+                steps.push(addStep);
+                i++;
+            }
+            
+            // Add remaining elements from right array
+            while (j < rightArray.length) {
+                tempMerged.push(rightArray[j]);
+                const addStep = {
+                    type: 'add',
+                    source: 'right',
+                    index: j,
+                    value: rightArray[j],
+                    merged: [...tempMerged],
+                    inversions: inversions,
+                    explanation: `Adding remaining Right[${j}]=${rightArray[j]} to merged array`
+                };
+                steps.push(addStep);
+                j++;
+            }
+            
+            // Final step showing completion
+            steps.push({
+                type: 'complete',
+                merged: [...tempMerged],
+                inversions: inversions,
+                explanation: 'Merge complete!'
+            });
+        }
+        
+        function renderStep(step) {
+            // Clear highlights
+            const leftItems = document.querySelectorAll('#leftArray .array-item');
+            const rightItems = document.querySelectorAll('#rightArray .array-item');
+            
+            leftItems.forEach(item => item.classList.remove('highlighted'));
+            rightItems.forEach(item => item.classList.remove('highlighted'));
+            
+            // Highlight compared elements
+            if (step.type === 'compare') {
+                if (step.leftIndex < leftItems.length) {
+                    leftItems[step.leftIndex].classList.add('highlighted');
+                }
+                if (step.rightIndex < rightItems.length) {
+                    rightItems[step.rightIndex].classList.add('highlighted');
+                }
+            }
+            
+            // Update merged array
+            const mergedContainer = document.getElementById('mergedArray');
+            mergedContainer.innerHTML = '';
+            
+            step.merged.forEach(value => {
+                const itemContainer = document.createElement('div');
+                
+                const item = document.createElement('div');
+                item.className = 'array-item';
+                item.textContent = value;
+                
+                itemContainer.appendChild(item);
+                mergedContainer.appendChild(itemContainer);
+            });
+            
+            // Update inversion counter
+            document.getElementById('inversionCounter').textContent = `Total Inversions: ${step.inversions}`;
+            
+            // Update comparison text
+            document.getElementById('comparisonText').textContent = step.explanation;
+        }
+        
+        // Initialize the visualization
+        generateSteps();
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(steps[currentStep]);
+                
+                document.getElementById('prevBtn').disabled = false;
+                if (currentStep === steps.length - 1) {
+                    document.getElementById('nextBtn').disabled = true;
+                }
+            }
+        });
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(steps[currentStep]);
+                
+                document.getElementById('nextBtn').disabled = false;
+                if (currentStep === 0) {
+                    document.getElementById('prevBtn').disabled = true;
+                }
+            }
+        });
+        
+        // Initialize with first step
+        if (steps.length > 0) {
+            currentStep = 0;
+            renderStep(steps[currentStep]);
+            document.getElementById('prevBtn').disabled = true;
+        }
+    </script>
+</body>
+</html>
