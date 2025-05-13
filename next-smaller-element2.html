@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-Based Algorithm Execution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: #FFFFFF;
+        }
+
+        .description {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .element {
+            width: 60px;
+            height: 60px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .element.current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+        }
+
+        .stack-container {
+            display: flex;
+            flex-direction: column-reverse;
+            margin-right: 60px;
+            min-height: 200px;
+            align-items: center;
+        }
+
+        .stack-title, .result-title, .array-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+
+        .stack-element {
+            width: 50px;
+            height: 50px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            margin: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .stack-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+            align-items: center;
+        }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.3s ease;
+        }
+
+        .result-row.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .result-element {
+            width: 50px;
+            height: 50px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .result-arrow {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .result-output {
+            width: 50px;
+            height: 50px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .explanation {
+            background-color: #FFF;
+            border-left: 4px solid #FF4800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+
+        .nav-button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stacks-results-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .step-indicator {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+
+        @media (max-width: 768px) {
+            .stacks-results-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stack-container {
+                margin-right: 0;
+                margin-bottom: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Stack-Based Algorithm Execution</h1>
+
+    <div class="container">
+        <div class="description">
+            <p>This visualization shows a step-by-step execution of the "Next Greater Element" algorithm using a stack. The algorithm finds the next greater element for each element in an array. If no greater element exists, it assigns -1.</p>
+        </div>
+
+        <div class="visualization-container">
+            <div class="array-title">Input Array</div>
+            <div class="array-container" id="array-container"></div>
+
+            <div class="stacks-results-container">
+                <div class="stack-container">
+                    <div class="stack-title">Stack</div>
+                    <div id="stack-elements"></div>
+                </div>
+
+                <div class="result-container">
+                    <div class="result-title">Results</div>
+                    <div id="result-elements"></div>
+                </div>
+            </div>
+
+            <div class="explanation" id="explanation"></div>
+            <div class="step-indicator" id="step-indicator">Step 0 of 0</div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-button" id="prev-button" disabled>Previous</button>
+            <button class="nav-button" id="next-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Data for the visualization
+        const inputArray = [4, 8, 5, 2, 25];
+        
+        const steps = [
+            {
+                currentIndex: -1,
+                stack: [],
+                result: [],
+                explanation: "We start with an empty stack and an empty result array. We'll process each element in the input array from left to right."
+            },
+            {
+                currentIndex: 0,
+                stack: [0],
+                result: [],
+                explanation: "We push the first element's index (0) onto the stack because we haven't found a greater element for it yet."
+            },
+            {
+                currentIndex: 1,
+                stack: [],
+                result: [{index: 0, value: 4, result: 8}],
+                explanation: "We process 8. Since 8 > 4, we pop index 0 from the stack and set result[0] = 8. Then we push index 1 (value 8) onto the stack."
+            },
+            {
+                currentIndex: 1,
+                stack: [1],
+                result: [{index: 0, value: 4, result: 8}],
+                explanation: "After processing, we have 8's index (1) on the stack."
+            },
+            {
+                currentIndex: 2,
+                stack: [1, 2],
+                result: [{index: 0, value: 4, result: 8}],
+                explanation: "We process 5. Since 5 < 8, we can't find a greater element for 8 yet. We push 5's index (2) onto the stack."
+            },
+            {
+                currentIndex: 3,
+                stack: [1, 2, 3],
+                result: [{index: 0, value: 4, result: 8}],
+                explanation: "We process 2. Since 2 < 5, we can't find a greater element for 5 yet. We push 2's index (3) onto the stack."
+            },
+            {
+                currentIndex: 4,
+                stack: [1],
+                result: [
+                    {index: 0, value: 4, result: 8},
+                    {index: 2, value: 5, result: 25},
+                    {index: 3, value: 2, result: 25}
+                ],
+                explanation: "We process 25. Since 25 > 2, we pop index 3 and set result[3] = 25. Since 25 > 5 as well, we also pop index 2 and set result[2] = 25."
+            },
+            {
+                currentIndex: 4,
+                stack: [1, 4],
+                result: [
+                    {index: 0, value: 4, result: 8},
+                    {index: 2, value: 5, result: 25},
+                    {index: 3, value: 2, result: 25}
+                ],
+                explanation: "Since 25 < 8, we can't find a greater element for 8 yet. We push 25's index (4) onto the stack."
+            },
+            {
+                currentIndex: 5, // Beyond the array length to indicate we're done
+                stack: [1, 4],
+                result: [
+                    {index: 0, value: 4, result: 8},
+                    {index: 1, value: 8, result: -1},
+                    {index: 2, value: 5, result: 25},
+                    {index: 3, value: 2, result: 25},
+                    {index: 4, value: 25, result: -1}
+                ],
+                explanation: "We've processed all elements. For the remaining indices in the stack (1 and 4), there's no greater element, so we set their results to -1."
+            }
+        ];
+
+        let currentStep = 0;
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const stepIndicator = document.getElementById('step-indicator');
+
+        // Initialize visualization
+        function initializeVisualization() {
+            const arrayContainer = document.getElementById('array-container');
+            
+            // Create array elements
+            inputArray.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.id = `element-${index}`;
+                element.textContent = value;
+                arrayContainer.appendChild(element);
+            });
+
+            updateVisualization();
+        }
+
+        // Update visualization based on current step
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentStep} of ${steps.length - 1}`;
+            
+            // Update current element highlight
+            document.querySelectorAll('.element').forEach((element, index) => {
+                if (index === step.currentIndex) {
+                    element.classList.add('current');
+                } else {
+                    element.classList.remove('current');
+                }
+            });
+
+            // Update stack
+            updateStack(step.stack);
+
+            // Update results
+            updateResults(step.result);
+
+            // Update explanation
+            document.getElementById('explanation').textContent = step.explanation;
+
+            // Update navigation buttons
+            prevButton.disabled = currentStep === 0;
+            nextButton.disabled = currentStep === steps.length - 1;
+        }
+
+        // Update stack visualization
+        function updateStack(stack) {
+            const stackContainer = document.getElementById('stack-elements');
+            stackContainer.innerHTML = '';
+
+            stack.forEach((index, stackPosition) => {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = inputArray[index];
+                stackContainer.appendChild(element);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    element.classList.add('visible');
+                }, stackPosition * 100);
+            });
+        }
+
+        // Update results visualization
+        function updateResults(results) {
+            const resultContainer = document.getElementById('result-elements');
+            resultContainer.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const row = document.createElement('div');
+                row.className = 'result-row';
+                
+                const elementDiv = document.createElement('div');
+                elementDiv.className = 'result-element';
+                elementDiv.textContent = result.value;
+                
+                const arrowDiv = document.createElement('div');
+                arrowDiv.className = 'result-arrow';
+                arrowDiv.textContent = '→';
+                
+                const outputDiv = document.createElement('div');
+                outputDiv.className = 'result-output';
+                outputDiv.textContent = result.result;
+                
+                row.appendChild(elementDiv);
+                row.appendChild(arrowDiv);
+                row.appendChild(outputDiv);
+                resultContainer.appendChild(row);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    row.classList.add('visible');
+                }, index * 100);
+            });
+        }
+
+        // Event listeners for navigation
+        prevButton.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+
+        // Initialize the visualization
+        initializeVisualization();
+    </script>
+</body>
+</html>
