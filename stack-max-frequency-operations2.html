@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Structure Organization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .slide-container {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            overflow: hidden;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .slide {
+            display: none;
+            animation-duration: 1s;
+        }
+        .active-slide {
+            display: block;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .data-structure {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #FD9F78;
+        }
+        .stack-container, .map-container {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .stack-element {
+            width: 40px;
+            height: 40px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .map-box {
+            padding: 10px;
+            margin: 10px;
+            background-color: #FD9F78;
+            border-radius: 10px;
+            color: #000000;
+            min-width: 100px;
+        }
+        .group-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .group-row {
+            display: flex;
+            margin: 10px 0;
+        }
+        .arrow {
+            margin: 10px;
+            font-size: 24px;
+            color: #FF4800;
+        }
+        .highlight {
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 1s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .max-freq {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Data Structure Organization for Optimized Approach</h1>
+        
+        <div class="slide-container">
+            <div class="slide active-slide" id="slide1">
+                <h2>Optimized Data Structure Organization</h2>
+                <p>Let's understand how three key data structures work together for efficient operations.</p>
+                
+                <div class="data-structure">
+                    <h3>The Stack: [5, 7, 5, 7, 4]</h3>
+                    <div class="stack-container">
+                        <div class="stack-element">5</div>
+                        <div class="stack-element">7</div>
+                        <div class="stack-element">5</div>
+                        <div class="stack-element">7</div>
+                        <div class="stack-element">4</div>
+                    </div>
+                    <p>This is our main data structure that stores all elements.</p>
+                </div>
+                
+                <div class="explanation">
+                    <p>In this illustration, we'll explore how three different data structures work together to create an optimized approach for tracking element frequencies.</p>
+                </div>
+            </div>
+            
+            <div class="slide" id="slide2">
+                <h2>Frequency Map</h2>
+                <p>The frequency map tracks how many times each element appears in our stack.</p>
+                
+                <div class="data-structure">
+                    <h3>Frequency Map: {5:2, 7:2, 4:1}</h3>
+                    <div class="stack-container">
+                        <div class="map-box">
+                            <strong>Element: 5</strong><br>
+                            Frequency: 2
+                        </div>
+                        <div class="map-box">
+                            <strong>Element: 7</strong><br>
+                            Frequency: 2
+                        </div>
+                        <div class="map-box">
+                            <strong>Element: 4</strong><br>
+                            Frequency: 1
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-structure">
+                    <h3>The Stack: [5, 7, 5, 7, 4]</h3>
+                    <div class="stack-container">
+                        <div class="stack-element">5</div>
+                        <div class="stack-element">7</div>
+                        <div class="stack-element">5</div>
+                        <div class="stack-element">7</div>
+                        <div class="stack-element">4</div>
+                    </div>
+                </div>
+                
+                <div class="explanation">
+                    <p>The frequency map keeps track of how many times each element appears in our stack. In this case:</p>
+                    <ul>
+                        <li>Element 5 appears 2 times</li>
+                        <li>Element 7 appears 2 times</li>
+                        <li>Element 4 appears 1 time</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="slide" id="slide3">
+                <h2>Group Map</h2>
+                <p>The group map organizes elements by their frequencies, grouping elements that appear the same number of times.</p>
+                
+                <div class="data-structure">
+                    <h3>Group Map: {1:[4], 2:[5,7]}</h3>
+                    <div class="stack-container">
+                        <div class="map-box">
+                            <strong>Frequency: 1</strong><br>
+                            Elements: [4]
+                        </div>
+                        <div class="map-box">
+                            <strong>Frequency: 2</strong><br>
+                            Elements: [5, 7]
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-structure">
+                    <h3>Frequency Map: {5:2, 7:2, 4:1}</h3>
+                    <div class="stack-container">
+                        <div class="map-box">
+                            <strong>Element: 5</strong><br>
+                            Frequency: 2
+                        </div>
+                        <div class="map-box">
+                            <strong>Element: 7</strong><br>
+                            Frequency: 2
+                        </div>
+                        <div class="map-box">
+                            <strong>Element: 4</strong><br>
+                            Frequency: 1
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="explanation">
+                    <p>The group map organizes elements by their frequency:</p>
+                    <ul>
+                        <li>Frequency 1 contains: [4]</li>
+                        <li>Frequency 2 contains: [5, 7]</li>
+                    </ul>
+                    <p>This allows us to quickly find all elements with a specific frequency.</p>
+                </div>
+            </div>
+            
+            <div class="slide" id="slide4">
+                <h2>Maximum Frequency Tracking</h2>
+                <p>We also keep track of the maximum frequency (maxfreq) to quickly find the most frequent elements.</p>
+                
+                <div class="data-structure">
+                    <h3>Maximum Frequency: <span class="max-freq">maxfreq = 2</span></h3>
+                    <p>This tells us that the most frequent elements appear 2 times in our stack.</p>
+                </div>
+                
+                <div class="data-structure">
+                    <h3>Group Map: {1:[4], 2:[5,7]}</h3>
+                    <div class="stack-container">
+                        <div class="map-box">
+                            <strong>Frequency: 1</strong><br>
+                            Elements: [4]
+                        </div>
+                        <div class="map-box highlight">
+                            <strong>Frequency: 2</strong><br>
+                            Elements: [5, 7]
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="explanation">
+                    <p>By keeping track of the maximum frequency (maxfreq = 2), we can quickly access the most frequent elements through the group map.</p>
+                    <p>When we need to find the most frequent elements, we simply look up the elements stored at the maxfreq key in our group map.</p>
+                </div>
+            </div>
+            
+            <div class="slide" id="slide5">
+                <h2>All Three Data Structures Working Together</h2>
+                
+                <div class="data-structure">
+                    <h3>The Stack: [5, 7, 5, 7, 4]</h3>
+                    <div class="stack-container">
+                        <div class="stack-element">5</div>
+                        <div class="stack-element">7</div>
+                        <div class="stack-element">5</div>
+                        <div class="stack-element">7</div>
+                        <div class="stack-element">4</div>
+                    </div>
+                </div>
+                
+                <div id="animation-container" class="group-container">
+                    <div class="group-row">
+                        <div class="map-box">
+                            <strong>Frequency Map</strong><br>
+                            {5:2, 7:2, 4:1}
+                        </div>
+                    </div>
+                    <div class="arrow">↓</div>
+                    <div class="group-row">
+                        <div class="map-box">
+                            <strong>Group Map</strong><br>
+                            {1:[4], 2:[5,7]}
+                        </div>
+                        <div class="map-box">
+                            <strong>Max Frequency</strong><br>
+                            maxfreq = 2
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="explanation">
+                    <p>These three data structures work together to provide efficient operations:</p>
+                    <ul>
+                        <li><strong>The Stack</strong> stores all our elements in order</li>
+                        <li><strong>The Frequency Map</strong> tracks how many times each element appears</li>
+                        <li><strong>The Group Map</strong> organizes elements by their frequencies</li>
+                        <li><strong>The Max Frequency</strong> provides quick access to the most frequent elements</li>
+                    </ul>
+                    <p>This organization allows for optimized approach to various operations like retrieving most frequent elements.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            let currentSlide = 0;
+            
+            function showSlide(n) {
+                slides[currentSlide].classList.remove('active-slide');
+                currentSlide = n;
+                slides[currentSlide].classList.add('active-slide');
+                slides[currentSlide].classList.add('fade-in');
+                
+                // Enable/disable buttons as needed
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.disabled = currentSlide === slides.length - 1;
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentSlide < slides.length - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            });
+            
+            // Animation for slide 5
+            if (document.getElementById('animation-container')) {
+                setInterval(function() {
+                    const container = document.getElementById('animation-container');
+                    if (container && document.getElementById('slide5').classList.contains('active-slide')) {
+                        const arrow = container.querySelector('.arrow');
+                        arrow.classList.toggle('highlight');
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
