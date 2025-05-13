@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postfix to Infix Conversion: Operator Precedence</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #FF4800;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .stack, .expression {
+            font-family: monospace;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .element {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+
+        .operator {
+            background-color: #FF4800;
+            color: white;
+        }
+
+        .operand {
+            background-color: #FD9F78;
+            color: black;
+        }
+
+        .result {
+            background-color: #000000;
+            color: white;
+            padding: 5px 10px;
+        }
+
+        .highlight {
+            box-shadow: 0 0 10px 5px rgba(255, 72, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .side-by-side {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .approach {
+            width: 48%;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .approach h3 {
+            color: #FF4800;
+            margin-top: 0;
+        }
+
+        .precedence-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .precedence-table th, .precedence-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .precedence-table th {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+
+        .indicator {
+            position: absolute;
+            font-size: 24px;
+            color: #FF4800;
+            transition: all 0.5s ease;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .active-slide {
+            opacity: 1;
+        }
+
+        .step-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF4800;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Postfix to Infix Conversion: Operator Precedence</h1>
+    
+    <div class="container">
+        <div class="animation-container" id="animationContainer">
+            <!-- Slides will be generated by JavaScript -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Postfix to Infix Conversion tutorial. We'll convert the postfix expression "ab+c*" to infix format and see how operator precedence affects the result.
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Define the slides content
+        const slides = [
+            {
+                title: "Understanding Postfix Expressions",
+                content: `
+                    <div style="text-align: center;">
+                        <div class="expression">
+                            <h3>Postfix Expression: ab+c*</h3>
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <p>In postfix notation (also called Reverse Polish Notation):</p>
+                        <ul>
+                            <li>Operators appear after their operands</li>
+                            <li>No parentheses are needed</li>
+                            <li>Reading from left to right, when we encounter an operator, we apply it to the preceding two operands</li>
+                        </ul>
+                    </div>
+                `,
+                explanation: "Postfix notation (ab+c*) places operators after their operands. We'll convert this to infix notation, which is the standard algebraic notation we're familiar with (like a+b)."
+            },
+            {
+                title: "Operator Precedence",
+                content: `
+                    <div style="text-align: center;">
+                        <h3>Operator Precedence Table</h3>
+                        <table class="precedence-table">
+                            <tr>
+                                <th>Operator</th>
+                                <th>Precedence</th>
+                            </tr>
+                            <tr>
+                                <td>* (Multiplication)</td>
+                                <td>Higher</td>
+                            </tr>
+                            <tr>
+                                <td>+ (Addition)</td>
+                                <td>Lower</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <p>When converting to infix, operator precedence determines if parentheses are necessary:</p>
+                        <ul>
+                            <li>If a lower precedence operation is performed before a higher precedence one, parentheses are needed</li>
+                            <li>Without considering precedence (brute force), we might add unnecessary parentheses</li>
+                        </ul>
+                    </div>
+                `,
+                explanation: "Operator precedence is crucial for correct infix expressions. Multiplication (*) has higher precedence than addition (+). When converting from postfix to infix, we need to consider this to avoid ambiguity."
+            },
+            {
+                title: "Brute Force Approach: Start",
+                content: `
+                    <h3>Converting "ab+c*" - Brute Force</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand highlight">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element operand highlight">a</div>
+                        </div>
+                    </div>
+                `,
+                explanation: "In the brute force approach, we add parentheses around every operation without considering operator precedence. Let's start by scanning the postfix expression from left to right."
+            },
+            {
+                title: "Brute Force Approach: Step 2",
+                content: `
+                    <h3>Converting "ab+c*" - Brute Force</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand highlight">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element operand">a</div>
+                            <div class="element operand highlight">b</div>
+                        </div>
+                    </div>
+                `,
+                explanation: "We read 'b' and push it onto the stack. Now we have both operands ('a' and 'b') on the stack, ready for an operation."
+            },
+            {
+                title: "Brute Force Approach: Step 3",
+                content: `
+                    <h3>Converting "ab+c*" - Brute Force</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator highlight">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element result highlight">(a+b)</div>
+                        </div>
+                        <p>Pop two operands, apply the operator, and put result with parentheses back on stack</p>
+                    </div>
+                `,
+                explanation: "We encounter the '+' operator. In the brute force approach, we pop the top two operands ('a' and 'b'), apply the operator, and push the result '(a+b)' back onto the stack, always adding parentheses."
+            },
+            {
+                title: "Brute Force Approach: Step 4",
+                content: `
+                    <h3>Converting "ab+c*" - Brute Force</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand highlight">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element result">(a+b)</div>
+                            <div class="element operand highlight">c</div>
+                        </div>
+                    </div>
+                `,
+                explanation: "Next, we read 'c' and push it onto the stack. Now we have '(a+b)' and 'c' on the stack."
+            },
+            {
+                title: "Brute Force Approach: Final Step",
+                content: `
+                    <h3>Converting "ab+c*" - Brute Force</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator highlight">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element result highlight">((a+b)*c)</div>
+                        </div>
+                        <p>Final infix expression with brute force approach</p>
+                    </div>
+                `,
+                explanation: "Finally, we encounter the '*' operator. We pop the top two items ('(a+b)' and 'c'), apply the operator, and get the final infix expression '((a+b)*c)'. Notice the double parentheses!"
+            },
+            {
+                title: "Optimized Approach: Considering Precedence",
+                content: `
+                    <h3>Converting "ab+c*" - Optimized Approach</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p>The optimized approach only adds parentheses when necessary based on operator precedence</p>
+                        <div style="margin-top: 40px;">
+                            <table class="precedence-table">
+                                <tr>
+                                    <th>Operator</th>
+                                    <th>Precedence Value</th>
+                                </tr>
+                                <tr>
+                                    <td>* (Multiplication)</td>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>+ (Addition)</td>
+                                    <td>1</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                `,
+                explanation: "Now let's try the optimized approach. Instead of blindly adding parentheses, we'll only add them when necessary based on operator precedence. This will produce a cleaner infix expression."
+            },
+            {
+                title: "Optimized Approach: Start",
+                content: `
+                    <h3>Converting "ab+c*" - Optimized</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand highlight">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element operand highlight">a</div>
+                        </div>
+                        <p>Each operand and operator stores its precedence value</p>
+                    </div>
+                `,
+                explanation: "We start the same way as the brute force approach, reading 'a' first and pushing it onto the stack. In this approach, we'll keep track of the precedence of each operation."
+            },
+            {
+                title: "Optimized Approach: Step 2",
+                content: `
+                    <h3>Converting "ab+c*" - Optimized</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand highlight">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element operand">a</div>
+                            <div class="element operand highlight">b</div>
+                        </div>
+                    </div>
+                `,
+                explanation: "Next, we read 'b' and push it onto the stack. So far, the process is identical to the brute force approach."
+            },
+            {
+                title: "Optimized Approach: Step 3",
+                content: `
+                    <h3>Converting "ab+c*" - Optimized</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator highlight">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element result highlight">a+b</div>
+                            <div style="font-size: 12px; margin-top: 5px;">(Precedence: 1)</div>
+                        </div>
+                        <p>No parentheses needed for single operation</p>
+                    </div>
+                `,
+                explanation: "We encounter the '+' operator (precedence 1). We pop the top two operands ('a' and 'b'), apply the operator, and push 'a+b' back onto the stack. Note that we don't add parentheses yet because this is a single operation."
+            },
+            {
+                title: "Optimized Approach: Step 4",
+                content: `
+                    <h3>Converting "ab+c*" - Optimized</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand highlight">c</div>
+                            <div class="element operator">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element result">a+b</div>
+                            <div class="element operand highlight">c</div>
+                        </div>
+                    </div>
+                `,
+                explanation: "Next, we read 'c' and push it onto the stack. Now we have 'a+b' and 'c' on the stack."
+            },
+            {
+                title: "Optimized Approach: Final Step",
+                content: `
+                    <h3>Converting "ab+c*" - Optimized</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operator">+</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator highlight">*</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px;">
+                        <h4>Stack:</h4>
+                        <div class="stack">
+                            <div class="element result highlight">(a+b)*c</div>
+                            <div style="font-size: 12px; margin-top: 5px;">(Precedence: 2)</div>
+                        </div>
+                        <p>Parentheses added because '+' has lower precedence than '*'</p>
+                    </div>
+                `,
+                explanation: "Finally, we encounter the '*' operator (precedence 2). Since multiplication has higher precedence than addition, and we're applying multiplication to the result of addition, we need to add parentheses around 'a+b'. The final result is '(a+b)*c'."
+            },
+            {
+                title: "Comparison of Approaches",
+                content: `
+                    <h3>Comparing the Two Approaches</h3>
+                    <div class="side-by-side">
+                        <div class="approach">
+                            <h3>Brute Force</h3>
+                            <p><b>Result:</b> ((a+b)*c)</p>
+                            <p><b>Method:</b> Always add parentheses around each operation</p>
+                            <p><b>Advantage:</b> Simple to implement</p>
+                            <p><b>Disadvantage:</b> Redundant parentheses</p>
+                        </div>
+                        <div class="approach">
+                            <h3>Optimized</h3>
+                            <p><b>Result:</b> (a+b)*c</p>
+                            <p><b>Method:</b> Add parentheses only when necessary based on operator precedence</p>
+                            <p><b>Advantage:</b> Clean, readable expression</p>
+                            <p><b>Disadvantage:</b> More complex implementation</p>
+                        </div>
+                    </div>
+                `,
+                explanation: "The brute force approach gives us '((a+b)*c)' with extra parentheses, while the optimized approach yields '(a+b)*c'. The optimized result is cleaner and more readable, as it only includes necessary parentheses based on operator precedence."
+            },
+            {
+                title: "Another Example: abc*+",
+                content: `
+                    <h3>Converting "abc*+" to Infix</h3>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div class="expression">
+                            <div class="element operand">a</div>
+                            <div class="element operand">b</div>
+                            <div class="element operand">c</div>
+                            <div class="element operator">*</div>
+                            <div class="element operator">+</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <div class="side-by-side">
+                            <div class="approach">
+                                <h3>Brute Force</h3>
+                                <p><b>Result:</b> (a+(b*c))</p>
+                            </div>
+                            <div class="approach">
+                                <h3>Optimized</h3>
+                                <p><b>Result:</b> a+b*c</p>
+                                <p><small>No parentheses needed as * has higher precedence than +</small></p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                explanation: "Let's look at another example: 'abc*+'. The brute force approach gives '(a+(b*c))' with unnecessary parentheses. The optimized approach gives 'a+b*c' without any parentheses since multiplication naturally has higher precedence than addition."
+            },
+            {
+                title: "Key Takeaways",
+                content: `
+                    <h3>Key Takeaways</h3>
+                    <div style="text-align: left; margin-top: 30px;">
+                        <ul>
+                            <li>When converting postfix to infix, operator precedence determines if parentheses are needed</li>
+                            <li>The brute force approach always adds parentheses, resulting in potentially redundant expressions</li>
+                            <li>The optimized approach only adds parentheses when necessary, based on operator precedence</li>
+                            <li>For operators with the same precedence, associativity (left-to-right or right-to-left) must also be considered</li>
+                            <li>Understanding operator precedence is crucial for writing efficient and readable code</li>
+                        </ul>
+                    </div>
+                `,
+                explanation: "Understanding operator precedence is crucial when converting between different notations. The optimized approach produces cleaner expressions by only adding parentheses when necessary to preserve the correct order of operations."
+            }
+        ];
+
+        // Initialize variables
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const animationContainer = document.getElementById('animationContainer');
+        const explanationDiv = document.getElementById('explanation');
+
+        // Function to update slide
+        function updateSlide() {
+            // Clear animation container
+            animationContainer.innerHTML = '';
+            
+            // Create the slide
+            const slide = document.createElement('div');
+            slide.className = 'slide active-slide';
+            slide.innerHTML = `
+                <div class="step-counter">Step ${currentSlide + 1}/${totalSlides}</div>
+                <h2 style="color: #FF4800;">${slides[currentSlide].title}</h2>
+                ${slides[currentSlide].content}
+            `;
+            
+            // Add to container
+            animationContainer.appendChild(slide);
+            
+            // Update explanation
+            explanationDiv.textContent = slides[currentSlide].explanation;
+            
+            // Update buttons
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        });
+
+        // Initialize first slide
+        updateSlide();
+    </script>
+</body>
+</html>
