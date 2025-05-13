@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefix to Infix Conversion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background-color: #FFFFFF;
+        }
+        h1 {
+            text-align: center;
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .prefix-expression {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+            background-color: #FD9F78;
+            padding: 10px;
+            border-radius: 5px;
+            color: #000000;
+            font-weight: bold;
+        }
+        .stack {
+            width: 150px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            padding: 10px;
+            min-height: 300px;
+            position: relative;
+        }
+        .stack-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        .stack-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #FD9F78;
+            border-radius: 3px;
+            text-align: center;
+            color: #000000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .explanation {
+            flex-grow: 1;
+            padding: 20px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            margin-left: 20px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .explanation-text {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .current-char {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            color: #FF4800;
+        }
+        .expression-display {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            color: #000000;
+        }
+        .highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .visual-expression {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            font-size: 24px;
+            letter-spacing: 2px;
+        }
+        .char {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border-radius: 3px;
+        }
+        .processed {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            animation: pulse 1s infinite;
+        }
+        .pending {
+            background-color: #eeeeee;
+            color: #000000;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prefix to Infix Conversion</h1>
+        <div class="prefix-expression">Prefix Expression: *+AB-CD</div>
+        
+        <div class="visual-expression" id="visualExpression"></div>
+        
+        <div class="animation-container">
+            <div class="stack">
+                <div class="stack-title">Stack</div>
+                <div id="stack-items"></div>
+            </div>
+            <div class="explanation">
+                <div>
+                    <div class="current-char" id="currentChar">Current Character: </div>
+                    <div class="explanation-text" id="explanationText"></div>
+                </div>
+                <div class="expression-display" id="result">Infix Expression: </div>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const prefixExpression = "*+AB-CD";
+            const expressionArray = prefixExpression.split('');
+            const reversedExpression = [...expressionArray].reverse();
+            
+            const steps = [
+                {
+                    character: 'Start',
+                    stack: [],
+                    explanation: "We'll convert the prefix expression *+AB-CD to infix. In prefix to infix conversion, we read the expression from RIGHT to LEFT. We'll use a stack to keep track of operands and intermediate expressions.",
+                    result: ""
+                },
+                {
+                    character: 'D',
+                    stack: ['D'],
+                    explanation: "D is an operand (not an operator). We push it onto the stack.",
+                    result: ""
+                },
+                {
+                    character: 'C',
+                    stack: ['D', 'C'],
+                    explanation: "C is an operand. We push it onto the stack.",
+                    result: ""
+                },
+                {
+                    character: '-',
+                    stack: ['(C-D)'],
+                    explanation: "- is an operator. We pop the top two elements from the stack (C and D). We create an infix expression (C-D) and push it back onto the stack.",
+                    result: ""
+                },
+                {
+                    character: 'B',
+                    stack: ['(C-D)', 'B'],
+                    explanation: "B is an operand. We push it onto the stack.",
+                    result: ""
+                },
+                {
+                    character: 'A',
+                    stack: ['(C-D)', 'B', 'A'],
+                    explanation: "A is an operand. We push it onto the stack.",
+                    result: ""
+                },
+                {
+                    character: '+',
+                    stack: ['(C-D)', '(A+B)'],
+                    explanation: "'+' is an operator. We pop the top two elements from the stack (A and B). We create an infix expression (A+B) and push it back onto the stack.",
+                    result: ""
+                },
+                {
+                    character: '*',
+                    stack: ['((A+B)*(C-D))'],
+                    explanation: "'*' is an operator. We pop the top two elements from the stack ((A+B) and (C-D)). We create an infix expression ((A+B)*(C-D)) and push it back onto the stack.",
+                    result: ""
+                },
+                {
+                    character: 'End',
+                    stack: ['((A+B)*(C-D))'],
+                    explanation: "We've processed all characters. The final infix expression is at the top of the stack.",
+                    result: "((A+B)*(C-D))"
+                }
+            ];
+            
+            let currentStep = 0;
+            const stackItemsContainer = document.getElementById('stack-items');
+            const explanationTextElement = document.getElementById('explanationText');
+            const resultElement = document.getElementById('result');
+            const currentCharElement = document.getElementById('currentChar');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const visualExpression = document.getElementById('visualExpression');
+            
+            function updateVisualization() {
+                // Update current character
+                if (steps[currentStep].character === 'Start' || steps[currentStep].character === 'End') {
+                    currentCharElement.textContent = `${steps[currentStep].character}`;
+                } else {
+                    currentCharElement.textContent = `Current Character: ${steps[currentStep].character}`;
+                }
+                
+                // Update stack
+                stackItemsContainer.innerHTML = '';
+                for (let i = steps[currentStep].stack.length - 1; i >= 0; i--) {
+                    const item = document.createElement('div');
+                    item.className = 'stack-item';
+                    item.textContent = steps[currentStep].stack[i];
+                    stackItemsContainer.appendChild(item);
+                    setTimeout(() => {
+                        item.style.opacity = 1;
+                    }, 100 * (steps[currentStep].stack.length - i));
+                }
+                
+                // Update explanation
+                explanationTextElement.innerHTML = steps[currentStep].explanation;
+                
+                // Update result
+                if (steps[currentStep].result) {
+                    resultElement.textContent = `Infix Expression: ${steps[currentStep].result}`;
+                } else {
+                    resultElement.textContent = `Infix Expression: (in progress)`;
+                }
+                
+                // Update visual expression
+                updateVisualExpression();
+                
+                // Update buttons
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length - 1;
+            }
+            
+            function updateVisualExpression() {
+                visualExpression.innerHTML = '';
+                
+                for (let i = 0; i < expressionArray.length; i++) {
+                    const char = document.createElement('span');
+                    char.textContent = expressionArray[i];
+                    char.className = 'char';
+                    
+                    // For 'Start' step, all are pending
+                    if (currentStep === 0) {
+                        char.classList.add('pending');
+                    } 
+                    // For other steps
+                    else {
+                        // Determine the index of the current character in the original expression
+                        // For end step, all characters are processed
+                        if (currentStep === steps.length - 1) {
+                            char.classList.add('processed');
+                        } else {
+                            const currentChar = steps[currentStep].character;
+                            const position = expressionArray.length - reversedExpression.indexOf(currentChar) - 1;
+                            
+                            if (i < position) {
+                                char.classList.add('pending');
+                            } else if (i === position) {
+                                char.classList.add('current');
+                            } else {
+                                char.classList.add('processed');
+                            }
+                        }
+                    }
+                    
+                    visualExpression.appendChild(char);
+                }
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+            
+            // Initialize visualization
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
