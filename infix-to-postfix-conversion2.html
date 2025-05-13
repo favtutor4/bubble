@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Processing Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .visualization {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        
+        .output-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        
+        .stack-title, .output-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .stack {
+            width: 100px;
+            height: 200px;
+            border: 2px solid #FF4800;
+            display: flex;
+            flex-direction: column-reverse;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .stack-item {
+            width: 100%;
+            height: 40px;
+            background-color: #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #000000;
+            font-weight: bold;
+            border-bottom: 1px solid #FF4800;
+            transition: all 0.5s ease;
+            position: absolute;
+            bottom: -50px;
+        }
+        
+        .output {
+            width: 200px;
+            height: 50px;
+            border: 2px solid #FF4800;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 75px;
+        }
+        
+        .input-display {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #000000;
+        }
+        
+        .expression {
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-info {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            color: #000000;
+            min-height: 50px;
+        }
+        
+        .current-char {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #FF4800;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        
+        .reading-head {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #FF4800;
+            width: 0%;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Processing Visualization</h1>
+        <p class="input-display">Converting <span class="expression">a+b*c</span> to Postfix</p>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="reading-head">
+            Currently reading: <span id="reading-char">-</span>
+        </div>
+        
+        <div class="visualization">
+            <div class="stack-container">
+                <div class="stack-title">Stack</div>
+                <div class="stack" id="stack">
+                    <!-- Stack items will be added here by JS -->
+                </div>
+            </div>
+            
+            <div class="output-container">
+                <div class="output-title">Output (Postfix)</div>
+                <div class="output" id="output">-</div>
+            </div>
+        </div>
+        
+        <div class="step-info" id="step-info">
+            Welcome to Stack Processing Visualization! Press 'Next' to start.
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const steps = [
+            {
+                readingChar: "-",
+                stackItems: [],
+                output: "-",
+                info: "Initial state: Empty stack, empty output. We will convert 'a+b*c' to postfix notation.",
+                progress: 0
+            },
+            {
+                readingChar: "a",
+                stackItems: [],
+                output: "a",
+                info: "Read 'a': Since it's an operand, directly add it to the output.",
+                progress: 20
+            },
+            {
+                readingChar: "+",
+                stackItems: ["+"],
+                output: "a",
+                info: "Read '+': Since the stack is empty, push it onto the stack.",
+                progress: 40
+            },
+            {
+                readingChar: "b",
+                stackItems: ["+"],
+                output: "ab",
+                info: "Read 'b': Since it's an operand, directly add it to the output.",
+                progress: 60
+            },
+            {
+                readingChar: "*",
+                stackItems: ["+", "*"],
+                output: "ab",
+                info: "Read '*': Since '*' has higher precedence than '+', push it onto the stack.",
+                progress: 80
+            },
+            {
+                readingChar: "c",
+                stackItems: ["+", "*"],
+                output: "abc",
+                info: "Read 'c': Since it's an operand, directly add it to the output.",
+                progress: 90
+            },
+            {
+                readingChar: "End",
+                stackItems: ["+"],
+                output: "abc*",
+                info: "End of input: Pop '*' from stack and add to output.",
+                progress: 95
+            },
+            {
+                readingChar: "End",
+                stackItems: [],
+                output: "abc*+",
+                info: "End of input: Pop '+' from stack and add to output. Final result: abc*+",
+                progress: 100
+            }
+        ];
+        
+        let currentStep = 0;
+        const stackElement = document.getElementById('stack');
+        const outputElement = document.getElementById('output');
+        const stepInfoElement = document.getElementById('step-info');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const readingCharElement = document.getElementById('reading-char');
+        const progressElement = document.getElementById('progress');
+        
+        function renderStep(step) {
+            // Update reading character
+            readingCharElement.innerHTML = step.readingChar === "-" ? "-" : `<span class="current-char">${step.readingChar}</span>`;
+            
+            // Update stack
+            stackElement.innerHTML = '';
+            step.stackItems.forEach((item, index) => {
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-item';
+                stackItem.textContent = item;
+                stackItem.style.bottom = `${index * 40}px`;
+                stackElement.appendChild(stackItem);
+            });
+            
+            // Update output
+            outputElement.textContent = step.output === "-" ? "-" : step.output;
+            
+            // Update info
+            stepInfoElement.textContent = step.info;
+            
+            // Update progress
+            progressElement.style.width = `${step.progress}%`;
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(steps[currentStep]);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(steps[currentStep]);
+            }
+        });
+        
+        // Initial render
+        renderStep(steps[currentStep]);
+    </script>
+</body>
+</html>
