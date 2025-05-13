@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auxiliary Stack Tracking Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            width: 800px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background-color: #FFFFFF;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .stacks-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .stack {
+            width: 45%;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+        }
+        .stack-title {
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #FF4800;
+        }
+        .element {
+            width: 80px;
+            height: 80px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #FD9F78;
+            color: #000000;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+        }
+        .empty-stack {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-style: italic;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Auxiliary Stack Tracking</h1>
+        
+        <div class="explanation" id="step-explanation">
+            We'll push elements [3, 7, 2, 5, 1] one by one into the main stack.
+            The auxiliary max stack will track the maximum value at each step.
+            Click "Next" to start the animation.
+        </div>
+        
+        <div class="stacks-container">
+            <div class="stack">
+                <div class="stack-title">Main Stack</div>
+                <div id="main-stack"></div>
+            </div>
+            
+            <div class="stack">
+                <div class="stack-title">Max Stack</div>
+                <div id="max-stack"></div>
+            </div>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 0 of 5</div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-btn" disabled>Previous</button>
+            <button class="nav-button" id="next-btn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const elements = [3, 7, 2, 5, 1];
+        let currentStep = 0;
+        
+        const mainStackEl = document.getElementById('main-stack');
+        const maxStackEl = document.getElementById('max-stack');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const stepExplanation = document.getElementById('step-explanation');
+        const stepIndicator = document.getElementById('step-indicator');
+        
+        // Initialize empty stacks
+        mainStackEl.innerHTML = '<div class="empty-stack">Empty stack</div>';
+        maxStackEl.innerHTML = '<div class="empty-stack">Empty stack</div>';
+        
+        // Explanations for each step
+        const explanations = [
+            "We'll push elements [3, 7, 2, 5, 1] one by one into the main stack. The auxiliary max stack will track the maximum value at each step. Click \"Next\" to start the animation.",
+            "Pushing 3: Since the main stack is empty, we push 3 to both stacks. The max stack will always have the current maximum at its top.",
+            "Pushing 7: Since 7 is greater than the current maximum (3), we push 7 to both stacks. Now 7 is our new maximum.",
+            "Pushing 2: Since 2 is less than the current maximum (7), we only push 2 to the main stack. The max stack remains unchanged with 7 at its top.",
+            "Pushing 5: Since 5 is less than the current maximum (7), we only push 5 to the main stack. The max stack still has 7 at its top.",
+            "Pushing 1: Since 1 is less than the current maximum (7), we only push 1 to the main stack. The max stack continues to have 7 at its top."
+        ];
+        
+        function updateStacks() {
+            // Clear current stacks
+            mainStackEl.innerHTML = '';
+            maxStackEl.innerHTML = '';
+            
+            if (currentStep === 0) {
+                mainStackEl.innerHTML = '<div class="empty-stack">Empty stack</div>';
+                maxStackEl.innerHTML = '<div class="empty-stack">Empty stack</div>';
+                return;
+            }
+            
+            // Update main stack
+            for (let i = 0; i < currentStep; i++) {
+                const el = document.createElement('div');
+                el.className = 'element';
+                el.textContent = elements[i];
+                mainStackEl.appendChild(el);
+            }
+            
+            // Update max stack with the correct maximum values
+            let maxSoFar = elements[0];
+            const maxValues = [];
+            
+            for (let i = 0; i < currentStep; i++) {
+                if (elements[i] >= maxSoFar) {
+                    maxSoFar = elements[i];
+                    maxValues.push(maxSoFar);
+                }
+            }
+            
+            for (let i = 0; i < maxValues.length; i++) {
+                const el = document.createElement('div');
+                el.className = 'element';
+                if (i === maxValues.length - 1) {
+                    el.className += ' highlighted';
+                }
+                el.textContent = maxValues[i];
+                maxStackEl.appendChild(el);
+            }
+            
+            // Update explanation
+            stepExplanation.textContent = explanations[currentStep];
+            stepIndicator.textContent = `Step ${currentStep} of 5`;
+        }
+        
+        // Event listeners for navigation buttons
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < 5) {
+                currentStep++;
+                updateStacks();
+                prevBtn.disabled = false;
+                if (currentStep === 5) nextBtn.disabled = true;
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStacks();
+                nextBtn.disabled = false;
+                if (currentStep === 0) prevBtn.disabled = true;
+            }
+        });
+        
+        // Initialize
+        updateStacks();
+    </script>
+</body>
+</html>
