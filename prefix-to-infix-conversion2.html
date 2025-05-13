@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expression Notations Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #FD9F78;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .tree-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            height: 350px;
+            position: relative;
+        }
+        #expression-tree {
+            width: 100%;
+            height: 100%;
+        }
+        .expression-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #FF4800;
+        }
+        .slide {
+            display: none;
+        }
+        .active-slide {
+            display: block;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+        .explanation h3 {
+            margin-top: 0;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Comparison of Expression Notations</h1>
+        
+        <table>
+            <tr>
+                <th>Prefix Notation</th>
+                <th>Infix Notation</th>
+                <th>Postfix Notation</th>
+            </tr>
+            <tr>
+                <td>*+AB-CD</td>
+                <td>((A+B)*(C-D))</td>
+                <td>AB+CD-*</td>
+            </tr>
+        </table>
+
+        <div class="slide active-slide" id="slide1">
+            <div class="expression-title">Understanding Expression Notations</div>
+            <div class="explanation">
+                <h3>What are Expression Notations?</h3>
+                <p>Expression notations are ways to represent mathematical expressions. The table above shows the same expression in three different notations: prefix, infix, and postfix. All three notations represent the same operation: (A+B)*(C-D).</p>
+            </div>
+            <div class="tree-container">
+                <canvas id="expression-tree"></canvas>
+            </div>
+        </div>
+
+        <div class="slide" id="slide2">
+            <div class="expression-title">Prefix Notation (*+AB-CD)</div>
+            <div class="explanation">
+                <h3>Prefix Notation (Polish Notation)</h3>
+                <p>In prefix notation, operators come before operands. For our expression (A+B)*(C-D), we write: *+AB-CD</p>
+                <p>Reading order: First * (multiplication), which operates on (+AB) and (-CD)</p>
+            </div>
+            <div class="tree-container">
+                <canvas id="expression-tree-prefix"></canvas>
+            </div>
+        </div>
+
+        <div class="slide" id="slide3">
+            <div class="expression-title">Infix Notation ((A+B)*(C-D))</div>
+            <div class="explanation">
+                <h3>Infix Notation (Standard Notation)</h3>
+                <p>In infix notation, operators are placed between operands. This is the most familiar notation: (A+B)*(C-D)</p>
+                <p>Reading order: Follows operator precedence and parentheses rules</p>
+            </div>
+            <div class="tree-container">
+                <canvas id="expression-tree-infix"></canvas>
+            </div>
+        </div>
+
+        <div class="slide" id="slide4">
+            <div class="expression-title">Postfix Notation (AB+CD-*)</div>
+            <div class="explanation">
+                <h3>Postfix Notation (Reverse Polish Notation)</h3>
+                <p>In postfix notation, operators come after operands. For our expression (A+B)*(C-D), we write: AB+CD-*</p>
+                <p>Reading order: First AB+, then CD-, and finally multiply the results</p>
+            </div>
+            <div class="tree-container">
+                <canvas id="expression-tree-postfix"></canvas>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button id="prev-btn" class="nav-btn" disabled>Previous</button>
+            <button id="next-btn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            let currentSlide = 0;
+
+            // Initialize tree drawing
+            drawExpressionTree();
+            drawPrefixTree();
+            drawInfixTree();
+            drawPostfixTree();
+
+            // Navigation handlers
+            prevBtn.addEventListener('click', function() {
+                slides[currentSlide].classList.remove('active-slide');
+                currentSlide--;
+                slides[currentSlide].classList.add('active-slide');
+                updateNavButtons();
+            });
+
+            nextBtn.addEventListener('click', function() {
+                slides[currentSlide].classList.remove('active-slide');
+                currentSlide++;
+                slides[currentSlide].classList.add('active-slide');
+                updateNavButtons();
+            });
+
+            function updateNavButtons() {
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.disabled = currentSlide === slides.length - 1;
+            }
+
+            function drawExpressionTree() {
+                const canvas = document.getElementById('expression-tree');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Define node properties
+                const nodeRadius = 30;
+                const levelHeight = 80;
+                const startX = canvas.width / 2;
+                const startY = 50;
+                
+                // Draw tree structure
+                drawNode(ctx, startX, startY, '*', '#FF4800', '#FFFFFF');
+                
+                // First level
+                drawNode(ctx, startX - 100, startY + levelHeight, '+', '#FD9F78', '#000000');
+                drawNode(ctx, startX + 100, startY + levelHeight, '-', '#FD9F78', '#000000');
+                
+                // Connect parent to children
+                drawLine(ctx, startX, startY, startX - 100, startY + levelHeight);
+                drawLine(ctx, startX, startY, startX + 100, startY + levelHeight);
+                
+                // Second level - leaves
+                drawNode(ctx, startX - 150, startY + 2 * levelHeight, 'A', '#000000', '#FFFFFF');
+                drawNode(ctx, startX - 50, startY + 2 * levelHeight, 'B', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 50, startY + 2 * levelHeight, 'C', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 150, startY + 2 * levelHeight, 'D', '#000000', '#FFFFFF');
+                
+                // Connect parents to children
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 150, startY + 2 * levelHeight);
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 150, startY + 2 * levelHeight);
+                
+                // Add expression notation at the bottom
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#FF4800';
+                ctx.textAlign = 'center';
+                ctx.fillText('Expression Tree for (A+B)*(C-D)', startX, startY + 3 * levelHeight);
+            }
+
+            function drawPrefixTree() {
+                const canvas = document.getElementById('expression-tree-prefix');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Define node properties
+                const nodeRadius = 30;
+                const levelHeight = 80;
+                const startX = canvas.width / 2;
+                const startY = 50;
+                
+                // Draw tree structure
+                drawNode(ctx, startX, startY, '*', '#FF4800', '#FFFFFF');
+                
+                // First level
+                drawNode(ctx, startX - 100, startY + levelHeight, '+', '#FD9F78', '#000000');
+                drawNode(ctx, startX + 100, startY + levelHeight, '-', '#FD9F78', '#000000');
+                
+                // Connect parent to children
+                drawLine(ctx, startX, startY, startX - 100, startY + levelHeight);
+                drawLine(ctx, startX, startY, startX + 100, startY + levelHeight);
+                
+                // Second level - leaves
+                drawNode(ctx, startX - 150, startY + 2 * levelHeight, 'A', '#000000', '#FFFFFF');
+                drawNode(ctx, startX - 50, startY + 2 * levelHeight, 'B', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 50, startY + 2 * levelHeight, 'C', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 150, startY + 2 * levelHeight, 'D', '#000000', '#FFFFFF');
+                
+                // Connect parents to children
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 150, startY + 2 * levelHeight);
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 150, startY + 2 * levelHeight);
+                
+                // Add tree traversal animation - prefix (preorder)
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#FF4800';
+                ctx.textAlign = 'center';
+                ctx.fillText('Prefix Notation: *+AB-CD', startX, startY + 3 * levelHeight);
+                
+                // Draw traversal order numbers
+                drawOrderLabel(ctx, startX, startY, '1', '#FFFFFF');
+                drawOrderLabel(ctx, startX - 100, startY + levelHeight, '2', '#000000');
+                drawOrderLabel(ctx, startX - 150, startY + 2 * levelHeight, '3', '#FFFFFF');
+                drawOrderLabel(ctx, startX - 50, startY + 2 * levelHeight, '4', '#FFFFFF');
+                drawOrderLabel(ctx, startX + 100, startY + levelHeight, '5', '#000000');
+                drawOrderLabel(ctx, startX + 50, startY + 2 * levelHeight, '6', '#FFFFFF');
+                drawOrderLabel(ctx, startX + 150, startY + 2 * levelHeight, '7', '#FFFFFF');
+            }
+
+            function drawInfixTree() {
+                const canvas = document.getElementById('expression-tree-infix');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Define node properties
+                const nodeRadius = 30;
+                const levelHeight = 80;
+                const startX = canvas.width / 2;
+                const startY = 50;
+                
+                // Draw tree structure
+                drawNode(ctx, startX, startY, '*', '#FF4800', '#FFFFFF');
+                
+                // First level
+                drawNode(ctx, startX - 100, startY + levelHeight, '+', '#FD9F78', '#000000');
+                drawNode(ctx, startX + 100, startY + levelHeight, '-', '#FD9F78', '#000000');
+                
+                // Connect parent to children
+                drawLine(ctx, startX, startY, startX - 100, startY + levelHeight);
+                drawLine(ctx, startX, startY, startX + 100, startY + levelHeight);
+                
+                // Second level - leaves
+                drawNode(ctx, startX - 150, startY + 2 * levelHeight, 'A', '#000000', '#FFFFFF');
+                drawNode(ctx, startX - 50, startY + 2 * levelHeight, 'B', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 50, startY + 2 * levelHeight, 'C', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 150, startY + 2 * levelHeight, 'D', '#000000', '#FFFFFF');
+                
+                // Connect parents to children
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 150, startY + 2 * levelHeight);
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 150, startY + 2 * levelHeight);
+                
+                // Add tree traversal animation - infix (inorder)
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#FF4800';
+                ctx.textAlign = 'center';
+                ctx.fillText('Infix Notation: ((A+B)*(C-D))', startX, startY + 3 * levelHeight);
+                
+                // Draw traversal order numbers
+                drawOrderLabel(ctx, startX - 150, startY + 2 * levelHeight, '1', '#FFFFFF');
+                drawOrderLabel(ctx, startX - 100, startY + levelHeight, '2', '#000000');
+                drawOrderLabel(ctx, startX - 50, startY + 2 * levelHeight, '3', '#FFFFFF');
+                drawOrderLabel(ctx, startX, startY, '4', '#FFFFFF');
+                drawOrderLabel(ctx, startX + 50, startY + 2 * levelHeight, '5', '#FFFFFF');
+                drawOrderLabel(ctx, startX + 100, startY + levelHeight, '6', '#000000');
+                drawOrderLabel(ctx, startX + 150, startY + 2 * levelHeight, '7', '#FFFFFF');
+            }
+
+            function drawPostfixTree() {
+                const canvas = document.getElementById('expression-tree-postfix');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Define node properties
+                const nodeRadius = 30;
+                const levelHeight = 80;
+                const startX = canvas.width / 2;
+                const startY = 50;
+                
+                // Draw tree structure
+                drawNode(ctx, startX, startY, '*', '#FF4800', '#FFFFFF');
+                
+                // First level
+                drawNode(ctx, startX - 100, startY + levelHeight, '+', '#FD9F78', '#000000');
+                drawNode(ctx, startX + 100, startY + levelHeight, '-', '#FD9F78', '#000000');
+                
+                // Connect parent to children
+                drawLine(ctx, startX, startY, startX - 100, startY + levelHeight);
+                drawLine(ctx, startX, startY, startX + 100, startY + levelHeight);
+                
+                // Second level - leaves
+                drawNode(ctx, startX - 150, startY + 2 * levelHeight, 'A', '#000000', '#FFFFFF');
+                drawNode(ctx, startX - 50, startY + 2 * levelHeight, 'B', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 50, startY + 2 * levelHeight, 'C', '#000000', '#FFFFFF');
+                drawNode(ctx, startX + 150, startY + 2 * levelHeight, 'D', '#000000', '#FFFFFF');
+                
+                // Connect parents to children
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 150, startY + 2 * levelHeight);
+                drawLine(ctx, startX - 100, startY + levelHeight, startX - 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 50, startY + 2 * levelHeight);
+                drawLine(ctx, startX + 100, startY + levelHeight, startX + 150, startY + 2 * levelHeight);
+                
+                // Add tree traversal animation - postfix (postorder)
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#FF4800';
+                ctx.textAlign = 'center';
+                ctx.fillText('Postfix Notation: AB+CD-*', startX, startY + 3 * levelHeight);
+                
+                // Draw traversal order numbers
+                drawOrderLabel(ctx, startX - 150, startY + 2 * levelHeight, '1', '#FFFFFF');
+                drawOrderLabel(ctx, startX - 50, startY + 2 * levelHeight, '2', '#FFFFFF');
+                drawOrderLabel(ctx, startX - 100, startY + levelHeight, '3', '#000000');
+                drawOrderLabel(ctx, startX + 50, startY + 2 * levelHeight, '4', '#FFFFFF');
+                drawOrderLabel(ctx, startX + 150, startY + 2 * levelHeight, '5', '#FFFFFF');
+                drawOrderLabel(ctx, startX + 100, startY + levelHeight, '6', '#000000');
+                drawOrderLabel(ctx, startX, startY, '7', '#FFFFFF');
+            }
+
+            function drawNode(ctx, x, y, text, fillColor, textColor) {
+                const nodeRadius = 30;
+                
+                // Draw circle
+                ctx.beginPath();
+                ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+                
+                // Draw text
+                ctx.font = 'bold 20px Arial';
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x, y);
+            }
+
+            function drawLine(ctx, x1, y1, x2, y2) {
+                const nodeRadius = 30;
+                
+                // Calculate direction vector
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                // Normalize vector
+                const ndx = dx / length;
+                const ndy = dy / length;
+                
+                // Adjust start and end points to be on the circle edge
+                const startX = x1 + ndx * nodeRadius;
+                const startY = y1 + ndy * nodeRadius;
+                const endX = x2 - ndx * nodeRadius;
+                const endY = y2 - ndy * nodeRadius;
+                
+                // Draw line
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+            }
+
+            function drawOrderLabel(ctx, x, y, text, textColor) {
+                // Draw small circle with order number
+                ctx.beginPath();
+                ctx.arc(x + 15, y - 15, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = '#FF4800';
+                ctx.fill();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+                
+                // Draw text
+                ctx.font = 'bold 12px Arial';
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x + 15, y - 15);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                drawExpressionTree();
+                drawPrefixTree();
+                drawInfixTree();
+                drawPostfixTree();
+            });
+        });
+    </script>
+</body>
+</html>
