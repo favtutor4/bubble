@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack-based Processing Flowchart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+        
+        .stack {
+            width: 150px;
+            border: 3px solid #FF4800;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            margin-bottom: 20px;
+            min-height: 200px;
+            position: relative;
+        }
+        
+        .stack-item {
+            padding: 10px;
+            border-bottom: 1px solid #FD9F78;
+            background-color: #FFFFFF;
+            transition: all 0.5s ease;
+        }
+        
+        .stack-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .expression-display {
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #FD9F78;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        .step-description {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            color: #000000;
+            font-size: 18px;
+        }
+        
+        .highlight {
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-counter {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #000000;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #FF4800;
+            margin: 10px 0;
+        }
+        
+        .character {
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .active-char {
+            color: #FF4800;
+            font-weight: bold;
+            transform: scale(1.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack-based Processing Flowchart</h1>
+        <div class="expression-display">
+            <span class="character">((</span><span class="character">a</span><span class="character">+</span><span class="character">b</span><span class="character">))</span>
+        </div>
+        
+        <div class="stack-container">
+            <div class="stack">
+                <div class="stack-label">Stack</div>
+                <!-- Stack items will be added here dynamically -->
+            </div>
+        </div>
+        
+        <div class="step-description" id="description">
+            We'll process the expression ((a+b)) using a stack
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-counter">Step <span id="currentStep">0</span> of <span id="totalSteps">9</span></div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                description: "We'll process the expression ((a+b)) using a stack. The stack is initially empty.",
+                stack: [],
+                activeChar: -1
+            },
+            {
+                description: "We read '(' and push it onto the stack.",
+                stack: ["("],
+                activeChar: 0
+            },
+            {
+                description: "We read another '(' and push it onto the stack.",
+                stack: ["(", "("],
+                activeChar: 1
+            },
+            {
+                description: "We read 'a' which is an operand. We don't push operands onto the stack, but process them directly.",
+                stack: ["(", "("],
+                activeChar: 2
+            },
+            {
+                description: "We read '+' which is an operator. We'll use it for calculation when we have both operands.",
+                stack: ["(", "(", "+"],
+                activeChar: 3
+            },
+            {
+                description: "We read 'b' which is an operand. We don't push operands onto the stack, but process them directly.",
+                stack: ["(", "(", "+"],
+                activeChar: 4
+            },
+            {
+                description: "We read ')' which means we need to evaluate the expression inside these parentheses. We pop the '+' and calculate 'a+b'.",
+                stack: ["("],
+                activeChar: 5,
+                popping: true
+            },
+            {
+                description: "We read another ')' which matches with the first '(' we pushed. We pop the remaining '(' from the stack.",
+                stack: [],
+                activeChar: 6,
+                popping: true
+            },
+            {
+                description: "Stack is empty and we've processed the entire expression. The evaluation of ((a+b)) is complete.",
+                stack: [],
+                activeChar: -1,
+                completed: true
+            }
+        ];
+        
+        let currentStepIndex = 0;
+        const stack = document.querySelector('.stack');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentStepEl = document.getElementById('currentStep');
+        const descriptionEl = document.getElementById('description');
+        const characters = document.querySelectorAll('.character');
+        
+        function updateStep() {
+            const step = steps[currentStepIndex];
+            
+            // Update step counter
+            currentStepEl.textContent = currentStepIndex;
+            
+            // Update description
+            descriptionEl.innerHTML = step.description;
+            
+            // Clear and update stack
+            stack.innerHTML = '<div class="stack-label">Stack</div>';
+            step.stack.forEach(item => {
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-item';
+                stackItem.textContent = item;
+                stack.appendChild(stackItem);
+            });
+            
+            // Update active character
+            characters.forEach((char, index) => {
+                char.classList.remove('active-char');
+                if (index === step.activeChar) {
+                    char.classList.add('active-char');
+                }
+            });
+            
+            // Update button states
+            prevBtn.disabled = currentStepIndex === 0;
+            nextBtn.disabled = currentStepIndex === steps.length - 1;
+            
+            // Add animation class if popping
+            if (step.popping) {
+                stack.classList.add('popping');
+            } else {
+                stack.classList.remove('popping');
+            }
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                updateStep();
+            }
+        });
+        
+        // Initialize
+        updateStep();
+    </script>
+</body>
+</html>
