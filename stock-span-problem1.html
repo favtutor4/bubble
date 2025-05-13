@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Span Calculation Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 800px;
+            max-width: 100%;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 50px;
+            margin-bottom: 80px;
+        }
+        
+        .price-bar {
+            position: absolute;
+            bottom: 60px;
+            width: 40px;
+            background-color: #FD9F78;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: height 0.8s ease-in-out;
+        }
+        
+        .price-label {
+            position: absolute;
+            top: -25px;
+            color: #000000;
+            font-weight: bold;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .day-label {
+            position: absolute;
+            bottom: -25px;
+            color: #000000;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .span-label {
+            position: absolute;
+            bottom: -50px;
+            color: #FF4800;
+            font-weight: bold;
+            width: 40px;
+            text-align: center;
+            visibility: hidden;
+        }
+        
+        .span-arrow {
+            position: absolute;
+            height: 2px;
+            background-color: #FF4800;
+            bottom: 30px;
+            transform-origin: left center;
+            transform: scaleX(0);
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            background-color: #FFFFFF;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .axis-line {
+            position: absolute;
+            background-color: #000000;
+        }
+        
+        .x-axis {
+            height: 2px;
+            width: 100%;
+            bottom: 60px;
+        }
+        
+        .y-axis {
+            width: 2px;
+            height: calc(100% - 60px);
+            bottom: 60px;
+            left: 0;
+        }
+        
+        .y-label {
+            position: absolute;
+            left: -60px;
+            font-size: 14px;
+            transform: rotate(-90deg);
+            transform-origin: right;
+            color: #000000;
+        }
+        
+        .x-label {
+            position: absolute;
+            bottom: -80px;
+            width: 100%;
+            text-align: center;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stock Span Calculation</h1>
+    
+    <div class="container">
+        <div class="chart-container" id="chart">
+            <div class="axis-line x-axis"></div>
+            <div class="axis-line y-axis"></div>
+            <div class="y-label" style="bottom: 200px;">Stock Price</div>
+            <div class="x-label">Day</div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>The stock span problem is a financial problem where we need to find the number of consecutive days before the current day where the stock price was less than or equal to the current day's price.</p>
+            <p>For example, if the stock prices are [100, 80, 60, 70, 60, 75, 85], then:</p>
+            <p>Press the "Next" button to start the animation and learn how the stock span is calculated for each day.</p>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step: 0/7</div>
+    </div>
+    
+    <script>
+        const prices = [100, 80, 60, 70, 60, 75, 85];
+        const spans = [1, 1, 1, 2, 1, 4, 6];
+        
+        const chartContainer = document.getElementById('chart');
+        const explanationElement = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        
+        let currentStep = 0;
+        const totalSteps = prices.length;
+        
+        // Explanation texts for each step
+        const explanations = [
+            "The stock span problem is a financial problem where we need to find the number of consecutive days before the current day where the stock price was less than or equal to the current day's price.",
+            
+            "Day 1: The price is 100. Since this is the first day, the span is 1. There are no previous days to compare.",
+            
+            "Day 2: The price is 80. Since 80 is less than the previous day's price (100), the span is 1.",
+            
+            "Day 3: The price is 60. Since 60 is less than the previous day's price (80), the span is 1.",
+            
+            "Day 4: The price is 70. The stock span is 2 because the price (70) is greater than the previous day's price (60), but less than the price from 2 days ago (80).",
+            
+            "Day 5: The price is 60. Since 60 is less than the previous day's price (70), the span is 1.",
+            
+            "Day 6: The price is 75. The stock span is 4 because the price (75) is greater than the previous 3 days' prices, but less than the price from 4 days ago (100).",
+            
+            "Day 7: The price is 85. The stock span is 6 because the price (85) is greater than the previous 5 days' prices, but less than the price from 6 days ago (100)."
+        ];
+        
+        // Create bars for each day
+        function initializeChart() {
+            const maxPrice = Math.max(...prices);
+            const barWidth = 40;
+            const barMargin = 60;
+            const chartWidth = prices.length * (barWidth + barMargin) - barMargin;
+            
+            for (let i = 0; i < prices.length; i++) {
+                // Create price bar
+                const bar = document.createElement('div');
+                bar.className = 'price-bar';
+                bar.style.left = `${i * (barWidth + barMargin) + 40}px`;
+                bar.style.width = `${barWidth}px`;
+                bar.style.height = '0';
+                
+                // Create price label
+                const priceLabel = document.createElement('div');
+                priceLabel.className = 'price-label';
+                priceLabel.textContent = prices[i];
+                bar.appendChild(priceLabel);
+                
+                // Create day label
+                const dayLabel = document.createElement('div');
+                dayLabel.className = 'day-label';
+                dayLabel.textContent = `Day ${i + 1}`;
+                bar.appendChild(dayLabel);
+                
+                // Create span label
+                const spanLabel = document.createElement('div');
+                spanLabel.className = 'span-label';
+                spanLabel.textContent = `Span: ${spans[i]}`;
+                bar.appendChild(spanLabel);
+                
+                chartContainer.appendChild(bar);
+                
+                // Create span arrows for each day
+                if (spans[i] > 1) {
+                    const spanArrow = document.createElement('div');
+                    spanArrow.className = 'span-arrow';
+                    spanArrow.id = `arrow-${i}`;
+                    spanArrow.style.left = `${i * (barWidth + barMargin) + 40 + barWidth/2}px`;
+                    spanArrow.style.width = `${(spans[i] - 1) * (barWidth + barMargin)}px`;
+                    chartContainer.appendChild(spanArrow);
+                }
+            }
+        }
+        
+        function updateStep() {
+            const bars = document.querySelectorAll('.price-bar');
+            const spanLabels = document.querySelectorAll('.span-label');
+            const maxPrice = Math.max(...prices);
+            
+            // Reset all bars and labels first
+            bars.forEach((bar, idx) => {
+                bar.style.height = '0';
+                bar.style.backgroundColor = '#FD9F78';
+                spanLabels[idx].style.visibility = 'hidden';
+            });
+            
+            // Hide all arrows
+            document.querySelectorAll('.span-arrow').forEach(arrow => {
+                arrow.style.transform = 'scaleX(0)';
+            });
+            
+            // Update progress based on current step
+            for (let i = 0; i <= currentStep; i++) {
+                const barHeight = (prices[i] / maxPrice) * 300;
+                bars[i].style.height = `${barHeight}px`;
+                
+                if (i === currentStep) {
+                    bars[i].style.backgroundColor = '#FF4800';
+                    spanLabels[i].style.visibility = 'visible';
+                    
+                    // Show span arrow if span > 1
+                    if (spans[i] > 1) {
+                        const arrow = document.getElementById(`arrow-${i}`);
+                        if (arrow) {
+                            arrow.style.transform = 'scaleX(1)';
+                        }
+                    }
+                }
+            }
+            
+            // Update explanation
+            explanationElement.innerHTML = `<p>${explanations[currentStep]}</p>`;
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step: ${currentStep}/${totalSteps}`;
+            
+            // Enable/disable buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+        
+        // Next button click handler
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Previous button click handler
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        // Initialize chart
+        initializeChart();
+        updateStep();
+    </script>
+</body>
+</html>
