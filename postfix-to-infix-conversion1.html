@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postfix to Infix Conversion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #000000;
+        }
+        .stack {
+            width: 300px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .stack-item {
+            padding: 10px;
+            border-bottom: 1px solid #FD9F78;
+            background-color: #FFFFFF;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .stack-item:last-child {
+            border-bottom: none;
+        }
+        .input {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .char {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 0 5px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #FD9F78;
+            border-radius: 5px;
+        }
+        .char.active {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .char.processed {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Postfix to Infix Conversion</h1>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the Postfix to Infix Conversion Visualization. We'll convert "ab+" to infix notation.
+        </div>
+        
+        <div class="visualization">
+            <div class="step" id="step-text">Step 0: Initial State</div>
+            
+            <div class="input">
+                <div class="char" id="char0">a</div>
+                <div class="char" id="char1">b</div>
+                <div class="char" id="char2">+</div>
+            </div>
+            
+            <h3>Stack</h3>
+            <div class="stack" id="stack">
+                <div class="stack-item">Empty</div>
+            </div>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Animation sequence
+        const steps = [
+            {
+                step: "Step 0: Initial State",
+                explanation: "We're going to convert the postfix expression 'ab+' to infix. We'll scan the expression from left to right and use a stack to keep track of operands and perform operations.",
+                stack: ["Empty"],
+                activeChar: -1,
+                processedChars: []
+            },
+            {
+                step: "Step 1: Read 'a'",
+                explanation: "Read 'a'. Since it's an operand, push it onto the stack.",
+                stack: ["a"],
+                activeChar: 0,
+                processedChars: [0]
+            },
+            {
+                step: "Step 2: Read 'b'",
+                explanation: "Read 'b'. Since it's an operand, push it onto the stack.",
+                stack: ["a", "b"],
+                activeChar: 1,
+                processedChars: [0, 1]
+            },
+            {
+                step: "Step 3: Read '+'",
+                explanation: "Read '+'. It's an operator, so pop the top two elements from the stack ('b' and 'a'), create the infix expression '(a+b)', and push it back onto the stack.",
+                stack: ["(a+b)"],
+                activeChar: 2,
+                processedChars: [0, 1, 2]
+            },
+            {
+                step: "Step 4: Finished",
+                explanation: "We've processed all characters in the postfix expression. The top of the stack contains the equivalent infix expression: (a+b)",
+                stack: ["(a+b)"],
+                activeChar: -1,
+                processedChars: [0, 1, 2],
+                result: "Infix Expression: (a+b)"
+            }
+        ];
+
+        // Initialize variables
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const stepText = document.getElementById('step-text');
+        const explanation = document.getElementById('explanation');
+        const stack = document.getElementById('stack');
+        const result = document.getElementById('result');
+
+        // Update the visualization based on the current step
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Update step text and explanation
+            stepText.textContent = step.step;
+            explanation.textContent = step.explanation;
+            
+            // Update stack
+            stack.innerHTML = '';
+            if (step.stack.length === 0 || (step.stack.length === 1 && step.stack[0] === 'Empty')) {
+                stack.innerHTML = '<div class="stack-item">Empty</div>';
+            } else {
+                step.stack.forEach(item => {
+                    const stackItem = document.createElement('div');
+                    stackItem.className = 'stack-item';
+                    stackItem.textContent = item;
+                    stack.prepend(stackItem); // Add to the beginning for proper stack visualization
+                });
+            }
+            
+            // Update input characters
+            document.querySelectorAll('.char').forEach((char, index) => {
+                char.classList.remove('active', 'processed');
+                if (index === step.activeChar) {
+                    char.classList.add('active');
+                }
+                if (step.processedChars.includes(index)) {
+                    char.classList.add('processed');
+                }
+            });
+            
+            // Update result
+            result.textContent = step.result || '';
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+
+        // Initialize the visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
