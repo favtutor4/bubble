@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Max Length Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            color: #1c1d20;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1, h2 {
+            color: #1c1d20;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #ff4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #e64000;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .visualization {
+            margin-bottom: 30px;
+        }
+        
+        .array-container {
+            display: flex;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .array-element {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #1c1d20;
+            margin-right: 5px;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .array-element.active {
+            background-color: rgba(255, 72, 0, 0.2);
+            border-color: #ff4800;
+        }
+        
+        .array-element .index {
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            color: #1c1d20;
+        }
+        
+        .hashmap-container {
+            border: 2px solid #1c1d20;
+            padding: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .hashmap-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .hashmap-entries {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .hashmap-entry {
+            display: flex;
+            margin-right: 15px;
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .hashmap-entry.new {
+            background-color: rgba(255, 72, 0, 0.2);
+        }
+        
+        .hashmap-key {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .variables {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .variable {
+            margin-right: 20px;
+            padding: 10px;
+            border: 2px solid #1c1d20;
+            border-radius: 4px;
+        }
+        
+        .variable.highlight {
+            border-color: #ff4800;
+            background-color: rgba(255, 72, 0, 0.1);
+        }
+        
+        .variable-name {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .step-info {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find Max Length</h1>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>← Previous</button>
+            <button id="nextBtn">Next →</button>
+        </div>
+        
+        <div class="step-info" id="stepInfo">Step 0: Initial state</div>
+        
+        <div class="visualization">
+            <h2>Array</h2>
+            <div class="array-container" id="arrayContainer"></div>
+            
+            <h2>Variables</h2>
+            <div class="variables" id="variables"></div>
+            
+            <h2>HashMap (sum_index)</h2>
+            <div class="hashmap-container">
+                <div class="hashmap-title">sum → index</div>
+                <div class="hashmap-entries" id="hashmapContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // The example array
+        const nums = [0, 1, 0, 1, 1, 0, 0];
+        
+        // Code lines for visualization
+        const codeLines = [
+            "def find_max_length(nums):",
+            "    # HashMap to store the first occurrence of each sum",
+            "    sum_index = {0: -1}  # Initialize with sum 0 at index -1",
+            "    max_length = 0",
+            "    current_sum = 0",
+            "",
+            "    for i in range(len(nums)):",
+            "        # Treat 0 as -1",
+            "        current_sum += 1 if nums[i] == 1 else -1",
+            "",
+            "        # If current_sum seen before, we found a subarray with equal 0s and 1s",
+            "        if current_sum in sum_index:",
+            "            max_length = max(max_length, i - sum_index[current_sum])",
+            "        else:",
+            "            # Store first occurrence of this sum",
+            "            sum_index[current_sum] = i",
+            "",
+            "    return max_length"
+        ];
+        
+        // Execution steps (state after each operation)
+        const steps = [
+            {
+                description: "Initial state",
+                variables: {
+                    sum_index: { 0: -1 },
+                    max_length: 0,
+                    current_sum: 0,
+                    i: null
+                },
+                activeIndex: null,
+                highlightLines: [0, 1, 2, 3, 4],
+                newHashmapEntry: null
+            }
+        ];
+        
+        // Generate all the steps of the algorithm
+        function generateSteps() {
+            let sum_index = { 0: -1 };
+            let max_length = 0;
+            let current_sum = 0;
+            
+            // Loop through the array
+            for (let i = 0; i < nums.length; i++) {
+                // Update current_sum
+                current_sum += nums[i] === 1 ? 1 : -1;
+                
+                // Step after updating current_sum
+                steps.push({
+                    description: `Updated sum for index ${i}`,
+                    variables: {
+                        sum_index: {...sum_index},
+                        max_length: max_length,
+                        current_sum: current_sum,
+                        i: i
+                    },
+                    activeIndex: i,
+                    highlightLines: [6, 7, 8],
+                    newHashmapEntry: null
+                });
+                
+                // Check if current_sum is in sum_index
+                if (current_sum in sum_index) {
+                    const oldMaxLength = max_length;
+                    max_length = Math.max(max_length, i - sum_index[current_sum]);
+                    
+                    // Step after updating max_length
+                    steps.push({
+                        description: `Found subarray at index ${i}`,
+                        variables: {
+                            sum_index: {...sum_index},
+                            max_length: max_length,
+                            current_sum: current_sum,
+                            i: i
+                        },
+                        activeIndex: i,
+                        highlightLines: [10, 11, 12],
+                        newHashmapEntry: null,
+                        highlightVariables: ["max_length"]
+                    });
+                } else {
+                    // Add current_sum to sum_index
+                    sum_index[current_sum] = i;
+                    
+                    // Step after updating sum_index
+                    steps.push({
+                        description: `Added sum ${current_sum} to hashmap`,
+                        variables: {
+                            sum_index: {...sum_index},
+                            max_length: max_length,
+                            current_sum: current_sum,
+                            i: i
+                        },
+                        activeIndex: i,
+                        highlightLines: [13, 14, 15],
+                        newHashmapEntry: { key: current_sum, value: i }
+                    });
+                }
+            }
+            
+            // Final step - return the result
+            steps.push({
+                description: "Algorithm completed",
+                variables: {
+                    sum_index: {...sum_index},
+                    max_length: max_length,
+                    current_sum: current_sum,
+                    i: nums.length - 1
+                },
+                activeIndex: null,
+                highlightLines: [17],
+                newHashmapEntry: null,
+                highlightVariables: ["max_length"]
+            });
+        }
+        
+        // Generate all steps
+        generateSteps();
+        
+        let currentStep = 0;
+        
+        // DOM Elements
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepInfo = document.getElementById('stepInfo');
+        const arrayContainer = document.getElementById('arrayContainer');
+        const variablesContainer = document.getElementById('variables');
+        const hashmapContainer = document.getElementById('hashmapContainer');
+        
+        // Initialize the visualization
+        function initVisualization() {
+            // Render array
+            arrayContainer.innerHTML = '';
+            for (let i = 0; i < nums.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.innerHTML = `<span class="index">${i}</span>${nums[i]}`;
+                arrayContainer.appendChild(element);
+            }
+            
+            // Render initial state
+            renderStep(0);
+        }
+        
+        // Render a specific step
+        function renderStep(stepIndex) {
+            const step = steps[stepIndex];
+            
+            // Update step info
+            stepInfo.textContent = `Step ${stepIndex}: ${step.description}`;
+            
+            // Update array highlighting
+            const arrayElements = document.querySelectorAll('.array-element');
+            arrayElements.forEach((element, index) => {
+                element.classList.remove('active');
+                if (index === step.activeIndex) {
+                    element.classList.add('active');
+                }
+            });
+            
+            // Update variables
+            variablesContainer.innerHTML = '';
+            for (const [key, value] of Object.entries(step.variables)) {
+                if (value !== null) {
+                    const variable = document.createElement('div');
+                    variable.className = 'variable';
+                    if (step.highlightVariables && step.highlightVariables.includes(key)) {
+                        variable.classList.add('highlight');
+                    }
+                    variable.innerHTML = `<span class="variable-name">${key}:</span>`;
+                    
+                    if (key === 'sum_index') {
+                        // Don't render sum_index as a variable since we have a dedicated visualization
+                        continue;
+                    } else if (typeof value === 'object') {
+                        variable.innerHTML += JSON.stringify(value);
+                    } else {
+                        variable.innerHTML += value;
+                    }
+                    
+                    variablesContainer.appendChild(variable);
+                }
+            }
+            
+            // Update hashmap
+            hashmapContainer.innerHTML = '';
+            for (const [key, value] of Object.entries(step.variables.sum_index)) {
+                const entry = document.createElement('div');
+                entry.className = 'hashmap-entry';
+                if (step.newHashmapEntry && step.newHashmapEntry.key == key && step.newHashmapEntry.value === value) {
+                    entry.classList.add('new');
+                }
+                entry.innerHTML = `<span class="hashmap-key">${key}:</span>${value}`;
+                hashmapContainer.appendChild(entry);
+            }
+            
+            // Update buttons
+            prevBtn.disabled = stepIndex === 0;
+            nextBtn.disabled = stepIndex === steps.length - 1;
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(currentStep);
+            }
+        });
+        
+        // Initialize visualization
+        initVisualization();
+    </script>
+</body>
+</html>
