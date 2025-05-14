@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Smaller Element Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #container {
+            width: 90%;
+            max-width: 800px;
+        }
+        #visualization {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            height: 250px;
+            align-items: flex-end;
+            position: relative;
+        }
+        .element {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .number-box {
+            width: 60px;
+            height: 60px;
+            background-color: #ff4800;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .result-box {
+            width: 60px;
+            height: 60px;
+            background-color: #1c1d20;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .index {
+            position: absolute;
+            top: -25px;
+            font-size: 16px;
+            color: #1c1d20;
+        }
+        .stack-container {
+            margin-top: 40px;
+            border: 2px solid #1c1d20;
+            padding: 10px;
+            width: 100%;
+            height: 100px;
+            position: relative;
+        }
+        .stack-label {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background-color: white;
+            padding: 0 5px;
+            color: #1c1d20;
+            font-weight: bold;
+        }
+        .stack {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            padding-left: 10px;
+        }
+        .stack-element {
+            width: 40px;
+            height: 40px;
+            background-color: #ff4800;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #ff4800;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:disabled {
+            background-color: #1c1d20;
+            cursor: not-allowed;
+        }
+        button:hover:not([disabled]) {
+            background-color: #e64100;
+        }
+        .pointer {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #ff4800;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        .pointer:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 5px;
+            border-width: 10px 5px 0;
+            border-style: solid;
+            border-color: #ff4800 transparent transparent;
+        }
+        .highlight {
+            box-shadow: 0 0 15px 5px rgba(255, 72, 0, 0.7);
+        }
+        .faded {
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="visualization">
+            <div class="pointer" id="pointer"></div>
+        </div>
+        <div class="stack-container">
+            <div class="stack-label">Stack</div>
+            <div class="stack" id="stack"></div>
+        </div>
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        <div id="explanation" style="margin-top: 20px; padding: 10px; border: 1px solid #1c1d20; color: #1c1d20; font-size: 14px; text-align: center;"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Test array
+            const array = [4, 8, 5, 2, 25];
+            
+            // Algorithm steps
+            let steps = [];
+            
+            // Function to run algorithm and capture steps
+            function simulateAlgorithm(arr) {
+                const n = arr.length;
+                const result = new Array(n).fill(-1);
+                const stack = [];
+                
+                steps.push({
+                    type: 'init',
+                    array: [...arr],
+                    result: [...result],
+                    stack: [...stack],
+                    currentIndex: -1,
+                    action: 'Initialize array, result, and empty stack'
+                });
+                
+                for (let i = 0; i < n; i++) {
+                    steps.push({
+                        type: 'process',
+                        array: [...arr],
+                        result: [...result],
+                        stack: [...stack],
+                        currentIndex: i,
+                        action: `Processing element at index ${i}: ${arr[i]}`
+                    });
+                    
+                    while (stack.length > 0 && arr[i] < arr[stack[stack.length - 1]]) {
+                        const poppedIndex = stack.pop();
+                        result[poppedIndex] = arr[i];
+                        
+                        steps.push({
+                            type: 'pop',
+                            array: [...arr],
+                            result: [...result],
+                            stack: [...stack],
+                            currentIndex: i,
+                            poppedIndex: poppedIndex,
+                            action: `Element ${arr[i]} is smaller than ${arr[poppedIndex]}, setting result[${poppedIndex}] = ${arr[i]}`
+                        });
+                    }
+                    
+                    stack.push(i);
+                    steps.push({
+                        type: 'push',
+                        array: [...arr],
+                        result: [...result],
+                        stack: [...stack],
+                        currentIndex: i,
+                        action: `Push index ${i} onto stack`
+                    });
+                }
+                
+                steps.push({
+                    type: 'finish',
+                    array: [...arr],
+                    result: [...result],
+                    stack: [...stack],
+                    currentIndex: -1,
+                    action: 'Algorithm finished'
+                });
+                
+                return result;
+            }
+            
+            // Initialize visualization
+            function initVisualization() {
+                const visualizationDiv = document.getElementById('visualization');
+                
+                // Clear existing content
+                while (visualizationDiv.children.length > 1) {
+                    visualizationDiv.removeChild(visualizationDiv.lastChild);
+                }
+                
+                // Create elements
+                array.forEach((num, idx) => {
+                    const elementDiv = document.createElement('div');
+                    elementDiv.className = 'element';
+                    
+                    const indexDiv = document.createElement('div');
+                    indexDiv.className = 'index';
+                    indexDiv.textContent = idx;
+                    
+                    const numberBox = document.createElement('div');
+                    numberBox.className = 'number-box';
+                    numberBox.textContent = num;
+                    numberBox.id = `number-${idx}`;
+                    
+                    const resultBox = document.createElement('div');
+                    resultBox.className = 'result-box';
+                    resultBox.id = `result-${idx}`;
+                    resultBox.textContent = '-1';
+                    
+                    elementDiv.appendChild(indexDiv);
+                    elementDiv.appendChild(numberBox);
+                    elementDiv.appendChild(resultBox);
+                    
+                    visualizationDiv.appendChild(elementDiv);
+                });
+                
+                // Setup stack
+                const stackDiv = document.getElementById('stack');
+                stackDiv.innerHTML = '';
+                
+                // Create stack elements (initially hidden)
+                for (let i = 0; i < array.length; i++) {
+                    const stackElement = document.createElement('div');
+                    stackElement.className = 'stack-element';
+                    stackElement.id = `stack-${i}`;
+                    stackElement.textContent = i;
+                    stackDiv.appendChild(stackElement);
+                }
+            }
+            
+            // Run algorithm
+            simulateAlgorithm(array);
+            
+            // Initialize the visualization
+            initVisualization();
+            
+            // Step control
+            let currentStep = 0;
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            function updateVisualization() {
+                const step = steps[currentStep];
+                
+                // Reset highlights
+                document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                document.querySelectorAll('.faded').forEach(el => el.classList.remove('faded'));
+                
+                // Update stack visualization
+                for (let i = 0; i < array.length; i++) {
+                    const stackElement = document.getElementById(`stack-${i}`);
+                    if (step.stack.includes(i)) {
+                        stackElement.style.opacity = '1';
+                        stackElement.textContent = i;
+                    } else {
+                        stackElement.style.opacity = '0';
+                    }
+                }
+                
+                // Update result boxes
+                for (let i = 0; i < array.length; i++) {
+                    const resultBox = document.getElementById(`result-${i}`);
+                    resultBox.textContent = step.result[i] === -1 ? '-1' : step.result[i];
+                    
+                    if (step.type === 'pop' && i === step.poppedIndex) {
+                        resultBox.style.opacity = '1';
+                        resultBox.classList.add('highlight');
+                    } else if (step.result[i] !== -1) {
+                        resultBox.style.opacity = '1';
+                    }
+                }
+                
+                // Update pointer
+                const pointer = document.getElementById('pointer');
+                if (step.currentIndex !== -1) {
+                    const currentElement = document.getElementById(`number-${step.currentIndex}`);
+                    const rect = currentElement.getBoundingClientRect();
+                    const parentRect = document.getElementById('visualization').getBoundingClientRect();
+                    
+                    pointer.style.opacity = '1';
+                    pointer.style.left = `${rect.left - parentRect.left + rect.width / 2 - 10}px`;
+                    
+                    // Highlight current element
+                    currentElement.classList.add('highlight');
+                } else {
+                    pointer.style.opacity = '0';
+                }
+                
+                // Highlight specific elements based on step type
+                if (step.type === 'pop') {
+                    const poppedElement = document.getElementById(`number-${step.poppedIndex}`);
+                    poppedElement.classList.add('highlight');
+                }
+                
+                // Update explanation text
+                document.getElementById('explanation').textContent = step.action;
+                
+                // Update buttons
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length - 1;
+            }
+            
+            // Button handlers
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    updateVisualization();
+                }
+            });
+            
+            // Initialize to first step
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
