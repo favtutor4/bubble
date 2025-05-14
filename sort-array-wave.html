@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Sort Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            height: 250px;
+            align-items: flex-end;
+            width: 100%;
+        }
+        .array-element {
+            margin: 0 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .array-bar {
+            background-color: #1c1d20;
+            width: 60px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            color: white;
+            padding-bottom: 5px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px #000;
+            transition: height 0.5s, background-color 0.5s;
+        }
+        .highlighted {
+            background-color: #ff4800;
+        }
+        .array-value {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #1c1d20;
+        }
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #ff4800;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #e64100;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #1c1d20;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #1c1d20;
+            border-radius: 5px;
+            color: #1c1d20;
+            max-width: 700px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="array-container" id="arrayContainer"></div>
+        <div class="step-counter" id="stepCounter">Step: 0 / 0</div>
+        <div class="explanation" id="explanation"></div>
+        <div class="buttons-container">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial array
+            const initialArray = [10, 5, 6, 3, 2, 20, 100];
+            
+            // Store all steps of the algorithm
+            const steps = [];
+            const highlights = [];
+            const explanations = [];
+            
+            // Add initial state
+            steps.push([...initialArray]);
+            highlights.push([]);
+            explanations.push("Initial array: [10, 5, 6, 3, 2, 20, 100]");
+            
+            // Implement the wave sort algorithm and capture each step
+            function waveSort(arr) {
+                const n = arr.length;
+                
+                for (let i = 0; i < n; i += 2) {
+                    // Keep track of what we're checking for explanation
+                    let explanation = `Checking position ${i} (value ${arr[i]}):\n`;
+                    
+                    // If current element is smaller than previous
+                    if (i > 0) {
+                        explanation += `Comparing with previous element at position ${i-1} (value ${arr[i-1]}).\n`;
+                        
+                        if (arr[i] < arr[i-1]) {
+                            explanation += `${arr[i]} < ${arr[i-1]}, so we swap them.`;
+                            // Swap
+                            [arr[i], arr[i-1]] = [arr[i-1], arr[i]];
+                            steps.push([...arr]);
+                            highlights.push([i, i-1]);
+                            explanations.push(explanation);
+                        } else {
+                            explanation += `${arr[i]} >= ${arr[i-1]}, no swap needed.`;
+                            // Add a step even when no swap happens to show the comparison
+                            steps.push([...arr]);
+                            highlights.push([i, i-1]);
+                            explanations.push(explanation);
+                        }
+                    }
+                    
+                    // If current element is smaller than next
+                    if (i < n-1) {
+                        explanation = `Checking position ${i} (value ${arr[i]}):\n`;
+                        explanation += `Comparing with next element at position ${i+1} (value ${arr[i+1]}).\n`;
+                        
+                        if (arr[i] < arr[i+1]) {
+                            explanation += `${arr[i]} < ${arr[i+1]}, so we swap them.`;
+                            // Swap
+                            [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
+                            steps.push([...arr]);
+                            highlights.push([i, i+1]);
+                            explanations.push(explanation);
+                        } else {
+                            explanation += `${arr[i]} >= ${arr[i+1]}, no swap needed.`;
+                            // Add a step even when no swap happens to show the comparison
+                            steps.push([...arr]);
+                            highlights.push([i, i+1]);
+                            explanations.push(explanation);
+                        }
+                    }
+                }
+                
+                // Add final state
+                if (steps[steps.length - 1].toString() !== arr.toString()) {
+                    steps.push([...arr]);
+                    highlights.push([]);
+                    explanations.push("Final sorted array in wave pattern: [" + arr.join(", ") + "]");
+                }
+                
+                return arr;
+            }
+            
+            // Execute the algorithm to capture steps
+            waveSort([...initialArray]);
+            
+            // Variables to track current step
+            let currentStep = 0;
+            const totalSteps = steps.length;
+            
+            // DOM elements
+            const arrayContainer = document.getElementById('arrayContainer');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const stepCounter = document.getElementById('stepCounter');
+            const explanationDiv = document.getElementById('explanation');
+            
+            // Update the step counter
+            function updateStepCounter() {
+                stepCounter.textContent = `Step: ${currentStep} / ${totalSteps - 1}`;
+            }
+            
+            // Update button states
+            function updateButtons() {
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === totalSteps - 1;
+            }
+            
+            // Render the array based on current step
+            function renderArray() {
+                arrayContainer.innerHTML = '';
+                
+                const currentArray = steps[currentStep];
+                const currentHighlights = highlights[currentStep];
+                
+                const maxValue = Math.max(...initialArray, ...currentArray);
+                
+                currentArray.forEach((value, index) => {
+                    const elementDiv = document.createElement('div');
+                    elementDiv.className = 'array-element';
+                    
+                    const barDiv = document.createElement('div');
+                    barDiv.className = 'array-bar';
+                    
+                    // Scale height based on value, but ensure minimum height
+                    const minHeight = 40; // Minimum height for small values
+                    const height = Math.max(minHeight, (value / maxValue) * 220);
+                    barDiv.style.height = `${height}px`;
+                    
+                    // Highlight elements involved in swap
+                    if (currentHighlights.includes(index)) {
+                        barDiv.classList.add('highlighted');
+                    }
+                    
+                    barDiv.textContent = value;
+                    
+                    const valueDiv = document.createElement('div');
+                    valueDiv.className = 'array-value';
+                    valueDiv.textContent = `Index ${index}`;
+                    
+                    elementDiv.appendChild(barDiv);
+                    elementDiv.appendChild(valueDiv);
+                    arrayContainer.appendChild(elementDiv);
+                });
+                
+                // Update explanation
+                explanationDiv.innerHTML = explanations[currentStep].replace(/\n/g, '<br>');
+                
+                updateStepCounter();
+                updateButtons();
+            }
+            
+            // Event listeners for buttons
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    renderArray();
+                }
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps - 1) {
+                    currentStep++;
+                    renderArray();
+                }
+            });
+            
+            // Initial render
+            renderArray();
+        });
+    </script>
+</body>
+</html>
