@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tower of Hanoi - Initial Configuration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #FFFFFF;
+      color: #000000;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    
+    h1 {
+      color: #FF4800;
+    }
+    
+    .explanation {
+      margin: 20px 0;
+      text-align: left;
+      padding: 20px;
+      background-color: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .towers-container {
+      display: flex;
+      justify-content: space-around;
+      margin: 40px 0;
+      height: 300px;
+    }
+    
+    .rod-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 200px;
+    }
+    
+    .rod-label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    .rod {
+      width: 15px;
+      height: 200px;
+      background-color: #000000;
+      border-radius: 8px;
+      position: relative;
+    }
+    
+    .base {
+      width: 180px;
+      height: 20px;
+      background-color: #000000;
+      border-radius: 8px;
+      margin-top: 5px;
+    }
+    
+    .disk {
+      height: 25px;
+      border-radius: 8px;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: all 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      margin-top: 20px;
+      gap: 20px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      background-color: #FF4800;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn:hover {
+      background-color: #FD9F78;
+    }
+
+    .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .disk-count {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tower of Hanoi - Initial Configuration</h1>
+    
+    <div class="explanation">
+      <p>The Tower of Hanoi is a classic puzzle that consists of three rods and a number of disks of different sizes. The puzzle starts with the disks stacked on the first rod in ascending order of size (the smallest at the top).</p>
+      <p>The objective of the puzzle is to move the entire stack to the third rod, following these rules:</p>
+      <ol>
+        <li>Only one disk can be moved at a time.</li>
+        <li>Each move consists of taking the upper disk from one of the stacks and placing it on top of another stack or on an empty rod.</li>
+        <li>No disk may be placed on top of a smaller disk.</li>
+      </ol>
+      <p>This animation shows the initial configuration of the Tower of Hanoi puzzle.</p>
+    </div>
+    
+    <div class="controls">
+      <div class="disk-count">
+        <label for="diskCount">Number of disks:</label>
+        <select id="diskCount">
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+        </select>
+      </div>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+    
+    <div class="towers-container">
+      <div class="rod-container">
+        <div class="rod" id="rod1"></div>
+        <div class="base"></div>
+        <div class="rod-label">Source</div>
+      </div>
+      
+      <div class="rod-container">
+        <div class="rod" id="rod2"></div>
+        <div class="base"></div>
+        <div class="rod-label">Auxiliary</div>
+      </div>
+      
+      <div class="rod-container">
+        <div class="rod" id="rod3"></div>
+        <div class="base"></div>
+        <div class="rod-label">Destination</div>
+      </div>
+    </div>
+    
+    <div class="nav-buttons">
+      <button class="btn" id="prevBtn" disabled>Previous</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const diskColors = [
+      '#FF4800', '#FD9F78', '#FF7844', '#FF9C6B', '#FFB092', '#FFC4B9', '#FFD8D1'
+    ];
+    
+    let disks = 3;
+    let currentStep = 0;
+    const totalSteps = 4;
+    
+    function createDisks(count) {
+      // Clear existing disks
+      document.querySelectorAll('.disk').forEach(disk => disk.remove());
+      
+      const rod1 = document.getElementById('rod1');
+      const maxWidth = 160;
+      const minWidth = 50;
+      const widthDecrement = (maxWidth - minWidth) / (count - 1);
+      
+      for (let i = count; i >= 1; i--) {
+        const disk = document.createElement('div');
+        disk.className = 'disk';
+        disk.id = `disk${i}`;
+        
+        const width = maxWidth - (widthDecrement * (count - i));
+        disk.style.width = `${width}px`;
+        disk.style.backgroundColor = diskColors[i - 1];
+        disk.style.bottom = `${(count - i) * 30}px`;
+        disk.textContent = i;
+        
+        rod1.appendChild(disk);
+      }
+    }
+    
+    function updateButtons() {
+      document.getElementById('prevBtn').disabled = currentStep === 0;
+      document.getElementById('nextBtn').disabled = currentStep === totalSteps - 1;
+    }
+    
+    function showStep(step) {
+      // For initial configuration animation, we'll just highlight different parts
+      switch(step) {
+        case 0:
+          // Initial setup - no highlights
+          document.querySelectorAll('.disk').forEach(disk => {
+            disk.style.boxShadow = 'none';
+          });
+          document.querySelectorAll('.rod').forEach(rod => {
+            rod.style.boxShadow = 'none';
+          });
+          break;
+        case 1:
+          // Highlight disks
+          document.querySelectorAll('.disk').forEach(disk => {
+            disk.style.boxShadow = '0 0 10px #FF4800';
+          });
+          document.querySelectorAll('.rod').forEach(rod => {
+            rod.style.boxShadow = 'none';
+          });
+          break;
+        case 2:
+          // Highlight source rod
+          document.querySelectorAll('.disk').forEach(disk => {
+            disk.style.boxShadow = 'none';
+          });
+          document.getElementById('rod1').style.boxShadow = '0 0 10px #FF4800';
+          document.getElementById('rod2').style.boxShadow = 'none';
+          document.getElementById('rod3').style.boxShadow = 'none';
+          break;
+        case 3:
+          // Highlight destination rod
+          document.querySelectorAll('.disk').forEach(disk => {
+            disk.style.boxShadow = 'none';
+          });
+          document.getElementById('rod1').style.boxShadow = 'none';
+          document.getElementById('rod2').style.boxShadow = 'none';
+          document.getElementById('rod3').style.boxShadow = '0 0 10px #FF4800';
+          break;
+      }
+    }
+    
+    function goToStep(step) {
+      currentStep = step;
+      showStep(currentStep);
+      updateButtons();
+    }
+    
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentStep > 0) {
+        goToStep(currentStep - 1);
+      }
+    });
+    
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentStep < totalSteps - 1) {
+        goToStep(currentStep + 1);
+      }
+    });
+    
+    document.getElementById('diskCount').addEventListener('change', (e) => {
+      disks = parseInt(e.target.value);
+      createDisks(disks);
+      currentStep = 0;
+      showStep(currentStep);
+      updateButtons();
+    });
+    
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      createDisks(disks);
+      currentStep = 0;
+      showStep(currentStep);
+      updateButtons();
+    });
+    
+    // Initialize on page load
+    window.onload = () => {
+      createDisks(disks);
+      goToStep(0);
+    };
+  </script>
+</body>
+</html>
