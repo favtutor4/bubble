@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Hanoi Recursive Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .towers-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            min-height: 300px;
+        }
+        
+        .tower {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+        }
+        
+        .rod {
+            width: 20px;
+            height: 220px;
+            background-color: #000000;
+            margin-top: auto;
+            position: absolute;
+            bottom: 20px;
+            z-index: 1;
+        }
+        
+        .base {
+            width: 180px;
+            height: 20px;
+            background-color: #000000;
+            margin-top: auto;
+        }
+        
+        .disk {
+            height: 30px;
+            border-radius: 15px;
+            margin-bottom: 5px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .disk-1 {
+            width: 80px;
+            background-color: #FF4800;
+        }
+        
+        .disk-2 {
+            width: 120px;
+            background-color: #FD9F78;
+        }
+        
+        .disk-3 {
+            width: 160px;
+            background-color: #FF4800;
+        }
+        
+        .tower-label {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .step-counter {
+            font-size: 18px;
+            color: #FF4800;
+            margin-bottom: 10px;
+        }
+        
+        .call-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stack-frame {
+            width: 300px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 2px solid #FF4800;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        
+        .active-frame {
+            background-color: #FD9F78;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tower of Hanoi - Recursive Solution Visualization</h1>
+        
+        <div class="step-counter">Step <span id="current-step">0</span> of <span id="total-steps">7</span></div>
+        
+        <div class="towers-container">
+            <div class="tower">
+                <div class="tower-label">A</div>
+                <div class="rod"></div>
+                <div class="base"></div>
+                <div id="tower-a" class="disks-container"></div>
+            </div>
+            
+            <div class="tower">
+                <div class="tower-label">B</div>
+                <div class="rod"></div>
+                <div class="base"></div>
+                <div id="tower-b" class="disks-container"></div>
+            </div>
+            
+            <div class="tower">
+                <div class="tower-label">C</div>
+                <div class="rod"></div>
+                <div class="base"></div>
+                <div id="tower-c" class="disks-container"></div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3>Recursive Logic:</h3>
+            <div id="explanation-text">
+                Initial State: We have 3 disks on Tower A and need to move them to Tower C.
+                The recursive solution will break this down into smaller subproblems.
+            </div>
+        </div>
+        
+        <div class="call-stack">
+            <h3>Recursive Call Stack:</h3>
+            <div id="stack-container"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const steps = [
+            {
+                a: [3, 2, 1],
+                b: [],
+                c: [],
+                explanation: "Initial state with 3 disks on Tower A. We need to move all disks to Tower C using Tower B as auxiliary. This is represented as hanoi(3, A, C, B).",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: true }
+                ]
+            },
+            {
+                a: [3, 2],
+                b: [1],
+                c: [],
+                explanation: "To move 3 disks from A to C, we first recursively move the top 2 disks from A to B (using C as auxiliary). This is represented as hanoi(2, A, B, C). First step: Move disk 1 from A to B.",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: false },
+                    { text: "Recursive call: hanoi(2, A, B, C)", active: true },
+                    { text: "Recursive call: hanoi(1, A, B, C)", active: false }
+                ]
+            },
+            {
+                a: [3],
+                b: [1],
+                c: [2],
+                explanation: "To move 2 disks from A to B, we moved disk 1 to B, now we move disk 2 from A to C (as part of the recursive solution for moving the top 2 disks from A to B).",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: false },
+                    { text: "Recursive call: hanoi(2, A, B, C)", active: true }
+                ]
+            },
+            {
+                a: [3],
+                b: [2, 1],
+                c: [],
+                explanation: "Now we move disk 1 from C to B, completing the hanoi(2, A, B, C) call. We've successfully moved the top 2 disks from A to B.",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: false },
+                    { text: "Recursive call: hanoi(2, A, B, C)", active: true },
+                    { text: "Recursive call: hanoi(1, C, B, A)", active: false }
+                ]
+            },
+            {
+                a: [],
+                b: [2, 1],
+                c: [3],
+                explanation: "Now that the recursive call hanoi(2, A, B, C) is complete, we move the largest disk (disk 3) from A to C. This is the direct move in our main problem hanoi(3, A, C, B).",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: true }
+                ]
+            },
+            {
+                a: [1],
+                b: [2],
+                c: [3],
+                explanation: "For the last part of solving hanoi(3, A, C, B), we need to move 2 disks from B to C using A as auxiliary. This is represented as hanoi(2, B, C, A). First step: Move disk 1 from B to A.",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: false },
+                    { text: "Recursive call: hanoi(2, B, C, A)", active: true },
+                    { text: "Recursive call: hanoi(1, B, A, C)", active: false }
+                ]
+            },
+            {
+                a: [],
+                b: [],
+                c: [3, 2, 1],
+                explanation: "Finally, we complete the solution by moving disk 1 from A to C and disk 2 from B to C. All disks are now on Tower C and the puzzle is solved! The recursive approach breaks down the problem into manageable steps, following the principle of moving n-1 disks to temporary position, moving the nth disk to final position, then moving n-1 disks to final position.",
+                stack: [
+                    { text: "Main call: hanoi(3, A, C, B)", active: true },
+                    { text: "Solution complete!", active: false }
+                ]
+            }
+        ];
+        
+        let currentStep = 0;
+        const totalSteps = steps.length;
+        
+        document.getElementById('total-steps').textContent = totalSteps - 1;
+        
+        function updateTowers() {
+            const towerA = document.getElementById('tower-a');
+            const towerB = document.getElementById('tower-b');
+            const towerC = document.getElementById('tower-c');
+            
+            towerA.innerHTML = '';
+            towerB.innerHTML = '';
+            towerC.innerHTML = '';
+            
+            const currentState = steps[currentStep];
+            
+            // Populate tower A
+            currentState.a.forEach(diskSize => {
+                const disk = document.createElement('div');
+                disk.className = `disk disk-${diskSize}`;
+                disk.textContent = diskSize;
+                towerA.appendChild(disk);
+            });
+            
+            // Populate tower B
+            currentState.b.forEach(diskSize => {
+                const disk = document.createElement('div');
+                disk.className = `disk disk-${diskSize}`;
+                disk.textContent = diskSize;
+                towerB.appendChild(disk);
+            });
+            
+            // Populate tower C
+            currentState.c.forEach(diskSize => {
+                const disk = document.createElement('div');
+                disk.className = `disk disk-${diskSize}`;
+                disk.textContent = diskSize;
+                towerC.appendChild(disk);
+            });
+            
+            // Update explanation
+            document.getElementById('explanation-text').textContent = currentState.explanation;
+            
+            // Update stack
+            const stackContainer = document.getElementById('stack-container');
+            stackContainer.innerHTML = '';
+            
+            currentState.stack.forEach(frame => {
+                const stackFrame = document.createElement('div');
+                stackFrame.className = `stack-frame ${frame.active ? 'active-frame' : ''}`;
+                stackFrame.textContent = frame.text;
+                stackContainer.appendChild(stackFrame);
+            });
+            
+            // Update step counter
+            document.getElementById('current-step').textContent = currentStep;
+            
+            // Update buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === totalSteps - 1;
+        }
+        
+        function nextStep() {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateTowers();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateTowers();
+            }
+        }
+        
+        document.getElementById('next-btn').addEventListener('click', nextStep);
+        document.getElementById('prev-btn').addEventListener('click', prevStep);
+        
+        // Initialize the visualization
+        updateTowers();
+    </script>
+</body>
+</html>
