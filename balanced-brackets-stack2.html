@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force String Replacement Visualization</title>
+    <style>
+        :root {
+            --primary: #FF4800;
+            --secondary: #FD9F78;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .visualization-container {
+            width: 100%;
+            height: 400px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .step-counter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        .string-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .char {
+            display: inline-block;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0 5px;
+            padding: 5px;
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            min-height: 80px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: var(--secondary);
+        }
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .highlight {
+            background-color: var(--secondary);
+            color: var(--black);
+        }
+        .removed {
+            opacity: 0;
+            transform: scale(0);
+        }
+        .to-be-removed {
+            background-color: var(--primary);
+            color: var(--white);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force String Replacement Process</h1>
+        
+        <div class="visualization-container">
+            <div class="step-counter">Step <span id="current-step">1</span> of <span id="total-steps">7</span></div>
+            <div class="string-display" id="string-display"></div>
+            <div class="explanation" id="explanation"></div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-btn" disabled>Previous</button>
+            <button class="nav-button" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                string: "([{}])",
+                explanation: "Starting with the initial string ([{}]). We'll look for matching pairs of brackets to remove.",
+                highlight: [],
+                toBeRemoved: []
+            },
+            {
+                string: "([{}])",
+                explanation: "First, we identify the innermost pair: {}",
+                highlight: [3, 4],
+                toBeRemoved: [3, 4]
+            },
+            {
+                string: "([])",
+                explanation: "After removing {}, we have ([]). Now we look for the next matching pair.",
+                highlight: [2, 3],
+                toBeRemoved: []
+            },
+            {
+                string: "([])",
+                explanation: "We identify the pair []",
+                highlight: [2, 3],
+                toBeRemoved: [2, 3]
+            },
+            {
+                string: "()",
+                explanation: "After removing [], we have (). Now we have just one pair left.",
+                highlight: [0, 1],
+                toBeRemoved: []
+            },
+            {
+                string: "()",
+                explanation: "We identify the final pair ()",
+                highlight: [0, 1],
+                toBeRemoved: [0, 1]
+            },
+            {
+                string: "",
+                explanation: "All pairs have been successfully removed, resulting in an empty string. This confirms that the original string had valid bracket pairs.",
+                highlight: [],
+                toBeRemoved: []
+            }
+        ];
+
+        let currentStep = 0;
+        const stringDisplay = document.getElementById('string-display');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentStepEl = document.getElementById('current-step');
+        const totalStepsEl = document.getElementById('total-steps');
+
+        totalStepsEl.textContent = steps.length;
+
+        function renderStep() {
+            const step = steps[currentStep];
+            stringDisplay.innerHTML = '';
+
+            if (step.string === "") {
+                stringDisplay.innerHTML = '<div class="char" style="font-size: 24px; width: auto;">Empty String</div>';
+            } else {
+                for (let i = 0; i < step.string.length; i++) {
+                    const charDiv = document.createElement('div');
+                    charDiv.className = 'char';
+                    if (step.highlight.includes(i)) {
+                        charDiv.classList.add('highlight');
+                    }
+                    if (step.toBeRemoved.includes(i)) {
+                        charDiv.classList.add('to-be-removed');
+                    }
+                    charDiv.textContent = step.string[i];
+                    stringDisplay.appendChild(charDiv);
+                }
+            }
+
+            explanation.textContent = step.explanation;
+            currentStepEl.textContent = currentStep + 1;
+
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        });
+
+        // Initial render
+        renderStep();
+    </script>
+</body>
+</html>
