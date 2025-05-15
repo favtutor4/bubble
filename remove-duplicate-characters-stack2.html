@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Operations for 'abbaca'</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            text-align: center;
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .visualization-container {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stack-container {
+            height: 300px;
+            width: 100px;
+            border: 2px solid #FF4800;
+            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .stack-element {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.5s ease;
+            position: absolute;
+            bottom: 10px;
+        }
+        .stack-bottom {
+            position: absolute;
+            bottom: -30px;
+            font-weight: bold;
+        }
+        .stack-operation {
+            font-size: 20px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+            height: 30px;
+        }
+        .string-display {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        .char {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #FF4800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            font-weight: bold;
+        }
+        .char.active {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        .char.processed {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .explanation {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Operations for 'abbaca'</h1>
+        
+        <div class="string-display" id="string-display">
+            <div class="char" data-index="0">a</div>
+            <div class="char" data-index="1">b</div>
+            <div class="char" data-index="2">b</div>
+            <div class="char" data-index="3">a</div>
+            <div class="char" data-index="4">c</div>
+            <div class="char" data-index="5">a</div>
+        </div>
+        
+        <div class="visualization-container">
+            <div class="stack-operation" id="operation"></div>
+            <div class="stack-container" id="stack-container">
+                <div class="stack-bottom">Stack Bottom</div>
+            </div>
+            <div class="explanation" id="explanation"></div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const steps = [
+            { 
+                operation: "Initial Empty Stack", 
+                stack: [], 
+                activeChar: -1,
+                processedChars: [],
+                explanation: "We start with an empty stack."
+            },
+            { 
+                operation: "Push 'a'", 
+                stack: ['a'], 
+                activeChar: 0,
+                processedChars: [0],
+                explanation: "We push 'a' onto the stack."
+            },
+            { 
+                operation: "Push 'b'", 
+                stack: ['a', 'b'], 
+                activeChar: 1,
+                processedChars: [0, 1],
+                explanation: "We push 'b' onto the stack."
+            },
+            { 
+                operation: "Push 'b'", 
+                stack: ['a', 'b', 'b'], 
+                activeChar: 2,
+                processedChars: [0, 1, 2],
+                explanation: "We push another 'b' onto the stack."
+            },
+            { 
+                operation: "Pop 'b' (duplicate)", 
+                stack: ['a', 'b'], 
+                activeChar: 2,
+                processedChars: [0, 1, 2],
+                explanation: "Since the top of the stack is 'b' and the current character is also 'b', we pop 'b' from the stack."
+            },
+            { 
+                operation: "Pop 'b' (duplicate)", 
+                stack: ['a'], 
+                activeChar: 2,
+                processedChars: [0, 1, 2],
+                explanation: "We continue and pop the second 'b' as well."
+            },
+            { 
+                operation: "Push 'a'", 
+                stack: ['a', 'a'], 
+                activeChar: 3,
+                processedChars: [0, 1, 2, 3],
+                explanation: "We push 'a' onto the stack."
+            },
+            { 
+                operation: "Push 'c'", 
+                stack: ['a', 'a', 'c'], 
+                activeChar: 4,
+                processedChars: [0, 1, 2, 3, 4],
+                explanation: "We push 'c' onto the stack."
+            },
+            { 
+                operation: "Push 'a'", 
+                stack: ['a', 'a', 'c', 'a'], 
+                activeChar: 5,
+                processedChars: [0, 1, 2, 3, 4, 5],
+                explanation: "We push 'a' onto the stack."
+            },
+            { 
+                operation: "Pop 'a' (duplicate)", 
+                stack: ['a', 'a', 'c'], 
+                activeChar: 5,
+                processedChars: [0, 1, 2, 3, 4, 5],
+                explanation: "Since the top of the stack is 'a' and the current character is also 'a', we pop 'a' from the stack."
+            },
+            { 
+                operation: "Final Stack: 'a', 'a', 'c'", 
+                stack: ['a', 'a', 'c'], 
+                activeChar: -1,
+                processedChars: [0, 1, 2, 3, 4, 5],
+                explanation: "The final stack contains 'a', 'a', 'c' from bottom to top."
+            }
+        ];
+        
+        let currentStep = 0;
+        const stackContainer = document.getElementById('stack-container');
+        const operationEl = document.getElementById('operation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const explanationEl = document.getElementById('explanation');
+        const stringDisplay = document.getElementById('string-display');
+        
+        function renderStack() {
+            // Clear previous stack elements
+            const elements = document.querySelectorAll('.stack-element');
+            elements.forEach(el => el.remove());
+            
+            // Update current operation
+            operationEl.textContent = steps[currentStep].operation;
+            
+            // Update explanation
+            explanationEl.textContent = steps[currentStep].explanation;
+            
+            // Add new stack elements with animation
+            const stack = steps[currentStep].stack;
+            stack.forEach((item, index) => {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = item;
+                element.style.bottom = `${(index * 70) + 10}px`;
+                stackContainer.appendChild(element);
+            });
+            
+            // Update character highlighting
+            const chars = document.querySelectorAll('.char');
+            chars.forEach(char => {
+                char.classList.remove('active', 'processed');
+                const index = parseInt(char.getAttribute('data-index'));
+                
+                if (index === steps[currentStep].activeChar) {
+                    char.classList.add('active');
+                }
+                
+                if (steps[currentStep].processedChars.includes(index)) {
+                    char.classList.add('processed');
+                }
+            });
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event Listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStack();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStack();
+            }
+        });
+        
+        // Initial render
+        renderStack();
+    </script>
+</body>
+</html>
