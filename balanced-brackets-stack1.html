@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Operation Flow for Balanced Brackets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        .animation-container {
+            margin: 30px 0;
+            position: relative;
+            height: 400px;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #FFFFFF;
+        }
+        .input-string {
+            font-size: 24px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .char {
+            padding: 10px 15px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .char.current {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.2);
+            border-color: #FF4800;
+        }
+        .char.processed {
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            border-color: #FD9F78;
+        }
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .stack-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        .stack {
+            width: 100px;
+            min-height: 200px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            padding-bottom: 10px;
+            overflow: hidden;
+        }
+        .stack-item {
+            width: 80px;
+            height: 40px;
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            border-radius: 5px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .stack-bottom {
+            width: 120px;
+            height: 10px;
+            background-color: #FF4800;
+            border-radius: 0 0 5px 5px;
+            margin-top: 5px;
+        }
+        .explanation {
+            margin-top: 20px;
+            font-size: 18px;
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            font-size: 16px;
+            color: #FF4800;
+            margin-top: 10px;
+        }
+        .operation {
+            position: absolute;
+            right: 20px;
+            top: 180px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Operation Flow for Balanced Brackets</h1>
+        
+        <div class="animation-container">
+            <div class="input-string" id="inputString"></div>
+            
+            <div class="stack-container">
+                <div class="stack-title">Stack:</div>
+                <div class="stack" id="stack"></div>
+                <div class="stack-bottom"></div>
+            </div>
+            
+            <div id="operation" class="operation"></div>
+            
+            <div class="explanation" id="explanation"></div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+        
+        <div class="step-counter" id="stepCounter">Step: 1 / 7</div>
+    </div>
+
+    <script>
+        const inputString = "{[()]}";
+        const steps = [
+            {
+                currentCharIndex: 0,
+                stack: [],
+                operation: "PUSH",
+                explanation: "We see an opening bracket '{'. We push it onto the stack."
+            },
+            {
+                currentCharIndex: 1,
+                stack: ["{"],
+                operation: "PUSH",
+                explanation: "We see an opening bracket '['. We push it onto the stack."
+            },
+            {
+                currentCharIndex: 2,
+                stack: ["{", "["],
+                operation: "PUSH",
+                explanation: "We see an opening bracket '('. We push it onto the stack."
+            },
+            {
+                currentCharIndex: 3,
+                stack: ["{", "[", "("],
+                operation: "POP",
+                explanation: "We see a closing bracket ')'. It matches with the top of the stack '(', so we pop '(' from the stack."
+            },
+            {
+                currentCharIndex: 4,
+                stack: ["{", "["],
+                operation: "POP",
+                explanation: "We see a closing bracket ']'. It matches with the top of the stack '[', so we pop '[' from the stack."
+            },
+            {
+                currentCharIndex: 5,
+                stack: ["{"],
+                operation: "POP",
+                explanation: "We see a closing bracket '}'. It matches with the top of the stack '{', so we pop '{' from the stack."
+            },
+            {
+                currentCharIndex: 6,
+                stack: [],
+                operation: "DONE",
+                explanation: "All brackets are processed and the stack is empty. This means the brackets are balanced!"
+            }
+        ];
+
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounter = document.getElementById('stepCounter');
+        const stackElement = document.getElementById('stack');
+        const inputStringElement = document.getElementById('inputString');
+        const explanationElement = document.getElementById('explanation');
+        const operationElement = document.getElementById('operation');
+
+        function renderInputString() {
+            inputStringElement.innerHTML = '';
+            for (let i = 0; i < inputString.length; i++) {
+                const charDiv = document.createElement('div');
+                charDiv.classList.add('char');
+                charDiv.textContent = inputString[i];
+                
+                if (i < currentStep) {
+                    charDiv.classList.add('processed');
+                } else if (i === currentStep && currentStep < inputString.length) {
+                    charDiv.classList.add('current');
+                }
+                
+                inputStringElement.appendChild(charDiv);
+            }
+        }
+
+        function renderStack() {
+            stackElement.innerHTML = '';
+            const currentStackItems = steps[currentStep].stack;
+            
+            for (let item of currentStackItems) {
+                const stackItem = document.createElement('div');
+                stackItem.classList.add('stack-item');
+                stackItem.textContent = item;
+                stackElement.appendChild(stackItem);
+            }
+        }
+
+        function updateAnimation() {
+            renderInputString();
+            renderStack();
+            explanationElement.textContent = steps[currentStep].explanation;
+            operationElement.textContent = steps[currentStep].operation;
+            stepCounter.textContent = `Step: ${currentStep + 1} / ${steps.length}`;
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateAnimation();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateAnimation();
+            }
+        });
+
+        // Initialize
+        updateAnimation();
+    </script>
+</body>
+</html>
