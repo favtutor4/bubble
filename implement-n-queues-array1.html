@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Queue Allocation Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        .array-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            margin: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .queue0 {
+            background-color: #FF4800;
+            color: white;
+        }
+        .queue1 {
+            background-color: #FD9F78;
+            color: black;
+        }
+        .queue2 {
+            background-color: #FFA07A;
+            color: black;
+        }
+        .empty {
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .highlight {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 72, 0, 0.7);
+            z-index: 1;
+        }
+        .queue-labels {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .queue-label {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .description {
+            margin: 20px 0;
+            text-align: left;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            line-height: 1.6;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fixed Queue Allocation Visualization</h1>
+        
+        <div class="description" id="description">
+            In a fixed queue allocation, an array is divided into fixed-size sections for each queue. In this example, we have an array of size 15 divided into 3 equal parts: positions 0-4 for Queue 0, 5-9 for Queue 1, and 10-14 for Queue 2.
+        </div>
+        
+        <div class="queue-labels">
+            <div class="queue-label" style="background-color: #FF4800; color: white;">Queue 0 (0-4)</div>
+            <div class="queue-label" style="background-color: #FD9F78; color: black;">Queue 1 (5-9)</div>
+            <div class="queue-label" style="background-color: #FFA07A; color: black;">Queue 2 (10-14)</div>
+        </div>
+        
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="controls">
+            <button id="prevBtn">Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const arraySize = 15;
+        const queueSize = 5;
+        
+        // State variables
+        let currentStep = 0;
+        const totalSteps = 4;
+        
+        // Initialize the array
+        function initializeArray() {
+            const arrayContainer = document.getElementById('arrayContainer');
+            arrayContainer.innerHTML = '';
+            
+            for (let i = 0; i < arraySize; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell empty';
+                cell.id = `cell-${i}`;
+                cell.textContent = i;
+                arrayContainer.appendChild(cell);
+            }
+        }
+        
+        // Update the description based on the current step
+        function updateDescription() {
+            const description = document.getElementById('description');
+            
+            switch(currentStep) {
+                case 0:
+                    description.innerHTML = 'In a fixed queue allocation, an array is divided into fixed-size sections for each queue. In this example, we have an array of size 15 divided into 3 equal parts: positions 0-4 for Queue 0, 5-9 for Queue 1, and 10-14 for Queue 2.';
+                    break;
+                case 1:
+                    description.innerHTML = 'Let\'s add some elements to Queue 0. Notice how elements are stored in positions 0-4 only, regardless of the state of other queues.';
+                    break;
+                case 2:
+                    description.innerHTML = 'Now let\'s add a few elements to Queue 1 and Queue 2. Each queue can only use its allocated section of the array.';
+                    break;
+                case 3:
+                    description.innerHTML = 'Here\'s the limitation of fixed queue allocation: Queue 0 is full (all 5 positions used), but Queues 1 and 2 are mostly empty. Even though there\'s available space in the array, Queue 0 cannot use it because it\'s restricted to its fixed section (positions 0-4).';
+                    break;
+            }
+        }
+        
+        // Update the visualization based on the current step
+        function updateVisualization() {
+            // Reset all cells to empty
+            for (let i = 0; i < arraySize; i++) {
+                const cell = document.getElementById(`cell-${i}`);
+                cell.className = 'cell empty';
+                cell.textContent = i;
+                cell.classList.remove('highlight');
+            }
+            
+            switch(currentStep) {
+                case 0:
+                    // Initial state - empty
+                    // Just color the cells based on their queue
+                    for (let i = 0; i < arraySize; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        if (i < queueSize) {
+                            cell.classList.add('queue0');
+                        } else if (i < queueSize * 2) {
+                            cell.classList.add('queue1');
+                        } else {
+                            cell.classList.add('queue2');
+                        }
+                        cell.classList.add('empty');
+                    }
+                    break;
+                
+                case 1:
+                    // Add 3 elements to Queue 0
+                    for (let i = 0; i < 3; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue0';
+                        cell.textContent = `Q0-${i}`;
+                    }
+                    // Color the empty cells
+                    for (let i = 3; i < arraySize; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        if (i < queueSize) {
+                            cell.classList.add('queue0');
+                        } else if (i < queueSize * 2) {
+                            cell.classList.add('queue1');
+                        } else {
+                            cell.classList.add('queue2');
+                        }
+                        cell.classList.add('empty');
+                    }
+                    break;
+                
+                case 2:
+                    // Add 3 elements to Queue 0, 2 to Queue 1, 1 to Queue 2
+                    for (let i = 0; i < 3; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue0';
+                        cell.textContent = `Q0-${i}`;
+                    }
+                    for (let i = 0; i < 2; i++) {
+                        const cell = document.getElementById(`cell-${i + queueSize}`);
+                        cell.className = 'cell queue1';
+                        cell.textContent = `Q1-${i}`;
+                    }
+                    const cell = document.getElementById(`cell-${queueSize * 2}`);
+                    cell.className = 'cell queue2';
+                    cell.textContent = `Q2-0`;
+                    
+                    // Color the empty cells
+                    for (let i = 3; i < queueSize; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue0 empty';
+                    }
+                    for (let i = queueSize + 2; i < queueSize * 2; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue1 empty';
+                    }
+                    for (let i = queueSize * 2 + 1; i < arraySize; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue2 empty';
+                    }
+                    break;
+                
+                case 3:
+                    // Queue 0 is full, others are partially filled
+                    for (let i = 0; i < queueSize; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue0';
+                        cell.textContent = `Q0-${i}`;
+                        // Highlight Queue 0 to show it's full
+                        cell.classList.add('highlight');
+                    }
+                    for (let i = 0; i < 2; i++) {
+                        const cell = document.getElementById(`cell-${i + queueSize}`);
+                        cell.className = 'cell queue1';
+                        cell.textContent = `Q1-${i}`;
+                    }
+                    const cell2 = document.getElementById(`cell-${queueSize * 2}`);
+                    cell2.className = 'cell queue2';
+                    cell2.textContent = `Q2-0`;
+                    
+                    // Color the empty cells
+                    for (let i = queueSize + 2; i < queueSize * 2; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue1 empty';
+                    }
+                    for (let i = queueSize * 2 + 1; i < arraySize; i++) {
+                        const cell = document.getElementById(`cell-${i}`);
+                        cell.className = 'cell queue2 empty';
+                    }
+                    break;
+            }
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = (currentStep === 0);
+            document.getElementById('nextBtn').disabled = (currentStep === totalSteps - 1);
+        }
+        
+        // Event handlers for navigation buttons
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDescription();
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateDescription();
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        initializeArray();
+        updateDescription();
+        updateVisualization();
+    </script>
+</body>
+</html>
