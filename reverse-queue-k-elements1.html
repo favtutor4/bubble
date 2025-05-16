@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Reversal Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .explanation {
+            margin-bottom: 20px;
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 8px;
+            color: #000000;
+        }
+        .visualization {
+            position: relative;
+            height: 300px;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            background-color: #FFFFFF;
+        }
+        .element {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 1s ease;
+        }
+        .stack {
+            position: absolute;
+            width: 120px;
+            height: 200px;
+            border: 2px dashed #FF4800;
+            top: 50px;
+            left: 300px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 10px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .stack-element {
+            width: 50px;
+            height: 50px;
+            background-color: #FD9F78;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .stack-label {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .queue-labels {
+            position: absolute;
+            width: 100%;
+            top: 10px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 70px;
+        }
+        .queue-label {
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Queue Reversal Visualization</h1>
+        <div class="explanation" id="explanation">
+            This visualization shows the process of reversing the first K elements of a queue. In this example, we have a queue [10, 20, 30, 40, 50] and we'll reverse the first K=3 elements to get [30, 20, 10, 40, 50].
+        </div>
+        
+        <div class="visualization" id="visualization">
+            <div class="queue-labels">
+                <div class="queue-label">Front</div>
+                <div class="queue-label">Rear</div>
+            </div>
+            <div class="stack" id="stack">
+                <div class="stack-label">Stack</div>
+            </div>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 1 of 7</div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const queue = [10, 20, 30, 40, 50];
+        const K = 3;
+        
+        const explanations = [
+            "Starting with the original queue [10, 20, 30, 40, 50]. We want to reverse the first K=3 elements.",
+            "Step 1: We'll use a stack to help with the reversal. First, we remove the first K=3 elements from the queue and push them into a stack.",
+            "Step 2: The first element (10) is removed from the queue and pushed onto the stack.",
+            "Step 3: The second element (20) is removed from the queue and pushed onto the stack.",
+            "Step 4: The third element (30) is removed from the queue and pushed onto the stack.",
+            "Step 5: Now we'll pop elements from the stack and add them back to the queue. This reverses their order.",
+            "Step 6: All elements from the stack are now back in the queue. The first K=3 elements have been reversed!",
+            "Final result: The queue is now [30, 20, 10, 40, 50]. The first 3 elements are reversed while the rest remain in the original order."
+        ];
+        
+        let currentStep = 0;
+        const totalSteps = explanations.length;
+        
+        const visualizationContainer = document.getElementById('visualization');
+        const explanationElement = document.getElementById('explanation');
+        const stackElement = document.getElementById('stack');
+        const stepIndicator = document.getElementById('step-indicator');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Initialize queue elements
+        function initializeQueue() {
+            // Clear any existing elements
+            visualizationContainer.querySelectorAll('.element').forEach(el => el.remove());
+            stackElement.querySelectorAll('.stack-element').forEach(el => el.remove());
+            
+            // Add stack label back
+            const stackLabel = document.createElement('div');
+            stackLabel.className = 'stack-label';
+            stackLabel.textContent = 'Stack';
+            stackElement.appendChild(stackLabel);
+            
+            // Create queue elements
+            queue.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                element.id = `element-${value}`;
+                element.style.left = `${70 + index * 130}px`;
+                element.style.top = '120px';
+                visualizationContainer.appendChild(element);
+            });
+        }
+        
+        function updateVisualization() {
+            stepIndicator.textContent = `Step ${currentStep+1} of ${totalSteps}`;
+            explanationElement.textContent = explanations[currentStep];
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+            
+            // Clear and redraw based on current step
+            initializeQueue();
+            
+            if (currentStep >= 1) {
+                // Show stack
+                stackElement.style.opacity = '1';
+            } else {
+                stackElement.style.opacity = '0';
+            }
+            
+            if (currentStep >= 2) {
+                // Move first element to stack
+                const element = document.getElementById('element-10');
+                element.style.left = `${330}px`;  // Center of stack
+                element.style.top = '180px';
+                
+                // Add to stack visualization
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-element';
+                stackItem.textContent = '10';
+                stackElement.appendChild(stackItem);
+            }
+            
+            if (currentStep >= 3) {
+                // Move second element to stack
+                const element = document.getElementById('element-20');
+                element.style.left = `${330}px`;  // Center of stack
+                element.style.top = '130px';
+                
+                // Add to stack visualization
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-element';
+                stackItem.textContent = '20';
+                stackElement.appendChild(stackItem);
+            }
+            
+            if (currentStep >= 4) {
+                // Move third element to stack
+                const element = document.getElementById('element-30');
+                element.style.left = `${330}px`;  // Center of stack
+                element.style.top = '80px';
+                
+                // Add to stack visualization
+                const stackItem = document.createElement('div');
+                stackItem.className = 'stack-element';
+                stackItem.textContent = '30';
+                stackElement.appendChild(stackItem);
+            }
+            
+            if (currentStep >= 5) {
+                // Start popping from stack and enqueueing
+                const element30 = document.getElementById('element-30');
+                const element20 = document.getElementById('element-20');
+                const element10 = document.getElementById('element-10');
+                const element40 = document.getElementById('element-40');
+                const element50 = document.getElementById('element-50');
+                
+                element30.style.left = '70px';
+                element30.style.top = '120px';
+                
+                element20.style.left = '200px';
+                element20.style.top = '120px';
+                
+                element10.style.left = '330px';
+                element10.style.top = '120px';
+                
+                element40.style.left = '460px';
+                element40.style.top = '120px';
+                
+                element50.style.left = '590px';
+                element50.style.top = '120px';
+                
+                // Update stack
+                stackElement.querySelectorAll('.stack-element').forEach(el => el.remove());
+            }
+            
+            if (currentStep >= 6) {
+                // Show final state with animation
+                stackElement.style.opacity = '0';
+                
+                // Emphasize the reversal
+                const element30 = document.getElementById('element-30');
+                const element20 = document.getElementById('element-20');
+                const element10 = document.getElementById('element-10');
+                
+                element30.style.backgroundColor = '#FD9F78';
+                element20.style.backgroundColor = '#FD9F78';
+                element10.style.backgroundColor = '#FD9F78';
+                
+                setTimeout(() => {
+                    element30.style.backgroundColor = '#FF4800';
+                    element20.style.backgroundColor = '#FF4800';
+                    element10.style.backgroundColor = '#FF4800';
+                }, 500);
+            }
+        }
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize visualization
+        initializeQueue();
+        updateVisualization();
+    </script>
+</body>
+</html>
