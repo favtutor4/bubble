@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HashMap and Doubly Linked List Structure for LRU Cache</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        canvas {
+            background-color: #FFFFFF;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            color: #000000;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            background-color: #FD9F78;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HashMap and Doubly Linked List Structure for LRU Cache</h1>
+        <div class="explanation" id="explanation">
+            Welcome to the LRU Cache visualization. We'll see how a HashMap and Doubly Linked List work together to create an efficient Least Recently Used (LRU) cache.
+        </div>
+        <div class="canvas-container">
+            <canvas id="lruCanvas"></canvas>
+        </div>
+    </div>
+    <div class="navigation">
+        <button id="prevBtn" disabled>Previous</button>
+        <div class="step-indicator" id="stepIndicator">Step 1 of 6</div>
+        <button id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('lruCanvas');
+        const ctx = canvas.getContext('2d');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+
+        // Set canvas dimensions
+        function resizeCanvas() {
+            const container = document.querySelector('.canvas-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            render();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Define colors
+        const colors = {
+            primary: '#FF4800',
+            secondary: '#FD9F78',
+            black: '#000000',
+            white: '#FFFFFF',
+            highlight: '#FF4800'
+        };
+
+        // Animation parameters
+        let currentStep = 1;
+        const totalSteps = 6;
+        let animationFrame;
+        let animationProgress = 0;
+        let isAnimating = false;
+
+        // Define elements and their positions
+        const hashMap = {
+            x: canvas.width * 0.25,
+            y: 80,
+            width: canvas.width * 0.3,
+            height: 300,
+            entries: [
+                { key: 'A', value: null, highlight: false },
+                { key: 'B', value: null, highlight: false },
+                { key: 'C', value: null, highlight: false },
+                { key: 'D', value: null, highlight: false }
+            ]
+        };
+
+        const linkedList = {
+            x: canvas.width * 0.6,
+            y: 200,
+            nodeRadius: 35,
+            nodeSpacing: 120,
+            nodes: [
+                { key: 'A', prev: null, next: 'B', highlight: false, x: 0, y: 0 },
+                { key: 'B', prev: 'A', next: 'C', highlight: false, x: 0, y: 0 },
+                { key: 'C', prev: 'B', next: 'D', highlight: false, x: 0, y: 0 },
+                { key: 'D', prev: 'C', next: null, highlight: false, x: 0, y: 0 }
+            ],
+            head: 'A',  // LRU (oldest)
+            tail: 'D'   // MRU (newest)
+        };
+
+        // Calculate node positions
+        function updateNodePositions() {
+            const centerX = canvas.width * 0.65;
+            const centerY = canvas.height * 0.5;
+            const nodeSpacing = linkedList.nodeSpacing;
+            
+            // Position nodes in a horizontal line
+            const orderedNodes = [];
+            let current = linkedList.head;
+            
+            while (current) {
+                const node = linkedList.nodes.find(n => n.key === current);
+                if (node) {
+                    orderedNodes.push(node);
+                    current = node.next;
+                } else {
+                    break;
+                }
+            }
+            
+            const totalWidth = (orderedNodes.length - 1) * nodeSpacing;
+            const startX = centerX - totalWidth / 2;
+            
+            orderedNodes.forEach((node, index) => {
+                node.x = startX + index * nodeSpacing;
+                node.y = centerY;
+            });
+        }
+
+        // Explanations for each step
+        const explanations = [
+            "LRU Cache combines a HashMap and a Doubly Linked List. The HashMap provides O(1) lookups, while the Linked List maintains the order of usage.",
+            
+            "When we access an element (like 'C'), we first look it up in the HashMap to find its node in the linked list. This lookup is O(1) time complexity.",
+            
+            "After finding the node, we remove it from its current position in the linked list. We update the prev and next pointers of adjacent nodes.",
+            
+            "Next, we move the accessed node to the end of the linked list (Most Recently Used position). This indicates it was just accessed.",
+            
+            "The HashMap always points to the current location of nodes in the linked list, maintaining O(1) access time despite node movements.",
+            
+            "When the cache is full and we add a new item, we remove the head node (Least Recently Used) and add the new item at the tail (Most Recently Used)."
+        ];
+
+        // Render function
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update positions
+            updateNodePositions();
+            
+            // Draw the title for HashMap
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = colors.primary;
+            ctx.textAlign = 'center';
+            ctx.fillText('HashMap', hashMap.x + hashMap.width/2, hashMap.y - 20);
+            
+            // Draw the HashMap
+            ctx.strokeStyle = colors.secondary;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(hashMap.x, hashMap.y, hashMap.width, hashMap.height);
+            
+            // Draw HashMap entries
+            const entryHeight = hashMap.height / hashMap.entries.length;
+            hashMap.entries.forEach((entry, i) => {
+                const entryY = hashMap.y + i * entryHeight;
+                
+                // Draw entry box
+                if (entry.highlight) {
+                    ctx.fillStyle = colors.secondary;
+                    ctx.fillRect(hashMap.x, entryY, hashMap.width, entryHeight);
+                }
+                
+                ctx.strokeRect(hashMap.x, entryY, hashMap.width, entryHeight);
+                
+                // Draw key section
+                ctx.beginPath();
+                ctx.moveTo(hashMap.x + hashMap.width * 0.3, entryY);
+                ctx.lineTo(hashMap.x + hashMap.width * 0.3, entryY + entryHeight);
+                ctx.stroke();
+                
+                // Draw key and value text
+                ctx.fillStyle = colors.black;
+                ctx.font = '18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Key: ${entry.key}`, hashMap.x + hashMap.width * 0.15, entryY + entryHeight/2 + 6);
+                
+                // Draw pointer to node (if connected)
+                const node = linkedList.nodes.find(n => n.key === entry.key);
+                if (node) {
+                    ctx.fillText('→ Node', hashMap.x + hashMap.width * 0.65, entryY + entryHeight/2 + 6);
+                    
+                    // Draw connection line if highlighted
+                    if (entry.highlight) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = colors.highlight;
+                        ctx.lineWidth = 3;
+                        ctx.moveTo(hashMap.x + hashMap.width, entryY + entryHeight/2);
+                        ctx.lineTo(node.x - linkedList.nodeRadius, node.y);
+                        ctx.stroke();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = colors.secondary;
+                    }
+                } else {
+                    ctx.fillText('null', hashMap.x + hashMap.width * 0.65, entryY + entryHeight/2 + 6);
+                }
+            });
+            
+            // Draw the title for Doubly Linked List
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = colors.primary;
+            ctx.textAlign = 'center';
+            ctx.fillText('Doubly Linked List', canvas.width * 0.65, 40);
+            
+            // Draw LRU and MRU labels
+            ctx.font = 'bold 16px Arial';
+            const headNode = linkedList.nodes.find(n => n.key === linkedList.head);
+            const tailNode = linkedList.nodes.find(n => n.key === linkedList.tail);
+            
+            if (headNode) {
+                ctx.fillText('LRU (Least Recently Used)', headNode.x, headNode.y - linkedList.nodeRadius - 25);
+            }
+            
+            if (tailNode) {
+                ctx.fillText('MRU (Most Recently Used)', tailNode.x, tailNode.y - linkedList.nodeRadius - 25);
+            }
+            
+            // Draw the linked list connections
+            linkedList.nodes.forEach(node => {
+                if (node.next) {
+                    const nextNode = linkedList.nodes.find(n => n.key === node.next);
+                    if (nextNode) {
+                        // Draw next pointer
+                        ctx.beginPath();
+                        ctx.strokeStyle = colors.secondary;
+                        ctx.lineWidth = 2;
+                        ctx.moveTo(node.x + linkedList.nodeRadius, node.y);
+                        ctx.lineTo(nextNode.x - linkedList.nodeRadius, node.y);
+                        ctx.stroke();
+                        
+                        // Draw arrow
+                        ctx.beginPath();
+                        ctx.moveTo(nextNode.x - linkedList.nodeRadius, node.y);
+                        ctx.lineTo(nextNode.x - linkedList.nodeRadius - 10, node.y - 7);
+                        ctx.lineTo(nextNode.x - linkedList.nodeRadius - 10, node.y + 7);
+                        ctx.closePath();
+                        ctx.fillStyle = colors.secondary;
+                        ctx.fill();
+                    }
+                }
+                
+                if (node.prev) {
+                    const prevNode = linkedList.nodes.find(n => n.key === node.prev);
+                    if (prevNode) {
+                        // Draw prev pointer
+                        ctx.beginPath();
+                        ctx.strokeStyle = colors.secondary;
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 3]);
+                        ctx.moveTo(node.x - linkedList.nodeRadius, node.y + 15);
+                        ctx.lineTo(prevNode.x + linkedList.nodeRadius, node.y + 15);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        
+                        // Draw arrow
+                        ctx.beginPath();
+                        ctx.moveTo(prevNode.x + linkedList.nodeRadius, node.y + 15);
+                        ctx.lineTo(prevNode.x + linkedList.nodeRadius + 10, node.y + 8);
+                        ctx.lineTo(prevNode.x + linkedList.nodeRadius + 10, node.y + 22);
+                        ctx.closePath();
+                        ctx.fillStyle = colors.secondary;
+                        ctx.fill();
+                    }
+                }
+            });
+            
+            // Draw nodes
+            linkedList.nodes.forEach(node => {
+                // Draw circle
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, linkedList.nodeRadius, 0, Math.PI * 2);
+                ctx.fillStyle = node.highlight ? colors.highlight : colors.white;
+                ctx.fill();
+                ctx.strokeStyle = colors.primary;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Draw text
+                ctx.fillStyle = node.highlight ? colors.white : colors.black;
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.key, node.x, node.y + 7);
+            });
+        }
+
+        // Animation function
+        function animate() {
+            if (!isAnimating) return;
+            
+            animationProgress += 0.02;
+            if (animationProgress >= 1) {
+                animationProgress = 1;
+                isAnimating = false;
+            }
+            
+            // Different animations based on step
+            switch(currentStep) {
+                case 2: // Highlight HashMap lookup
+                    const cEntry = hashMap.entries.find(e => e.key === 'C');
+                    cEntry.highlight = true;
+                    const cNode = linkedList.nodes.find(n => n.key === 'C');
+                    cNode.highlight = animationProgress > 0.5;
+                    break;
+                
+                case 3: // Remove from current position
+                    // Update prev and next pointers in animation
+                    const bNode = linkedList.nodes.find(n => n.key === 'B');
+                    const cNode3 = linkedList.nodes.find(n => n.key === 'C');
+                    const dNode = linkedList.nodes.find(n => n.key === 'D');
+                    
+                    if (animationProgress > 0.5) {
+                        cNode3.highlight = true;
+                        bNode.next = 'D';
+                        dNode.prev = 'B';
+                        cNode3.prev = null;
+                        cNode3.next = null;
+                    }
+                    break;
+                
+                case 4: // Move to end
+                    const cNode4 = linkedList.nodes.find(n => n.key === 'C');
+                    const dNode4 = linkedList.nodes.find(n => n.key === 'D');
+                    
+                    if (animationProgress > 0.5) {
+                        cNode4.highlight = true;
+                        dNode4.next = 'C';
+                        cNode4.prev = 'D';
+                        linkedList.tail = 'C';
+                    }
+                    break;
+                
+                case 5: // HashMap maintains pointers
+                    hashMap.entries.forEach(entry => {
+                        entry.highlight = false;
+                    });
+                    linkedList.nodes.forEach(node => {
+                        node.highlight = false;
+                    });
+                    
+                    const cEntry5 = hashMap.entries.find(e => e.key === 'C');
+                    cEntry5.highlight = animationProgress > 0.3;
+                    const cNode5 = linkedList.nodes.find(n => n.key === 'C');
+                    cNode5.highlight = animationProgress > 0.6;
+                    break;
+                
+                case 6: // Cache eviction
+                    const aNode = linkedList.nodes.find(n => n.key === 'A');
+                    aNode.highlight = animationProgress < 0.5;
+                    
+                    if (animationProgress > 0.5) {
+                        linkedList.head = 'B';
+                        const bNode6 = linkedList.nodes.find(n => n.key === 'B');
+                        bNode6.prev = null;
+                    }
+                    break;
+            }
+            
+            render();
+            
+            if (isAnimating) {
+                animationFrame = requestAnimationFrame(animate);
+            }
+        }
+
+        // Navigation functions
+        function goToStep(step) {
+            // Reset highlights
+            hashMap.entries.forEach(entry => entry.highlight = false);
+            linkedList.nodes.forEach(node => node.highlight = false);
+            
+            // Reset linked list to initial state
+            linkedList.nodes = [
+                { key: 'A', prev: null, next: 'B', highlight: false, x: 0, y: 0 },
+                { key: 'B', prev: 'A', next: 'C', highlight: false, x: 0, y: 0 },
+                { key: 'C', prev: 'B', next: 'D', highlight: false, x: 0, y: 0 },
+                { key: 'D', prev: 'C', next: null, highlight: false, x: 0, y: 0 }
+            ];
+            linkedList.head = 'A';
+            linkedList.tail = 'D';
+            
+            // Apply changes for each step
+            if (step >= 3) {
+                // After step 3, C is removed from its position
+                const bNode = linkedList.nodes.find(n => n.key === 'B');
+                const dNode = linkedList.nodes.find(n => n.key === 'D');
+                bNode.next = 'D';
+                dNode.prev = 'B';
+                
+                const cNode = linkedList.nodes.find(n => n.key === 'C');
+                cNode.prev = null;
+                cNode.next = null;
+            }
+            
+            if (step >= 4) {
+                // After step 4, C is at the end
+                const cNode = linkedList.nodes.find(n => n.key === 'C');
+                const dNode = linkedList.nodes.find(n => n.key === 'D');
+                dNode.next = 'C';
+                cNode.prev = 'D';
+                linkedList.tail = 'C';
+            }
+            
+            if (step >= 6) {
+                // After step 6, A is evicted
+                linkedList.head = 'B';
+                const bNode = linkedList.nodes.find(n => n.key === 'B');
+                bNode.prev = null;
+            }
+            
+            // Update explanation and indicator
+            explanation.textContent = explanations[step - 1];
+            stepIndicator.textContent = `Step ${step} of ${totalSteps}`;
+            
+            // Update buttons
+            prevBtn.disabled = step === 1;
+            nextBtn.disabled = step === totalSteps;
+            
+            currentStep = step;
+            render();
+            
+            // Start animation for steps 2+
+            if (step > 1) {
+                isAnimating = true;
+                animationProgress = 0;
+                cancelAnimationFrame(animationFrame);
+                animationFrame = requestAnimationFrame(animate);
+            }
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                goToStep(currentStep + 1);
+            }
+        });
+
+        // Initialize the visualization
+        goToStep(1);
+    </script>
+</body>
+</html>
