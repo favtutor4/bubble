@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Interleaving Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .explanation {
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .queue {
+            display: flex;
+            margin: 20px 0;
+            transition: all 0.5s ease;
+        }
+
+        .element {
+            width: 40px;
+            height: 40px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .queue-label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #FF4800;
+            align-self: center;
+        }
+
+        .arrow {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #FF4800;
+        }
+
+        .highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #FD9F78;
+        }
+
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .step-indicator {
+            margin-top: 20px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .moving {
+            position: absolute;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Queue Interleaving Visualization</h1>
+        
+        <div class="explanation">
+            <p>Queue interleaving is a process where we take elements from the first half and second half of a queue and arrange them in alternating positions. For example, with [1, 2, 3, 4, 5, 6, 7, 8], we want to create [1, 5, 2, 6, 3, 7, 4, 8].</p>
+        </div>
+        
+        <div class="visualization" id="visualization">
+            <div class="queue">
+                <div class="queue-label">Original Queue:</div>
+                <div class="element">1</div>
+                <div class="element">2</div>
+                <div class="element">3</div>
+                <div class="element">4</div>
+                <div class="element">5</div>
+                <div class="element">6</div>
+                <div class="element">7</div>
+                <div class="element">8</div>
+            </div>
+            
+            <div class="arrow">↓</div>
+            
+            <div class="queue">
+                <div class="queue-label">Interleaved Queue:</div>
+                <div class="element" id="result1"></div>
+                <div class="element" id="result2"></div>
+                <div class="element" id="result3"></div>
+                <div class="element" id="result4"></div>
+                <div class="element" id="result5"></div>
+                <div class="element" id="result6"></div>
+                <div class="element" id="result7"></div>
+                <div class="element" id="result8"></div>
+            </div>
+        </div>
+        
+        <div id="stepDescription" class="explanation">
+            Start the animation to see how queue interleaving works step by step.
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 0 of 8</div>
+    </div>
+
+    <script>
+        const originalQueue = [1, 2, 3, 4, 5, 6, 7, 8];
+        const interleavedQueue = [1, 5, 2, 6, 3, 7, 4, 8];
+        const sourceIndices = [0, 4, 1, 5, 2, 6, 3, 7];
+        
+        let currentStep = 0;
+        let isAnimating = false;
+        
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const stepDescription = document.getElementById('stepDescription');
+        const visualization = document.getElementById('visualization');
+        
+        const descriptions = [
+            "We start with the original queue [1, 2, 3, 4, 5, 6, 7, 8]. Our goal is to interleave it so that elements from the first half alternate with elements from the second half.",
+            "Step 1: First element (1) from the first half moves to the first position of the result.",
+            "Step 2: First element (5) from the second half moves to the second position of the result.",
+            "Step 3: Second element (2) from the first half moves to the third position of the result.",
+            "Step 4: Second element (6) from the second half moves to the fourth position of the result.",
+            "Step 5: Third element (3) from the first half moves to the fifth position of the result.",
+            "Step 6: Third element (7) from the second half moves to the sixth position of the result.",
+            "Step 7: Fourth element (4) from the first half moves to the seventh position of the result.",
+            "Step 8: Fourth element (8) from the second half moves to the eighth position of the result. The interleaving is complete!"
+        ];
+        
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 0 || isAnimating;
+            nextBtn.disabled = currentStep === 8 || isAnimating;
+            stepIndicator.textContent = `Step ${currentStep} of 8`;
+            stepDescription.textContent = descriptions[currentStep];
+        }
+        
+        function resetHighlights() {
+            const elements = document.querySelectorAll('.element');
+            elements.forEach(elem => {
+                elem.classList.remove('highlight');
+            });
+        }
+        
+        function animateElement(sourceIndex, targetPosition) {
+            isAnimating = true;
+            
+            // Get the source element
+            const sourceElements = document.querySelectorAll('.queue:first-of-type .element');
+            const sourceElement = sourceElements[sourceIndex];
+            
+            // Get the target element
+            const targetElement = document.getElementById(`result${targetPosition}`);
+            
+            // Highlight the source
+            resetHighlights();
+            sourceElement.classList.add('highlight');
+            
+            // Create a clone for animation
+            const clone = sourceElement.cloneNode(true);
+            clone.classList.add('moving');
+            
+            // Get positions
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = targetElement.getBoundingClientRect();
+            const visualRect = visualization.getBoundingClientRect();
+            
+            // Set initial position
+            clone.style.left = (sourceRect.left - visualRect.left) + 'px';
+            clone.style.top = (sourceRect.top - visualRect.top) + 'px';
+            clone.style.width = sourceRect.width + 'px';
+            clone.style.height = sourceRect.height + 'px';
+            
+            visualization.appendChild(clone);
+            
+            // Animate
+            setTimeout(() => {
+                clone.style.left = (targetRect.left - visualRect.left) + 'px';
+                clone.style.top = (targetRect.top - visualRect.top) + 'px';
+                
+                setTimeout(() => {
+                    // Update target with value
+                    targetElement.textContent = sourceElement.textContent;
+                    targetElement.classList.add('highlight');
+                    
+                    // Remove clone
+                    clone.remove();
+                    isAnimating = false;
+                    updateButtons();
+                }, 500);
+            }, 100);
+        }
+        
+        function nextStep() {
+            if (currentStep < 8 && !isAnimating) {
+                currentStep++;
+                
+                if (currentStep > 0 && currentStep <= 8) {
+                    const targetPosition = currentStep;
+                    const sourceIndex = sourceIndices[currentStep - 1];
+                    animateElement(sourceIndex, targetPosition);
+                }
+                
+                updateButtons();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 0 && !isAnimating) {
+                // Clear the current position
+                if (currentStep <= 8) {
+                    document.getElementById(`result${currentStep}`).textContent = '';
+                    document.getElementById(`result${currentStep}`).classList.remove('highlight');
+                }
+                
+                currentStep--;
+                resetHighlights();
+                updateButtons();
+            }
+        }
+        
+        nextBtn.addEventListener('click', nextStep);
+        prevBtn.addEventListener('click', prevStep);
+        
+        // Initialize
+        updateButtons();
+    </script>
+</body>
+</html>
