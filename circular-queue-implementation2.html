@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimized Circular Queue Wraparound</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        .array-cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            font-size: 18px;
+            font-weight: bold;
+            position: relative;
+            background-color: #FD9F78;
+            opacity: 0.7;
+            transition: all 0.5s ease;
+        }
+        .array-cell.active {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            opacity: 1;
+        }
+        .array-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .pointers {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        .pointer {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+        .pointer-label {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .pointer-value {
+            background-color: #FF4800;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .explanation {
+            margin: 30px 0;
+            line-height: 1.6;
+        }
+        #navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 40px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .operation {
+            margin-top: 30px;
+            padding: 15px;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            background-color: #FFF8F5;
+        }
+        .operation-title {
+            color: #FF4800;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #FF4800;
+            top: -20px;
+        }
+        .modulo-example {
+            background-color: #FFF8F5;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .highlight {
+            background-color: #FD9F78;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        #step-counter {
+            color: #FF4800;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Optimized Circular Queue Wraparound</h1>
+        
+        <div id="step-counter">Step 1 of 5</div>
+        
+        <div class="array-container">
+            <div class="array-cell" id="cell0">
+                <span class="cell-value">C</span>
+                <span class="array-index">0</span>
+            </div>
+            <div class="array-cell" id="cell1">
+                <span class="cell-value">D</span>
+                <span class="array-index">1</span>
+            </div>
+            <div class="array-cell" id="cell2">
+                <span class="array-index">2</span>
+            </div>
+            <div class="array-cell" id="cell3">
+                <span class="cell-value">A</span>
+                <span class="array-index">3</span>
+            </div>
+            <div class="array-cell" id="cell4">
+                <span class="cell-value">B</span>
+                <span class="array-index">4</span>
+            </div>
+        </div>
+        
+        <div class="pointers">
+            <div class="pointer">
+                <span class="pointer-label">Front:</span>
+                <span class="pointer-value" id="front-value">3</span>
+            </div>
+            <div class="pointer">
+                <span class="pointer-label">Rear:</span>
+                <span class="pointer-value" id="rear-value">1</span>
+            </div>
+            <div class="pointer">
+                <span class="pointer-label">Count:</span>
+                <span class="pointer-value" id="count-value">4</span>
+            </div>
+        </div>
+        
+        <div id="explanation" class="explanation">
+            This is a circular queue with size 5. Elements are stored at positions 3, 4, 0, and 1 after wraparound has occurred. The front pointer is at index 3, and the rear pointer is at index 1. The queue contains 4 elements.
+        </div>
+        
+        <div id="modulo-example" class="modulo-example">
+            <strong>Modulo Operation</strong>: The modulo operation (%) allows the queue to wrap around when it reaches the end of the array, creating a circular structure.
+        </div>
+        
+        <div id="navigation">
+            <button id="prev-btn" class="nav-btn" disabled>Previous</button>
+            <button id="next-btn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                title: "Initial State",
+                explanation: "This is a circular queue with size 5. Elements are stored at positions 3, 4, 0, and 1 after wraparound has occurred. The front pointer is at index 3, and the rear pointer is at index 1. The queue contains 4 elements.",
+                front: 3,
+                rear: 1,
+                count: 4,
+                activeCells: [3, 4, 0, 1],
+                moduloExample: "<strong>Modulo Operation</strong>: The modulo operation (%) allows the queue to wrap around when it reaches the end of the array, creating a circular structure."
+            },
+            {
+                title: "Understanding Front",
+                explanation: "The front pointer (3) points to the first element in the queue. We always dequeue from the front. In this case, the first element 'A' is at index 3.",
+                front: 3,
+                rear: 1,
+                count: 4,
+                activeCells: [3],
+                moduloExample: "<strong>Front Element Access</strong>: We can access the front element using the front pointer: queue[front] = queue[3] = 'A'"
+            },
+            {
+                title: "Understanding Rear",
+                explanation: "The rear pointer (1) points to the last element that was added to the queue. We always enqueue new elements at (rear + 1) % size. The last element 'D' is at index 1.",
+                front: 3,
+                rear: 1,
+                count: 4,
+                activeCells: [1],
+                moduloExample: "<strong>Next Rear Position</strong>: If we want to add a new element, the next rear position would be (rear + 1) % size = (1 + 1) % 5 = 2"
+            },
+            {
+                title: "Wraparound Concept",
+                explanation: "Notice how the queue wraps around the array! After index 4, the next element is at index 0. This is the key benefit of a circular queue - it efficiently uses all available space.",
+                front: 3,
+                rear: 1,
+                count: 4,
+                activeCells: [3, 4, 0, 1],
+                moduloExample: "<strong>Wraparound Example</strong>: When we moved past index 4, the modulo operation wrapped around to 0: (4 + 1) % 5 = 0"
+            },
+            {
+                title: "Queue Operations with Modulo",
+                explanation: "In a circular queue, we use modulo arithmetic for all operations to handle the wraparound naturally. When dequeueing, front becomes (front + 1) % size. When enqueueing, rear becomes (rear + 1) % size.",
+                front: 3,
+                rear: 1,
+                count: 4,
+                activeCells: [3, 4, 0, 1],
+                moduloExample: "<strong>Dequeue Operation</strong>: After removing 'A', front would become (front + 1) % size = (3 + 1) % 5 = 4<br><strong>Enqueue Operation</strong>: If we add a new element 'E', rear would become (rear + 1) % size = (1 + 1) % 5 = 2"
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        function updateDisplay() {
+            // Update step counter
+            document.getElementById('step-counter').textContent = `Step ${currentStep + 1} of ${steps.length}`;
+            
+            // Update cell highlight
+            const cells = document.querySelectorAll('.array-cell');
+            cells.forEach((cell, index) => {
+                if (steps[currentStep].activeCells.includes(index)) {
+                    cell.classList.add('active');
+                } else {
+                    cell.classList.remove('active');
+                }
+            });
+            
+            // Update pointer values
+            document.getElementById('front-value').textContent = steps[currentStep].front;
+            document.getElementById('rear-value').textContent = steps[currentStep].rear;
+            document.getElementById('count-value').textContent = steps[currentStep].count;
+            
+            // Update explanation
+            document.getElementById('explanation').textContent = steps[currentStep].explanation;
+            
+            // Update modulo example
+            document.getElementById('modulo-example').innerHTML = steps[currentStep].moduloExample;
+            
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+        
+        // Set initial display
+        updateDisplay();
+        
+        // Initial cell content (A, B, C, D)
+        document.querySelector('#cell3 .cell-value').textContent = 'A';
+        document.querySelector('#cell4 .cell-value').textContent = 'B';
+        document.querySelector('#cell0 .cell-value').textContent = 'C';
+        document.querySelector('#cell1 .cell-value').textContent = 'D';
+    </script>
+</body>
+</html>
