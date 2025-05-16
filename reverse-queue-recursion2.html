@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Queue Reversal Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            background-color: #FFFFFF;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 500px;
+            position: relative;
+        }
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FF4800;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .step-description {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .queue-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-direction: column;
+        }
+        .queue {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .queue-box {
+            width: 40px;
+            height: 40px;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        .queue-label {
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .highlighted {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            transform: scale(1.1);
+        }
+        .queue-front, .queue-rear {
+            font-size: 0.8rem;
+            color: #000000;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .action {
+            font-size: 1rem;
+            background-color: #FD9F78;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .arrow {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #FF4800;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .step-counter {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #000000;
+        }
+        .recursion-level {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .dequeued-element {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .divider {
+            width: 80%;
+            border-top: 2px dashed #FD9F78;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recursive Queue Reversal Process</h1>
+        <div class="animation-container" id="animationContainer">
+            <!-- Content will be dynamically added here -->
+        </div>
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+        <div class="step-counter" id="stepCounter">Step 1 of 11</div>
+    </div>
+
+    <script>
+        // Animation steps
+        const steps = [
+            {
+                title: "Initial Queue",
+                description: "We start with a queue [1, 2, 3, 4, 5] that we want to reverse using recursion.",
+                queue: [1, 2, 3, 4, 5],
+                recursionLevel: 0,
+                highlight: null,
+                action: null,
+                dequeued: null
+            },
+            {
+                title: "Step 1: Beginning Recursion",
+                description: "First, we dequeue the front element (1) and make a recursive call with the remaining queue.",
+                queue: [1, 2, 3, 4, 5],
+                recursionLevel: 0,
+                highlight: 0,
+                action: "Dequeue 1 and make recursive call with [2, 3, 4, 5]",
+                dequeued: null
+            },
+            {
+                title: "Recursion Level 1",
+                description: "Now we're working with queue [2, 3, 4, 5].",
+                queue: [2, 3, 4, 5],
+                recursionLevel: 1,
+                highlight: null,
+                action: null,
+                dequeued: 1
+            },
+            {
+                title: "Recursion Level 1: Dequeue",
+                description: "We dequeue the front element (2) and make another recursive call with the remaining queue.",
+                queue: [2, 3, 4, 5],
+                recursionLevel: 1,
+                highlight: 0,
+                action: "Dequeue 2 and make recursive call with [3, 4, 5]",
+                dequeued: 1
+            },
+            {
+                title: "Recursion Level 2",
+                description: "Now we're working with queue [3, 4, 5].",
+                queue: [3, 4, 5],
+                recursionLevel: 2,
+                highlight: null,
+                action: null,
+                dequeued: [1, 2]
+            },
+            {
+                title: "Recursion Level 2: Dequeue",
+                description: "We dequeue the front element (3) and make another recursive call with the remaining queue.",
+                queue: [3, 4, 5],
+                recursionLevel: 2,
+                highlight: 0,
+                action: "Dequeue 3 and make recursive call with [4, 5]",
+                dequeued: [1, 2]
+            },
+            {
+                title: "Recursion Level 3",
+                description: "Now we're working with queue [4, 5].",
+                queue: [4, 5],
+                recursionLevel: 3,
+                highlight: null,
+                action: null,
+                dequeued: [1, 2, 3]
+            },
+            {
+                title: "Recursion Level 3: Dequeue",
+                description: "We dequeue the front element (4) and make another recursive call with the remaining queue.",
+                queue: [4, 5],
+                recursionLevel: 3,
+                highlight: 0,
+                action: "Dequeue 4 and make recursive call with [5]",
+                dequeued: [1, 2, 3]
+            },
+            {
+                title: "Recursion Level 4",
+                description: "Now we're working with queue [5].",
+                queue: [5],
+                recursionLevel: 4,
+                highlight: null,
+                action: null,
+                dequeued: [1, 2, 3, 4]
+            },
+            {
+                title: "Recursion Level 4: Base Case",
+                description: "With only one element left, we dequeue 5 but don't make further recursive calls. This is our base case.",
+                queue: [5],
+                recursionLevel: 4,
+                highlight: 0,
+                action: "Dequeue 5 and reach empty queue (base case)",
+                dequeued: [1, 2, 3, 4]
+            },
+            {
+                title: "Unwinding the Recursion",
+                description: "As the recursion unwinds, each function call enqueues its dequeued element to the end of the queue returned from the recursive call.",
+                queue: [5, 4, 3, 2, 1],
+                recursionLevel: 0,
+                highlight: null,
+                action: "Final reversed queue: [5, 4, 3, 2, 1]",
+                dequeued: null,
+                unwinding: true
+            }
+        ];
+
+        // Variables to track current step
+        let currentStep = 0;
+        const totalSteps = steps.length;
+
+        // DOM elements
+        const animationContainer = document.getElementById('animationContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepCounter = document.getElementById('stepCounter');
+
+        // Initialize
+        updateStep();
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+
+        // Update the animation container based on current step
+        function updateStep() {
+            const step = steps[currentStep];
+            
+            // Clear the container
+            animationContainer.innerHTML = '';
+            
+            // Add recursion level indicator
+            const recursionLevelEl = document.createElement('div');
+            recursionLevelEl.className = 'recursion-level';
+            recursionLevelEl.textContent = `Recursion Level: ${step.recursionLevel}`;
+            animationContainer.appendChild(recursionLevelEl);
+            
+            // Add step title
+            const titleEl = document.createElement('div');
+            titleEl.className = 'step-title';
+            titleEl.textContent = step.title;
+            animationContainer.appendChild(titleEl);
+            
+            // Add step description
+            const descriptionEl = document.createElement('div');
+            descriptionEl.className = 'step-description';
+            descriptionEl.textContent = step.description;
+            animationContainer.appendChild(descriptionEl);
+            
+            // Show dequeued elements if available
+            if (step.dequeued) {
+                const dequeuedContainerEl = document.createElement('div');
+                dequeuedContainerEl.className = 'queue-container';
+                
+                const dequeuedLabelEl = document.createElement('div');
+                dequeuedLabelEl.className = 'queue-label';
+                dequeuedLabelEl.textContent = 'Elements Dequeued So Far:';
+                dequeuedContainerEl.appendChild(dequeuedLabelEl);
+                
+                const dequeuedQueueEl = document.createElement('div');
+                dequeuedQueueEl.className = 'queue';
+                
+                // Create boxes for dequeued elements
+                if (Array.isArray(step.dequeued)) {
+                    step.dequeued.forEach(item => {
+                        const boxEl = document.createElement('div');
+                        boxEl.className = 'queue-box';
+                        boxEl.textContent = item;
+                        dequeuedQueueEl.appendChild(boxEl);
+                    });
+                } else {
+                    const boxEl = document.createElement('div');
+                    boxEl.className = 'queue-box';
+                    boxEl.textContent = step.dequeued;
+                    dequeuedQueueEl.appendChild(boxEl);
+                }
+                
+                dequeuedContainerEl.appendChild(dequeuedQueueEl);
+                animationContainer.appendChild(dequeuedContainerEl);
+                
+                // Add divider
+                const dividerEl = document.createElement('div');
+                dividerEl.className = 'divider';
+                animationContainer.appendChild(dividerEl);
+            }
+            
+            // Show current queue state
+            const queueContainerEl = document.createElement('div');
+            queueContainerEl.className = 'queue-container';
+            
+            const queueLabelEl = document.createElement('div');
+            queueLabelEl.className = 'queue-label';
+            queueLabelEl.textContent = 'Current Queue:';
+            queueContainerEl.appendChild(queueLabelEl);
+            
+            const queueEl = document.createElement('div');
+            queueEl.className = 'queue';
+            
+            // Create boxes for queue elements
+            if (step.queue.length > 0) {
+                step.queue.forEach((item, index) => {
+                    const boxEl = document.createElement('div');
+                    boxEl.className = 'queue-box';
+                    if (index === step.highlight) {
+                        boxEl.classList.add('highlighted');
+                    }
+                    boxEl.textContent = item;
+                    queueEl.appendChild(boxEl);
+                });
+            } else {
+                const emptyEl = document.createElement('div');
+                emptyEl.textContent = 'Empty Queue';
+                queueEl.appendChild(emptyEl);
+            }
+            
+            queueContainerEl.appendChild(queueEl);
+            
+            // Add front and rear indicators if there are elements
+            if (step.queue.length > 0) {
+                const frontRearEl = document.createElement('div');
+                frontRearEl.style.display = 'flex';
+                frontRearEl.style.justifyContent = 'space-between';
+                frontRearEl.style.width = `${step.queue.length * 50}px`;
+                
+                const frontEl = document.createElement('div');
+                frontEl.className = 'queue-front';
+                frontEl.textContent = 'Front';
+                frontRearEl.appendChild(frontEl);
+                
+                const rearEl = document.createElement('div');
+                rearEl.className = 'queue-rear';
+                rearEl.textContent = 'Rear';
+                frontRearEl.appendChild(rearEl);
+                
+                queueContainerEl.appendChild(frontRearEl);
+            }
+            
+            animationContainer.appendChild(queueContainerEl);
+            
+            // Show action if available
+            if (step.action) {
+                const actionEl = document.createElement('div');
+                actionEl.className = 'action';
+                actionEl.textContent = step.action;
+                animationContainer.appendChild(actionEl);
+            }
+            
+            // Final result visualization for the unwinding step
+            if (step.unwinding) {
+                const unwindingExplanationEl = document.createElement('div');
+                unwindingExplanationEl.className = 'step-description';
+                unwindingExplanationEl.innerHTML = `
+                    <p>The recursion unwinding process:</p>
+                    <p>1. Base case returns [5]</p>
+                    <p>2. Level 3 adds 4: [5, 4]</p>
+                    <p>3. Level 2 adds 3: [5, 4, 3]</p>
+                    <p>4. Level 1 adds 2: [5, 4, 3, 2]</p>
+                    <p>5. Level 0 adds 1: [5, 4, 3, 2, 1]</p>
+                `;
+                animationContainer.appendChild(unwindingExplanationEl);
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+            
+            // Update step counter
+            stepCounter.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
+        }
+    </script>
+</body>
+</html>
