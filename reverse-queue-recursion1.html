@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Reversal Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .queue-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .queues {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .queue {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .queue-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FF4800;
+            font-size: 18px;
+        }
+        .queue-elements {
+            display: flex;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .element {
+            width: 50px;
+            height: 50px;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-right: 1px solid #FF4800;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .element:last-child {
+            border-right: none;
+        }
+        .arrows {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .arrow-label {
+            margin-bottom: 5px;
+            color: #000000;
+        }
+        .arrow-icon {
+            font-size: 24px;
+            color: #FF4800;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #FF4800;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .hidden {
+            opacity: 0;
+        }
+        .reversal-animation {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: #FF4800;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Queue Reversal Visualization</h1>
+        
+        <div class="queue-container">
+            <div class="queues">
+                <div class="queue">
+                    <div class="queue-title">Original Queue</div>
+                    <div class="queue-elements original-queue">
+                        <div class="element">10</div>
+                        <div class="element">20</div>
+                        <div class="element">30</div>
+                        <div class="element">40</div>
+                        <div class="element">50</div>
+                    </div>
+                    <div class="arrows">
+                        <div class="arrow">
+                            <div class="arrow-label">Front</div>
+                            <div class="arrow-icon">↑</div>
+                        </div>
+                        <div class="arrow">
+                            <div class="arrow-label">Rear</div>
+                            <div class="arrow-icon">↑</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="reversal-animation">⟳</div>
+                
+                <div class="queue">
+                    <div class="queue-title">Reversed Queue</div>
+                    <div class="queue-elements reversed-queue">
+                        <div class="element">50</div>
+                        <div class="element">40</div>
+                        <div class="element">30</div>
+                        <div class="element">20</div>
+                        <div class="element">10</div>
+                    </div>
+                    <div class="arrows">
+                        <div class="arrow">
+                            <div class="arrow-label">Front</div>
+                            <div class="arrow-icon">↑</div>
+                        </div>
+                        <div class="arrow">
+                            <div class="arrow-label">Rear</div>
+                            <div class="arrow-icon">↑</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="explanation" class="explanation">
+                <p>In a queue, elements are added at the rear and removed from the front (FIFO - First In, First Out).</p>
+                <p>To reverse a queue, we need to change the order so the first element becomes the last, and the last becomes the first.</p>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+        
+        <div id="stepIndicator" class="step-indicator">Step 1 of 4</div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                explanation: "In a queue, elements are added at the rear and removed from the front (FIFO - First In, First Out).<br><br>To reverse a queue, we need to change the order so the first element becomes the last, and the last becomes the first."
+            },
+            {
+                explanation: "To reverse a queue, we need to reverse the order of elements:<br><br>1. Original queue has front at 10 and rear at 50<br>2. After reversal, the front will be at 50 and the rear at 10",
+                animate: true
+            },
+            {
+                explanation: "The reversed queue has the exact opposite order of the original queue:<br><br>- Original queue: [10, 20, 30, 40, 50] (front at 10)<br>- Reversed queue: [50, 40, 30, 20, 10] (front at 50)",
+                showReversed: true
+            },
+            {
+                explanation: "Key points about queue reversal:<br><br>- The front element of the original queue becomes the rear element of the reversed queue<br>- The rear element of the original queue becomes the front element of the reversed queue<br>- All elements maintain their relative positions but in reverse order",
+                showReversed: true
+            }
+        ];
+        
+        let currentStep = 0;
+        const totalSteps = steps.length;
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const explanationDiv = document.getElementById('explanation');
+        const originalElements = document.querySelectorAll('.original-queue .element');
+        const reversedElements = document.querySelectorAll('.reversed-queue .element');
+        const reversalAnimation = document.querySelector('.reversal-animation');
+        
+        // Initially hide the reversed queue elements
+        reversedElements.forEach(element => {
+            element.style.opacity = '0';
+        });
+        
+        function updateStep() {
+            // Update explanation
+            explanationDiv.innerHTML = steps[currentStep].explanation;
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+            
+            // Handle animations
+            if (steps[currentStep].animate) {
+                animateReversal();
+            }
+            
+            // Show reversed queue if needed
+            if (steps[currentStep].showReversed) {
+                reversedElements.forEach(element => {
+                    element.style.opacity = '1';
+                });
+            } else {
+                reversedElements.forEach(element => {
+                    element.style.opacity = '0';
+                });
+            }
+        }
+        
+        function animateReversal() {
+            // Show reversal animation
+            reversalAnimation.style.opacity = '1';
+            
+            setTimeout(() => {
+                reversalAnimation.style.opacity = '0';
+                
+                // Show reversed elements with a delay
+                reversedElements.forEach((element, index) => {
+                    setTimeout(() => {
+                        element.style.opacity = '1';
+                    }, index * 200);
+                });
+            }, 1500);
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize
+        updateStep();
+    </script>
+</body>
+</html>
