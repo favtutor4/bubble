@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Illustration of Oranges</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .description {
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #000000;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .cell-value {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .empty {
+            background-color: #FFFFFF;
+        }
+        .fresh {
+            background-color: #FD9F78;
+        }
+        .rotten {
+            background-color: #FF4800;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .nav-button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 3px;
+            border: 1px solid #000000;
+        }
+        .explanation {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .step-indicator {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .orange {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grid Illustration of Oranges</h1>
+        
+        <div class="description">
+            This animation illustrates a grid of oranges where each cell can be empty (0), contain a fresh orange (1), or contain a rotten orange (2).
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FFFFFF;"></div>
+                <span>Empty (0)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FD9F78;"></div>
+                <span>Fresh Orange (1)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF4800;"></div>
+                <span>Rotten Orange (2)</span>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            A 3x3 grid showing empty cells (0), fresh oranges (1), and rotten oranges (2) at the initial state.
+        </div>
+        
+        <div class="grid-container" id="grid">
+            <!-- Grid will be populated by JavaScript -->
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">
+            Step 1: Initial Grid
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" disabled>Previous</button>
+            <button class="nav-button" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial grid data
+        const gridStates = [
+            // Step 1: Initial state
+            [
+                [1, 2, 1],
+                [0, 1, 0],
+                [1, 0, 2]
+            ],
+            // Step 2: Showing individual values
+            [
+                [1, 2, 1],
+                [0, 1, 0],
+                [1, 0, 2]
+            ],
+            // Step 3: Focus on fresh oranges
+            [
+                [1, 2, 1],
+                [0, 1, 0],
+                [1, 0, 2]
+            ],
+            // Step 4: Focus on rotten oranges
+            [
+                [1, 2, 1],
+                [0, 1, 0],
+                [1, 0, 2]
+            ],
+            // Step 5: Empty cells
+            [
+                [1, 2, 1],
+                [0, 1, 0],
+                [1, 0, 2]
+            ]
+        ];
+
+        const explanations = [
+            "A 3x3 grid showing empty cells (0), fresh oranges (1), and rotten oranges (2) at the initial state.",
+            "Each cell is labeled with its value: 0 for empty, 1 for fresh orange, 2 for rotten orange.",
+            "Fresh oranges (value 1) are shown in light orange color. They're still good but can be contaminated by nearby rotten oranges.",
+            "Rotten oranges (value 2) are shown in dark orange color. They can contaminate fresh oranges that are adjacent to them.",
+            "Empty cells (value 0) have no oranges in them and serve as boundaries that prevent rot from spreading."
+        ];
+        
+        const stepTitles = [
+            "Step 1: Initial Grid",
+            "Step 2: Cell Values",
+            "Step 3: Fresh Oranges",
+            "Step 4: Rotten Oranges",
+            "Step 5: Empty Cells"
+        ];
+
+        let currentStep = 0;
+        const grid = document.getElementById('grid');
+        const explanation = document.getElementById('explanation');
+        const stepIndicator = document.getElementById('step-indicator');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Initialize the grid
+        function initGrid() {
+            grid.innerHTML = '';
+            const currentGrid = gridStates[currentStep];
+            
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    const value = currentGrid[i][j];
+                    
+                    cell.className = 'cell';
+                    if (value === 0) {
+                        cell.classList.add('empty');
+                    } else if (value === 1) {
+                        cell.classList.add('fresh');
+                    } else if (value === 2) {
+                        cell.classList.add('rotten');
+                    }
+                    
+                    // Add value label
+                    const valueLabel = document.createElement('div');
+                    valueLabel.className = 'cell-value';
+                    valueLabel.textContent = value;
+                    cell.appendChild(valueLabel);
+                    
+                    // Add orange visual if not empty
+                    if (value !== 0) {
+                        const orange = document.createElement('div');
+                        orange.className = 'orange';
+                        orange.style.backgroundColor = value === 1 ? '#FD9F78' : '#FF4800';
+                        orange.textContent = value === 1 ? "🍊" : "🦠";
+                        cell.appendChild(orange);
+                    }
+                    
+                    grid.appendChild(cell);
+                }
+            }
+            
+            // Highlight specific cells based on the current step
+            if (currentStep === 2) {
+                highlightCells(1); // Highlight fresh oranges
+            } else if (currentStep === 3) {
+                highlightCells(2); // Highlight rotten oranges
+            } else if (currentStep === 4) {
+                highlightCells(0); // Highlight empty cells
+            }
+            
+            explanation.textContent = explanations[currentStep];
+            stepIndicator.textContent = stepTitles[currentStep];
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === gridStates.length - 1;
+        }
+        
+        function highlightCells(valueToHighlight) {
+            const cells = document.querySelectorAll('.cell');
+            const currentGrid = gridStates[currentStep];
+            
+            let index = 0;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (currentGrid[i][j] !== valueToHighlight) {
+                        cells[index].style.opacity = '0.3';
+                    } else {
+                        cells[index].style.opacity = '1';
+                        cells[index].style.transform = 'scale(1.1)';
+                        cells[index].style.zIndex = '1';
+                    }
+                    index++;
+                }
+            }
+        }
+
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                initGrid();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < gridStates.length - 1) {
+                currentStep++;
+                initGrid();
+            }
+        });
+
+        // Initialize the grid when the page loads
+        initGrid();
+    </script>
+</body>
+</html>
