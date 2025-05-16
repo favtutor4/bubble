@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Petrol Pump Tour</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .canvas-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto 30px;
+        }
+        canvas {
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+        }
+        .explanation {
+            margin-bottom: 30px;
+            text-align: left;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #FFF5F1;
+            border: 1px solid #FD9F78;
+            line-height: 1.6;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pump-info {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Circular Petrol Pump Tour Illustration</h1>
+
+        <div class="canvas-container">
+            <canvas id="petrolCanvas" width="500" height="500"></canvas>
+        </div>
+
+        <div class="pump-info" id="pumpInfo">Starting at Pump 0</div>
+
+        <div class="explanation" id="explanation">
+            <p>Welcome to the Circular Petrol Pump Tour! This illustration shows 5 petrol pumps arranged in a circle.</p>
+            <p>Each pump has two important values:</p>
+            <ul>
+                <li><strong style="color: #FF4800;">Petrol:</strong> The amount of petrol available at this pump</li>
+                <li><strong style="color: #FF4800;">Distance:</strong> The distance to the next pump</li>
+            </ul>
+            <p>Our vehicle (🚗) starts at a pump and needs to complete a full circular tour, visiting all pumps and returning to the starting point without running out of petrol.</p>
+            <p>Click "Next" to see the vehicle attempt the journey from each starting pump!</p>
+        </div>
+
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('petrolCanvas');
+        const ctx = canvas.getContext('2d');
+        const pumpInfo = document.getElementById('pumpInfo');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Petrol pump data: [petrol, distance to next]
+        const pumpData = [
+            [4, 6], // Pump 0
+            [6, 5], // Pump 1
+            [7, 3], // Pump 2
+            [4, 5], // Pump 3
+            [3, 7]  // Pump 4
+        ];
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 180;
+        
+        let currentStartPump = 0;
+        let animationStep = 0;
+        let currentPosition = 0;
+        let petrolInTank = 0;
+        let isAnimating = false;
+        let animationId;
+        let currentExplanationIndex = 0;
+
+        // Explanations for each step
+        const explanations = [
+            // Starting step
+            "Welcome to the Circular Petrol Pump Tour! This illustration shows 5 petrol pumps arranged in a circle. Each pump has Petrol (available at the pump) and Distance (to the next pump) values. Our goal is to find a starting pump that allows the vehicle to complete a full circular tour without running out of petrol.",
+            
+            // Attempting from pump 0
+            "Starting from Pump 0 with 4 units of petrol. The distance to Pump 1 is 6 units. Since the vehicle needs more petrol (6) than it has (4), it will run out of fuel before reaching Pump 1!",
+            
+            // Attempting from pump 1
+            "Starting from Pump 1 with 6 units of petrol. The distance to Pump 2 is 5 units. After traveling, we have 1 unit left and collect 7 more at Pump 2. Now with 8 units, we can reach Pump 3 (distance 3), and continue the journey.",
+            
+            // Attempting from pump 2
+            "Starting from Pump 2 with 7 units of petrol. The distance to Pump 3 is 3 units. After traveling, we have 4 units left and collect 4 more at Pump 3. With 8 units, we can reach Pump 4 (distance 5), and continue the journey.",
+            
+            // Attempting from pump 3
+            "Starting from Pump 3 with 4 units of petrol. The distance to Pump 4 is 5 units. Since the vehicle needs more petrol (5) than it has (4), it will run out of fuel before reaching Pump 4!",
+            
+            // Attempting from pump 4
+            "Starting from Pump 4 with 3 units of petrol. The distance to Pump 0 is 7 units. Since the vehicle needs more petrol (7) than it has (3), it will run out of fuel before reaching Pump 0!"
+        ];
+
+        function drawPumps() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw the circular path
+            ctx.beginPath();
+            ctx.strokeStyle = "#FD9F78";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw each pump
+            for (let i = 0; i < pumpData.length; i++) {
+                const angle = (i * 2 * Math.PI / pumpData.length) - Math.PI / 2;
+                const pumpX = centerX + radius * Math.cos(angle);
+                const pumpY = centerY + radius * Math.sin(angle);
+                
+                // Pump station
+                ctx.fillStyle = i === currentStartPump ? "#FF4800" : "#FD9F78";
+                ctx.beginPath();
+                ctx.arc(pumpX, pumpY, 25, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Pump number
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(i, pumpX, pumpY);
+                
+                // Pump data
+                ctx.fillStyle = "#000000";
+                ctx.font = "14px Arial";
+                ctx.fillText(`P: ${pumpData[i][0]}`, pumpX, pumpY + 40);
+                ctx.fillText(`D: ${pumpData[i][1]}`, pumpX, pumpY + 60);
+            }
+        }
+
+        function drawCar(currentPump, nextPump, progress) {
+            const startAngle = (currentPump * 2 * Math.PI / pumpData.length) - Math.PI / 2;
+            const endAngle = (nextPump * 2 * Math.PI / pumpData.length) - Math.PI / 2;
+            
+            // Interpolate between angles for smooth movement
+            const angle = startAngle + (endAngle - startAngle) * progress;
+            
+            const carX = centerX + radius * Math.cos(angle);
+            const carY = centerY + radius * Math.sin(angle);
+            
+            // Draw car (simple triangle pointing in direction of movement)
+            ctx.save();
+            ctx.translate(carX, carY);
+            ctx.rotate(angle + Math.PI / 2);
+            
+            // Car emoji
+            ctx.font = "30px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🚗", 0, 0);
+            
+            // Show petrol in tank
+            ctx.font = "14px Arial";
+            ctx.fillStyle = "#000000";
+            ctx.fillText(`Petrol: ${petrolInTank}`, 0, 30);
+            
+            ctx.restore();
+        }
+
+        function animate() {
+            const totalSteps = 60; // Frames for smooth animation
+            let progress = 0;
+            let step = 0;
+            let success = true;
+            
+            petrolInTank = pumpData[currentStartPump][0];
+            currentPosition = currentStartPump;
+            
+            pumpInfo.textContent = `Starting at Pump ${currentStartPump} with ${petrolInTank} units of petrol`;
+            explanation.innerHTML = `<p>${explanations[currentStartPump + 1]}</p>`;
+            
+            function frame() {
+                if (step >= totalSteps) {
+                    isAnimating = false;
+                    return;
+                }
+                
+                progress = step / totalSteps;
+                drawPumps();
+                
+                // Calculate next pump
+                const nextPump = (currentPosition + 1) % pumpData.length;
+                
+                // Check if we can reach next pump
+                if (step === 0) {
+                    if (petrolInTank < pumpData[currentPosition][1]) {
+                        // Out of gas
+                        success = false;
+                        drawCar(currentPosition, nextPump, 0.5 * (petrolInTank / pumpData[currentPosition][1]));
+                        
+                        // Draw "Out of Gas" text
+                        ctx.fillStyle = "#FF4800";
+                        ctx.font = "bold 20px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Out of Gas! 😞", centerX, centerY);
+                        
+                        step = totalSteps; // End animation
+                    } else {
+                        drawCar(currentPosition, nextPump, progress);
+                    }
+                } else {
+                    drawCar(currentPosition, nextPump, progress);
+                }
+                
+                step++;
+                
+                if (step === totalSteps && success) {
+                    // Reached next pump
+                    petrolInTank = petrolInTank - pumpData[currentPosition][1] + pumpData[nextPump][0];
+                    currentPosition = nextPump;
+                    
+                    // If we've made a complete circle
+                    if (currentPosition === currentStartPump) {
+                        // Draw success text
+                        ctx.fillStyle = "#FF4800";
+                        ctx.font = "bold 20px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Tour Successfully Completed! 🎉", centerX, centerY);
+                    } else {
+                        // Continue animation for next segment
+                        step = 0;
+                        animationId = requestAnimationFrame(frame);
+                        return;
+                    }
+                }
+                
+                if (step < totalSteps) {
+                    animationId = requestAnimationFrame(frame);
+                }
+            }
+            
+            isAnimating = true;
+            animationId = requestAnimationFrame(frame);
+        }
+
+        function startAnimation() {
+            if (isAnimating) {
+                cancelAnimationFrame(animationId);
+            }
+            animate();
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = currentStartPump === 0;
+            nextBtn.disabled = currentStartPump === pumpData.length - 1;
+        }
+
+        // Initial draw
+        drawPumps();
+        updateButtons();
+        explanation.innerHTML = `<p>${explanations[0]}</p>`;
+
+        // Event listeners
+        nextBtn.addEventListener('click', () => {
+            if (currentStartPump < pumpData.length - 1) {
+                currentStartPump++;
+                startAnimation();
+                updateButtons();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStartPump > 0) {
+                currentStartPump--;
+                startAnimation();
+                updateButtons();
+            }
+        });
+
+        // Start with the initial animation
+        startAnimation();
+    </script>
+</body>
+</html>
