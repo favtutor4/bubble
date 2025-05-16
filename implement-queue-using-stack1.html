@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Stack Queue Implementation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .animation-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stack {
+            display: flex;
+            flex-direction: column-reverse;
+            width: 100px;
+            height: 300px;
+            border: 3px solid #FF4800;
+            border-top: none;
+            position: relative;
+            margin: 0 20px;
+        }
+        
+        .stack-label {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #FF4800;
+        }
+        
+        .element {
+            width: 80px;
+            height: 50px;
+            margin: 5px auto;
+            background-color: #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.8s ease;
+        }
+        
+        .arrow {
+            width: 120px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .arrow::after {
+            content: "";
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 20px solid #FF4800;
+            position: absolute;
+            right: 0;
+        }
+        
+        .arrow::before {
+            content: "";
+            width: 100px;
+            height: 5px;
+            background-color: #FF4800;
+            position: absolute;
+        }
+        
+        .explanation {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #FFF;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .flying-element {
+            position: absolute;
+            z-index: 100;
+        }
+        
+        .top-indicator {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FF4800;
+            font-weight: bold;
+        }
+        
+        .bottom-indicator {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Two-Stack Queue Implementation</h1>
+        
+        <div class="explanation" id="explanation">
+            <p>Two-Stack Queue uses two stacks to implement a queue (FIFO) structure.</p>
+            <p>Elements are initially pushed onto Stack1 (LIFO order).</p>
+            <p>To dequeue, all elements from Stack1 are transferred to Stack2, reversing their order.</p>
+        </div>
+        
+        <div class="animation-container">
+            <div>
+                <div class="stack-label">Stack1 (Input)</div>
+                <div class="stack" id="stack1">
+                    <div class="top-indicator">Top</div>
+                    <div class="bottom-indicator">Bottom</div>
+                </div>
+            </div>
+            
+            <div class="arrow" id="arrow"></div>
+            
+            <div>
+                <div class="stack-label">Stack2 (Output)</div>
+                <div class="stack" id="stack2">
+                    <div class="top-indicator">Top</div>
+                    <div class="bottom-indicator">Bottom</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        // Animation states
+        const states = [
+            {
+                explanation: "Let's start with an empty Queue implemented using two stacks.",
+                stack1: [],
+                stack2: []
+            },
+            {
+                explanation: "Enqueue operation: We add elements (1, 2, 3) to Stack1.",
+                stack1: [1, 2, 3],
+                stack2: []
+            },
+            {
+                explanation: "To dequeue elements in FIFO order, we need to move everything from Stack1 to Stack2.",
+                stack1: [1, 2, 3],
+                stack2: []
+            },
+            {
+                explanation: "Pop element 3 from Stack1...",
+                stack1: [1, 2],
+                stack2: [3],
+                animateFrom: "stack1",
+                animateTo: "stack2",
+                elementValue: 3
+            },
+            {
+                explanation: "Pop element 2 from Stack1...",
+                stack1: [1],
+                stack2: [3, 2],
+                animateFrom: "stack1",
+                animateTo: "stack2",
+                elementValue: 2
+            },
+            {
+                explanation: "Pop element 1 from Stack1...",
+                stack1: [],
+                stack2: [3, 2, 1],
+                animateFrom: "stack1",
+                animateTo: "stack2",
+                elementValue: 1
+            },
+            {
+                explanation: "Now Stack2 contains [3, 2, 1] with 1 at the top. The LIFO structure of Stack1 has been transformed into FIFO in Stack2!",
+                stack1: [],
+                stack2: [3, 2, 1]
+            },
+            {
+                explanation: "When we dequeue, we take the top element from Stack2 (element 1), which was the first element added to Stack1.",
+                stack1: [],
+                stack2: [3, 2]
+            },
+            {
+                explanation: "Next dequeue operation takes element 2, which was the second element added.",
+                stack1: [],
+                stack2: [3]
+            },
+            {
+                explanation: "Final dequeue operation takes element 3, which was the last element added to Stack1 but now comes out last (FIFO behavior).",
+                stack1: [],
+                stack2: []
+            }
+        ];
+        
+        let currentState = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanation = document.getElementById('explanation');
+        const stack1 = document.getElementById('stack1');
+        const stack2 = document.getElementById('stack2');
+        
+        // Initialize the animation
+        updateState();
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentState > 0) {
+                currentState--;
+                updateState();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentState < states.length - 1) {
+                currentState++;
+                updateState();
+            }
+        });
+        
+        function updateState() {
+            const state = states[currentState];
+            
+            // Update explanation
+            explanation.innerHTML = `<p>${state.explanation}</p>`;
+            
+            // Clear stacks
+            stack1.innerHTML = `
+                <div class="top-indicator">Top</div>
+                <div class="bottom-indicator">Bottom</div>
+            `;
+            stack2.innerHTML = `
+                <div class="top-indicator">Top</div>
+                <div class="bottom-indicator">Bottom</div>
+            `;
+            
+            // Fill stack1
+            state.stack1.forEach(val => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = val;
+                stack1.appendChild(element);
+            });
+            
+            // Fill stack2
+            state.stack2.forEach(val => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = val;
+                stack2.appendChild(element);
+            });
+            
+            // Animate element transfer if needed
+            if (state.animateFrom && state.animateTo) {
+                animateTransfer(state.animateFrom, state.animateTo, state.elementValue);
+            }
+            
+            // Update buttons
+            prevBtn.disabled = currentState === 0;
+            nextBtn.disabled = currentState === states.length - 1;
+        }
+        
+        function animateTransfer(fromStack, toStack, value) {
+            // Create flying element
+            const flyingElement = document.createElement('div');
+            flyingElement.className = 'element flying-element';
+            flyingElement.textContent = value;
+            document.body.appendChild(flyingElement);
+            
+            // Get positions
+            const fromRect = document.getElementById(fromStack).getBoundingClientRect();
+            const toRect = document.getElementById(toStack).getBoundingClientRect();
+            
+            // Set initial position
+            flyingElement.style.top = `${fromRect.top + 20}px`;
+            flyingElement.style.left = `${fromRect.left + (fromRect.width/2) - 40}px`;
+            flyingElement.style.width = '80px';
+            flyingElement.style.height = '50px';
+            
+            // Animate
+            setTimeout(() => {
+                flyingElement.style.transition = 'all 1s ease';
+                flyingElement.style.top = `${toRect.top + 20}px`;
+                flyingElement.style.left = `${toRect.left + (toRect.width/2) - 40}px`;
+                
+                setTimeout(() => {
+                    document.body.removeChild(flyingElement);
+                }, 1000);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
