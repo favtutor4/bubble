@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Window Sliding Technique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .array-element {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            position: relative;
+        }
+        
+        .index {
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            color: #000000;
+        }
+        
+        .window {
+            background-color: #FD9F78;
+        }
+        
+        .negative-highlight {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            min-height: 80px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .result-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .result-array {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .result-element {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Window Sliding Technique</h1>
+    <div class="container">
+        <h2>Finding First Negative Number in Every Window of Size 3</h2>
+        
+        <div class="array-container" id="array-display"></div>
+        
+        <div class="explanation" id="explanation">
+            <p>This visualization demonstrates the sliding window technique to find the first negative number in every window of size K=3 in the array [-2, -3, 4, -1, -2, 1, 5, -3].</p>
+            <p>Press "Next" to start the animation.</p>
+        </div>
+        
+        <div class="result-container">
+            <h3>Result Array (First Negative in Each Window):</h3>
+            <div class="result-array" id="result-array"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array data
+        const array = [-2, -3, 4, -1, -2, 1, 5, -3];
+        const k = 3;
+        
+        // Animation states
+        let currentStep = 0;
+        const steps = [];
+        
+        // Result array
+        const resultArray = [];
+        
+        // Generate steps for animation
+        function generateSteps() {
+            for (let i = 0; i <= array.length - k; i++) {
+                let firstNegative = null;
+                let firstNegativeIndex = -1;
+                
+                for (let j = i; j < i + k; j++) {
+                    if (array[j] < 0 && firstNegative === null) {
+                        firstNegative = array[j];
+                        firstNegativeIndex = j;
+                    }
+                }
+                
+                steps.push({
+                    window: { start: i, end: i + k - 1 },
+                    firstNegative: firstNegative,
+                    firstNegativeIndex: firstNegativeIndex,
+                    explanation: generateExplanation(i, firstNegative, firstNegativeIndex)
+                });
+                
+                resultArray.push(firstNegative !== null ? firstNegative : 0);
+            }
+        }
+        
+        function generateExplanation(windowStart, firstNegative, firstNegativeIndex) {
+            let text = `<strong>Window ${windowStart + 1}:</strong> Examining elements at positions [${windowStart}, ${windowStart + 1}, ${windowStart + 2}]<br>`;
+            
+            if (firstNegative !== null) {
+                text += `Found first negative number ${firstNegative} at position ${firstNegativeIndex}`;
+            } else {
+                text += "No negative number found in this window";
+            }
+            
+            return text;
+        }
+        
+        // Render the array
+        function renderArray() {
+            const arrayDisplay = document.getElementById('array-display');
+            arrayDisplay.innerHTML = '';
+            
+            for (let i = 0; i < array.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                
+                // Add index above each element
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'index';
+                indexSpan.textContent = i;
+                element.appendChild(indexSpan);
+                
+                element.id = `element-${i}`;
+                element.textContent = array[i];
+                arrayDisplay.appendChild(element);
+            }
+        }
+        
+        // Update the visualization for the current step
+        function updateVisualization() {
+            // Reset all elements
+            for (let i = 0; i < array.length; i++) {
+                const element = document.getElementById(`element-${i}`);
+                element.className = 'array-element';
+            }
+            
+            if (currentStep < steps.length) {
+                const step = steps[currentStep];
+                
+                // Highlight the window
+                for (let i = step.window.start; i <= step.window.end; i++) {
+                    const element = document.getElementById(`element-${i}`);
+                    element.classList.add('window');
+                }
+                
+                // Highlight first negative in the window
+                if (step.firstNegativeIndex !== -1) {
+                    const negElement = document.getElementById(`element-${step.firstNegativeIndex}`);
+                    negElement.classList.add('negative-highlight');
+                }
+                
+                // Update explanation
+                document.getElementById('explanation').innerHTML = step.explanation;
+                
+                // Update result array
+                updateResultArray();
+            }
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === steps.length - 1;
+        }
+        
+        function updateResultArray() {
+            const resultContainer = document.getElementById('result-array');
+            resultContainer.innerHTML = '';
+            
+            for (let i = 0; i <= currentStep && i < resultArray.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'result-element';
+                element.textContent = resultArray[i] !== null ? resultArray[i] : 0;
+                resultContainer.appendChild(element);
+            }
+        }
+        
+        // Event handlers for buttons
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize
+        generateSteps();
+        renderArray();
+        updateVisualization();
+    </script>
+</body>
+</html>
