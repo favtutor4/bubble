@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFS Traversal Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .grid-container {
+            margin: 20px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            grid-gap: 5px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #FFFFFF;
+            border: 2px solid #FD9F78;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .cell.source {
+            background-color: #FF4800;
+            color: white;
+        }
+        .cell.visited {
+            background-color: #FD9F78;
+            color: #000000;
+        }
+        .cell.current {
+            background-color: #FF4800;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 72, 0, 0.5);
+        }
+        .queue-container {
+            margin: 20px 0;
+            width: 100%;
+        }
+        .queue-title {
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+        }
+        .queue {
+            display: flex;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            min-height: 50px;
+            align-items: center;
+        }
+        .queue-item {
+            width: 40px;
+            height: 40px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FD9F78;
+            color: #000000;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            text-align: left;
+            width: 100%;
+            color: #000000;
+        }
+        .navigation {
+            display: flex;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            margin: 0 20px;
+            font-weight: bold;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BFS Traversal Animation</h1>
+        
+        <div class="grid-container">
+            <div class="grid" id="grid"></div>
+        </div>
+        
+        <div class="queue-container">
+            <div class="queue-title">Queue:</div>
+            <div class="queue" id="queue"></div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Welcome to the BFS Traversal Animation. Click "Next" to start the animation.
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" class="nav-button" disabled>Previous</button>
+            <span class="step-indicator" id="stepIndicator">Step 0 of 0</span>
+            <button id="nextBtn" class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial matrix
+        const matrix = [
+            [0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0]
+        ];
+        
+        // Distance matrix to track BFS distances
+        const distances = [
+            [Infinity, Infinity, Infinity, Infinity, Infinity],
+            [Infinity, 0, Infinity, Infinity, Infinity],
+            [Infinity, Infinity, Infinity, 0, Infinity],
+            [Infinity, Infinity, Infinity, Infinity, Infinity],
+            [0, Infinity, Infinity, Infinity, Infinity]
+        ];
+        
+        // Direction arrays for 4 directions
+        const dx = [-1, 0, 1, 0];
+        const dy = [0, 1, 0, -1];
+        
+        // BFS Simulation state
+        let currentStep = 0;
+        let bfsSteps = [];
+        
+        // Find source cells (cells with value 1)
+        const sourceCells = [];
+        for (let i = 0; i < matrix.length; i++) {
+            for (let j = 0; j < matrix[i].length; j++) {
+                if (matrix[i][j] === 1) {
+                    sourceCells.push([i, j]);
+                }
+            }
+        }
+        
+        // Prepare BFS simulation steps
+        function prepareBFSSteps() {
+            const steps = [];
+            const visited = Array(matrix.length).fill().map(() => Array(matrix[0].length).fill(false));
+            const queue = [];
+            
+            // Initialize queue with source cells
+            for (const [row, col] of sourceCells) {
+                queue.push([row, col]);
+                visited[row][col] = true;
+            }
+            
+            // Initial state
+            steps.push({
+                queue: [...queue],
+                current: null,
+                visited: JSON.parse(JSON.stringify(visited)),
+                distances: JSON.parse(JSON.stringify(distances)),
+                explanation: "Initial state: Cells with value 1 are the source cells. We add them to the queue to start BFS."
+            });
+            
+            // BFS process
+            while (queue.length > 0) {
+                const [row, col] = queue.shift();
+                
+                // Step for processing current cell
+                steps.push({
+                    queue: [...queue],
+                    current: [row, col],
+                    visited: JSON.parse(JSON.stringify(visited)),
+                    distances: JSON.parse(JSON.stringify(distances)),
+                    explanation: `Processing cell at (${row}, ${col}) with distance ${distances[row][col]}. We check all four adjacent cells.`
+                });
+                
+                // Check all four directions
+                for (let i = 0; i < 4; i++) {
+                    const newRow = row + dx[i];
+                    const newCol = col + dy[i];
+                    
+                    // Check if the new cell is valid and not visited
+                    if (newRow >= 0 && newRow < matrix.length && newCol >= 0 && newCol < matrix[0].length && !visited[newRow][newCol]) {
+                        // Visit the new cell
+                        visited[newRow][newCol] = true;
+                        distances[newRow][newCol] = distances[row][col] + 1;
+                        queue.push([newRow, newCol]);
+                        
+                        // Step for adding a new cell to the queue
+                        steps.push({
+                            queue: [...queue],
+                            current: [row, col],
+                            newCell: [newRow, newCol],
+                            visited: JSON.parse(JSON.stringify(visited)),
+                            distances: JSON.parse(JSON.stringify(distances)),
+                            explanation: `Adding cell (${newRow}, ${newCol}) to the queue with distance ${distances[newRow][newCol]} from the nearest source.`
+                        });
+                    }
+                }
+            }
+            
+            // Final state
+            steps.push({
+                queue: [],
+                current: null,
+                visited: JSON.parse(JSON.stringify(visited)),
+                distances: JSON.parse(JSON.stringify(distances)),
+                explanation: "BFS complete! Each cell now has a distance value representing the shortest path to the nearest source cell (cells with value 1)."
+            });
+            
+            return steps;
+        }
+        
+        // Render the grid
+        function renderGrid(step) {
+            const gridElement = document.getElementById('grid');
+            gridElement.innerHTML = '';
+            
+            for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    // Source cell
+                    if (matrix[i][j] === 1) {
+                        cell.classList.add('source');
+                        cell.textContent = '1';
+                    } 
+                    // Current cell being processed
+                    else if (step.current && step.current[0] === i && step.current[1] === j) {
+                        cell.classList.add('current');
+                        cell.textContent = step.distances[i][j] === Infinity ? '∞' : step.distances[i][j];
+                    }
+                    // New cell just added to queue
+                    else if (step.newCell && step.newCell[0] === i && step.newCell[1] === j) {
+                        cell.classList.add('current');
+                        cell.textContent = step.distances[i][j] === Infinity ? '∞' : step.distances[i][j];
+                    }
+                    // Visited cell
+                    else if (step.visited[i][j]) {
+                        cell.classList.add('visited');
+                        cell.textContent = step.distances[i][j] === Infinity ? '∞' : step.distances[i][j];
+                    }
+                    // Unvisited cell
+                    else {
+                        cell.textContent = '∞';
+                    }
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+        
+        // Render the queue
+        function renderQueue(step) {
+            const queueElement = document.getElementById('queue');
+            queueElement.innerHTML = '';
+            
+            if (step.queue.length === 0) {
+                queueElement.innerHTML = '<div style="padding: 10px;">Empty</div>';
+                return;
+            }
+            
+            for (const [row, col] of step.queue) {
+                const queueItem = document.createElement('div');
+                queueItem.className = 'queue-item';
+                queueItem.textContent = `${row},${col}`;
+                queueElement.appendChild(queueItem);
+            }
+        }
+        
+        // Update explanation
+        function updateExplanation(text) {
+            document.getElementById('explanation').textContent = text;
+        }
+        
+        // Update step indicator
+        function updateStepIndicator() {
+            document.getElementById('stepIndicator').textContent = `Step ${currentStep + 1} of ${bfsSteps.length}`;
+        }
+        
+        // Show current step
+        function showStep(stepIndex) {
+            const step = bfsSteps[stepIndex];
+            renderGrid(step);
+            renderQueue(step);
+            updateExplanation(step.explanation);
+            updateStepIndicator();
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = stepIndex === 0;
+            document.getElementById('nextBtn').disabled = stepIndex === bfsSteps.length - 1;
+        }
+        
+        // Event listeners for navigation buttons
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStep < bfsSteps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+        
+        // Initialize the animation
+        function init() {
+            bfsSteps = prepareBFSSteps();
+            showStep(currentStep);
+        }
+        
+        // Start the animation
+        init();
+    </script>
+</body>
+</html>
