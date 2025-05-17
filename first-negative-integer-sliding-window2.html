@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Tracking Illustration for Sliding Window</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .description {
+            background-color: #FD9F78;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+        
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .array-box {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            margin: 5px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .array-box.active {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        
+        .array-box.window {
+            border-color: #FF4800;
+            border-width: 3px;
+        }
+        
+        .array-box.in-queue {
+            background-color: #FD9F78;
+        }
+        
+        .queue-container {
+            margin: 30px 0;
+            border: 2px solid #000000;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #FFFFFF;
+        }
+        
+        .queue-title {
+            color: #FF4800;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .queue-elements {
+            display: flex;
+            justify-content: center;
+            min-height: 60px;
+            align-items: center;
+        }
+        
+        .queue-element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000000;
+            margin: 5px;
+            background-color: #FD9F78;
+            font-weight: bold;
+            font-size: 18px;
+            position: relative;
+        }
+        
+        .queue-element .index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            color: #000000;
+        }
+        
+        .empty-queue {
+            color: #FF4800;
+            font-style: italic;
+        }
+        
+        .explanation {
+            padding: 15px;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            margin: 20px 0;
+            background-color: #FFFFFF;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .step-indicator {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Queue Tracking Illustration for Sliding Window</h1>
+        
+        <div class="description">
+            <p>This animation illustrates how a queue is used to track negative numbers in a sliding window. For the array [-2, -3, 4, -1, -2, 1, 5, -3], we'll visualize how the queue maintains indices of negative numbers as the window slides.</p>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 0: Initialize</div>
+        
+        <div class="array-container" id="arrayContainer"></div>
+        
+        <div class="queue-container">
+            <h3 class="queue-title">Queue (storing indices of negative numbers)</h3>
+            <div class="queue-elements" id="queueElements">
+                <div class="empty-queue">Queue is empty</div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Initializing the array [-2, -3, 4, -1, -2, 1, 5, -3]. We'll use a queue to track the indices of negative numbers as we slide a window through the array.
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="prevBtn" disabled>Previous</button>
+            <button class="btn" id="nextBtn">Next</button>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <h3>Final Result:</h3>
+            <p id="resultText"></p>
+        </div>
+    </div>
+    
+    <script>
+        const array = [-2, -3, 4, -1, -2, 1, 5, -3];
+        const k = 3; // Window size
+        
+        // States for our animation
+        const steps = [
+            {
+                description: "Initializing the array and an empty queue. We'll process the array with a window size of 3.",
+                windowStart: -1,
+                windowEnd: -1,
+                queue: [],
+                active: -1
+            },
+            // Step 1: Process element at index 0 (-2)
+            {
+                description: "Processing index 0 with value -2. Since it's negative, we add its index (0) to the queue.",
+                windowStart: 0,
+                windowEnd: 0,
+                queue: [0],
+                active: 0
+            },
+            // Step 2: Process element at index 1 (-3)
+            {
+                description: "Processing index 1 with value -3. Since it's negative, we add its index (1) to the queue.",
+                windowStart: 0,
+                windowEnd: 1,
+                queue: [0, 1],
+                active: 1
+            },
+            // Step 3: Process element at index 2 (4)
+            {
+                description: "Processing index 2 with value 4. Since it's positive, we don't add it to the queue. Our window is now complete (indices 0-2).",
+                windowStart: 0,
+                windowEnd: 2,
+                queue: [0, 1],
+                active: 2
+            },
+            // Step 4: Slide window, process element at index 3 (-1)
+            {
+                description: "Sliding window: remove index 0 from consideration. Process index 3 with value -1. Since it's negative, add its index (3) to the queue.",
+                windowStart: 1,
+                windowEnd: 3,
+                queue: [1, 3],
+                active: 3
+            },
+            // Step 5: Slide window, process element at index 4 (-2)
+            {
+                description: "Sliding window: remove index 1 from consideration. Process index 4 with value -2. Since it's negative, add its index (4) to the queue.",
+                windowStart: 2,
+                windowEnd: 4,
+                queue: [3, 4],
+                active: 4
+            },
+            // Step 6: Slide window, process element at index 5 (1)
+            {
+                description: "Sliding window: remove index 2 from consideration. Process index 5 with value 1. Since it's positive, we don't add it to the queue.",
+                windowStart: 3,
+                windowEnd: 5,
+                queue: [3, 4],
+                active: 5
+            },
+            // Step 7: Slide window, process element at index 6 (5)
+            {
+                description: "Sliding window: remove index 3 from consideration. Process index 6 with value 5. Since it's positive, we don't add it to the queue. Note that index 3 is removed from the queue.",
+                windowStart: 4,
+                windowEnd: 6,
+                queue: [4],
+                active: 6
+            },
+            // Step 8: Slide window, process element at index 7 (-3)
+            {
+                description: "Sliding window: remove index 4 from consideration. Process index 7 with value -3. Since it's negative, add its index (7) to the queue. Note that index 4 is removed from the queue.",
+                windowStart: 5,
+                windowEnd: 7,
+                queue: [7],
+                active: 7
+            },
+            // Final step - show conclusion
+            {
+                description: "Animation complete! The queue tracks indices of negative numbers within the current window. As the window slides, we update the queue by removing indices that are no longer in the window and adding new negative number indices.",
+                windowStart: 5,
+                windowEnd: 7,
+                queue: [7],
+                active: -1,
+                final: true
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        // Initialize DOM elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        const queueElements = document.getElementById('queueElements');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultText = document.getElementById('resultText');
+        
+        // Initialize the array display
+        function initializeArray() {
+            arrayContainer.innerHTML = '';
+            for (let i = 0; i < array.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'array-box';
+                box.id = `array-box-${i}`;
+                box.textContent = array[i];
+                
+                // Add index below the box
+                const indexSpan = document.createElement('span');
+                indexSpan.style.display = 'block';
+                indexSpan.style.fontSize = '12px';
+                indexSpan.textContent = `[${i}]`;
+                box.appendChild(indexSpan);
+                
+                arrayContainer.appendChild(box);
+            }
+        }
+        
+        // Update the visualization based on current step
+        function updateVisualization() {
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentStep}: ${currentStep === 0 ? 'Initialize' : 'Processing'}`;
+            
+            // Reset all array boxes
+            for (let i = 0; i < array.length; i++) {
+                const box = document.getElementById(`array-box-${i}`);
+                box.className = 'array-box';
+            }
+            
+            const currentState = steps[currentStep];
+            
+            // Highlight the window
+            if (currentState.windowStart >= 0 && currentState.windowEnd >= 0) {
+                for (let i = currentState.windowStart; i <= currentState.windowEnd; i++) {
+                    const box = document.getElementById(`array-box-${i}`);
+                    box.classList.add('window');
+                }
+            }
+            
+            // Highlight current active element
+            if (currentState.active >= 0) {
+                const activeBox = document.getElementById(`array-box-${currentState.active}`);
+                activeBox.classList.add('active');
+            }
+            
+            // Highlight elements in queue
+            for (const idx of currentState.queue) {
+                const queueBox = document.getElementById(`array-box-${idx}`);
+                queueBox.classList.add('in-queue');
+            }
+            
+            // Update queue display
+            if (currentState.queue.length === 0) {
+                queueElements.innerHTML = '<div class="empty-queue">Queue is empty</div>';
+            } else {
+                queueElements.innerHTML = '';
+                for (const idx of currentState.queue) {
+                    const queueElement = document.createElement('div');
+                    queueElement.className = 'queue-element';
+                    queueElement.textContent = array[idx];
+                    
+                    const indexSpan = document.createElement('div');
+                    indexSpan.className = 'index';
+                    indexSpan.textContent = `idx: ${idx}`;
+                    queueElement.appendChild(indexSpan);
+                    
+                    queueElements.appendChild(queueElement);
+                }
+            }
+            
+            // Update explanation
+            explanation.textContent = currentState.description;
+            
+            // Show final result if we're at the end
+            if (currentState.final) {
+                resultContainer.style.display = 'block';
+                resultText.textContent = "We've successfully tracked negative numbers in each sliding window using a queue. The queue ensures we always know which negative numbers are in the current window, making it efficient to find them without scanning the entire window each time.";
+            } else {
+                resultContainer.style.display = 'none';
+            }
+            
+            // Update buttons
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Handle button clicks
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Initialize the visualization
+        initializeArray();
+        updateVisualization();
+    </script>
+</body>
+</html>
