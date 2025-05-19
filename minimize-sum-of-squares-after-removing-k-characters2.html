@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sum of Squares Reduction Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        .explanation {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .visualization {
+            margin: 20px 0;
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+
+        .frequency-display {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .freq-block {
+            background-color: #FD9F78;
+            border: 2px solid #FF4800;
+            border-radius: 4px;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            transition: all 0.5s ease;
+        }
+
+        .sum-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #FF4800;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+
+        .nav-btn:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .square {
+            width: 20px;
+            height: 20px;
+            background-color: #FF4800;
+            margin: 2px;
+            display: inline-block;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .squares-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .frequency-group {
+            margin: 10px;
+            text-align: center;
+        }
+
+        .frequency-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .arrow {
+            font-size: 24px;
+            margin: 0 10px;
+        }
+
+        .reduction-highlight {
+            border: 2px dashed #FF4800;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(253, 159, 120, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sum of Squares Reduction Comparison</h1>
+        
+        <div class="slide active" id="slide1">
+            <div class="explanation">
+                Let's understand the Sum of Squares with frequency [5,3,1], meaning we have:
+                <br>- 5 items with frequency 1
+                <br>- 3 items with frequency 2
+                <br>- 1 item with frequency 3
+            </div>
+            <div class="squares-container" id="initialSquares"></div>
+            <div class="sum-display" id="initialSum">Total Sum of Squares: 35</div>
+        </div>
+
+        <div class="slide" id="slide2">
+            <div class="explanation">
+                <span class="reduction-highlight">Option 1: Reducing highest frequency (5→4)</span>
+                <br>We reduce one item from frequency 5 to frequency 4
+            </div>
+            <div class="squares-container" id="option1Squares"></div>
+            <div class="sum-display" id="option1Sum">New Sum of Squares: 26</div>
+            <div class="sum-display">Reduction: 9</div>
+        </div>
+
+        <div class="slide" id="slide3">
+            <div class="explanation">
+                <span class="reduction-highlight">Option 2: Reducing middle frequency (3→2)</span>
+                <br>We reduce one item from frequency 3 to frequency 2
+            </div>
+            <div class="squares-container" id="option2Squares"></div>
+            <div class="sum-display" id="option2Sum">New Sum of Squares: 30</div>
+            <div class="sum-display">Reduction: 5</div>
+        </div>
+
+        <div class="slide" id="slide4">
+            <div class="explanation">
+                <span class="reduction-highlight">Option 3: Reducing lowest frequency (1→0)</span>
+                <br>We reduce one item from frequency 1 to frequency 0
+            </div>
+            <div class="squares-container" id="option3Squares"></div>
+            <div class="sum-display" id="option3Sum">New Sum of Squares: 34</div>
+            <div class="sum-display">Reduction: 1</div>
+        </div>
+
+        <div class="slide" id="slide5">
+            <div class="explanation">
+                <span class="reduction-highlight">Comparison of All Reduction Options</span>
+            </div>
+            <div class="frequency-display">
+                <div class="frequency-group">
+                    <div class="frequency-label">Original [5,3,1]</div>
+                    <div class="sum-display">Sum: 35</div>
+                </div>
+            </div>
+            <div class="frequency-display">
+                <div class="frequency-group">
+                    <div class="frequency-label">Option 1: 5→4</div>
+                    <div class="sum-display">Sum: 26</div>
+                    <div class="sum-display" style="color: green">Reduction: 9</div>
+                </div>
+                <div class="frequency-group">
+                    <div class="frequency-label">Option 2: 3→2</div>
+                    <div class="sum-display">Sum: 30</div>
+                    <div class="sum-display" style="color: green">Reduction: 5</div>
+                </div>
+                <div class="frequency-group">
+                    <div class="frequency-label">Option 3: 1→0</div>
+                    <div class="sum-display">Sum: 34</div>
+                    <div class="sum-display" style="color: green">Reduction: 1</div>
+                </div>
+            </div>
+            <div class="explanation" style="margin-top: 20px">
+                <strong>Conclusion:</strong> Reducing the highest frequency (5→4) gives the largest reduction (9) in the sum of squares!
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 5;
+        
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+        }
+
+        function showSlide(slideNumber) {
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            document.getElementById(`slide${slideNumber}`).classList.add('active');
+            currentSlide = slideNumber;
+            updateNavButtons();
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        });
+
+        function createSquaresVisualization() {
+            // Initial squares - frequency [5,3,1]
+            const initialContainer = document.getElementById('initialSquares');
+            
+            // 5 items with frequency 1 (5 squares)
+            const freq1Group = document.createElement('div');
+            freq1Group.className = 'frequency-group';
+            freq1Group.innerHTML = '<div class="frequency-label">5 items with frequency 1</div>';
+            const freq1Squares = document.createElement('div');
+            for (let i = 0; i < 5; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                freq1Squares.appendChild(square);
+                setTimeout(() => {
+                    square.style.opacity = 1;
+                }, i * 100);
+            }
+            freq1Group.appendChild(freq1Squares);
+            initialContainer.appendChild(freq1Group);
+
+            // 3 items with frequency 2 (6 squares)
+            const freq2Group = document.createElement('div');
+            freq2Group.className = 'frequency-group';
+            freq2Group.innerHTML = '<div class="frequency-label">3 items with frequency 2</div>';
+            const freq2Squares = document.createElement('div');
+            freq2Squares.style.display = 'flex';
+            
+            for (let i = 0; i < 3; i++) {
+                const itemGroup = document.createElement('div');
+                itemGroup.style.margin = '0 5px';
+                
+                for (let j = 0; j < 2; j++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    itemGroup.appendChild(square);
+                    setTimeout(() => {
+                        square.style.opacity = 1;
+                    }, (i * 2 + j + 5) * 100);
+                }
+                
+                freq2Squares.appendChild(itemGroup);
+            }
+            
+            freq2Group.appendChild(freq2Squares);
+            initialContainer.appendChild(freq2Group);
+
+            // 1 item with frequency 3 (3 squares)
+            const freq3Group = document.createElement('div');
+            freq3Group.className = 'frequency-group';
+            freq3Group.innerHTML = '<div class="frequency-label">1 item with frequency 3</div>';
+            const freq3Squares = document.createElement('div');
+            
+            for (let i = 0; i < 3; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                freq3Squares.appendChild(square);
+                setTimeout(() => {
+                    square.style.opacity = 1;
+                }, (i + 11) * 100);
+            }
+            
+            freq3Group.appendChild(freq3Squares);
+            initialContainer.appendChild(freq3Group);
+
+            // Option 1: Reducing 5→4
+            const option1Container = document.getElementById('option1Squares');
+            
+            // 4 items with frequency 1 (4 squares)
+            const option1Freq1Group = document.createElement('div');
+            option1Freq1Group.className = 'frequency-group';
+            option1Freq1Group.innerHTML = '<div class="frequency-label">4 items with frequency 1</div>';
+            const option1Freq1Squares = document.createElement('div');
+            for (let i = 0; i < 4; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                option1Freq1Squares.appendChild(square);
+                setTimeout(() => {
+                    if (document.getElementById('slide2').classList.contains('active')) {
+                        square.style.opacity = 1;
+                    } else {
+                        square.style.opacity = 0;
+                    }
+                }, i * 100);
+            }
+            option1Freq1Group.appendChild(option1Freq1Squares);
+            option1Container.appendChild(option1Freq1Group);
+
+            // 4 items with frequency 2 (8 squares)
+            const option1Freq2Group = document.createElement('div');
+            option1Freq2Group.className = 'frequency-group';
+            option1Freq2Group.innerHTML = '<div class="frequency-label">4 items with frequency 2</div>';
+            const option1Freq2Squares = document.createElement('div');
+            option1Freq2Squares.style.display = 'flex';
+            
+            for (let i = 0; i < 4; i++) {
+                const itemGroup = document.createElement('div');
+                itemGroup.style.margin = '0 5px';
+                
+                for (let j = 0; j < 2; j++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    itemGroup.appendChild(square);
+                    setTimeout(() => {
+                        if (document.getElementById('slide2').classList.contains('active')) {
+                            square.style.opacity = 1;
+                        } else {
+                            square.style.opacity = 0;
+                        }
+                    }, (i * 2 + j + 4) * 100);
+                }
+                
+                option1Freq2Squares.appendChild(itemGroup);
+            }
+            
+            option1Freq2Group.appendChild(option1Freq2Squares);
+            option1Container.appendChild(option1Freq2Group);
+
+            // 1 item with frequency 3 (3 squares)
+            const option1Freq3Group = document.createElement('div');
+            option1Freq3Group.className = 'frequency-group';
+            option1Freq3Group.innerHTML = '<div class="frequency-label">1 item with frequency 3</div>';
+            const option1Freq3Squares = document.createElement('div');
+            
+            for (let i = 0; i < 3; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                option1Freq3Squares.appendChild(square);
+                setTimeout(() => {
+                    if (document.getElementById('slide2').classList.contains('active')) {
+                        square.style.opacity = 1;
+                    } else {
+                        square.style.opacity = 0;
+                    }
+                }, (i + 12) * 100);
+            }
+            
+            option1Freq3Group.appendChild(option1Freq3Squares);
+            option1Container.appendChild(option1Freq3Group);
+
+            // Option 2: Reducing 3→2
+            const option2Container = document.getElementById('option2Squares');
+            
+            // 5 items with frequency 1 (5 squares)
+            const option2Freq1Group = document.createElement('div');
+            option2Freq1Group.className = 'frequency-group';
+            option2Freq1Group.innerHTML = '<div class="frequency-label">5 items with frequency 1</div>';
+            const option2Freq1Squares = document.createElement('div');
+            for (let i = 0; i < 5; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                option2Freq1Squares.appendChild(square);
+                setTimeout(() => {
+                    if (document.getElementById('slide3').classList.contains('active')) {
+                        square.style.opacity = 1;
+                    } else {
+                        square.style.opacity = 0;
+                    }
+                }, i * 100);
+            }
+            option2Freq1Group.appendChild(option2Freq1Squares);
+            option2Container.appendChild(option2Freq1Group);
+
+            // 4 items with frequency 2 (8 squares)
+            const option2Freq2Group = document.createElement('div');
+            option2Freq2Group.className = 'frequency-group';
+            option2Freq2Group.innerHTML = '<div class="frequency-label">4 items with frequency 2</div>';
+            const option2Freq2Squares = document.createElement('div');
+            option2Freq2Squares.style.display = 'flex';
+            
+            for (let i = 0; i < 4; i++) {
+                const itemGroup = document.createElement('div');
+                itemGroup.style.margin = '0 5px';
+                
+                for (let j = 0; j < 2; j++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    itemGroup.appendChild(square);
+                    setTimeout(() => {
+                        if (document.getElementById('slide3').classList.contains('active')) {
+                            square.style.opacity = 1;
+                        } else {
+                            square.style.opacity = 0;
+                        }
+                    }, (i * 2 + j + 5) * 100);
+                }
+                
+                option2Freq2Squares.appendChild(itemGroup);
+            }
+            
+            option2Freq2Group.appendChild(option2Freq2Squares);
+            option2Container.appendChild(option2Freq2Group);
+
+            // Option 3: Reducing 1→0
+            const option3Container = document.getElementById('option3Squares');
+            
+            // 4 items with frequency 1 (4 squares)
+            const option3Freq1Group = document.createElement('div');
+            option3Freq1Group.className = 'frequency-group';
+            option3Freq1Group.innerHTML = '<div class="frequency-label">4 items with frequency 1</div>';
+            const option3Freq1Squares = document.createElement('div');
+            for (let i = 0; i < 4; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                option3Freq1Squares.appendChild(square);
+                setTimeout(() => {
+                    if (document.getElementById('slide4').classList.contains('active')) {
+                        square.style.opacity = 1;
+                    } else {
+                        square.style.opacity = 0;
+                    }
+                }, i * 100);
+            }
+            option3Freq1Group.appendChild(option3Freq1Squares);
+            option3Container.appendChild(option3Freq1Group);
+
+            // 3 items with frequency 2 (6 squares)
+            const option3Freq2Group = document.createElement('div');
+            option3Freq2Group.className = 'frequency-group';
+            option3Freq2Group.innerHTML = '<div class="frequency-label">3 items with frequency 2</div>';
+            const option3Freq2Squares = document.createElement('div');
+            option3Freq2Squares.style.display = 'flex';
+            
+            for (let i = 0; i < 3; i++) {
+                const itemGroup = document.createElement('div');
+                itemGroup.style.margin = '0 5px';
+                
+                for (let j = 0; j < 2; j++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    itemGroup.appendChild(square);
+                    setTimeout(() => {
+                        if (document.getElementById('slide4').classList.contains('active')) {
+                            square.style.opacity = 1;
+                        } else {
+                            square.style.opacity = 0;
+                        }
+                    }, (i * 2 + j + 4) * 100);
+                }
+                
+                option3Freq2Squares.appendChild(itemGroup);
+            }
+            
+            option3Freq2Group.appendChild(option3Freq2Squares);
+            option3Container.appendChild(option3Freq2Group);
+
+            // 1 item with frequency 3 (3 squares)
+            const option3Freq3Group = document.createElement('div');
+            option3Freq3Group.className = 'frequency-group';
+            option3Freq3Group.innerHTML = '<div class="frequency-label">1 item with frequency 3</div>';
+            const option3Freq3Squares = document.createElement('div');
+            
+            for (let i = 0; i < 3; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                option3Freq3Squares.appendChild(square);
+                setTimeout(() => {
+                    if (document.getElementById('slide4').classList.contains('active')) {
+                        square.style.opacity = 1;
+                    } else {
+                        square.style.opacity = 0;
+                    }
+                }, (i + 10) * 100);
+            }
+            
+            option3Freq3Group.appendChild(option3Freq3Squares);
+            option3Container.appendChild(option3Freq3Group);
+        }
+
+        // Initialize the visualization when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createSquaresVisualization();
+            updateNavButtons();
+        });
+
+        // Update square visibility when slides change
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            document.querySelectorAll('.square').forEach(square => {
+                square.style.opacity = 0;
+            });
+            
+            setTimeout(() => {
+                const currentSlideElement = document.querySelector('.slide.active');
+                const squares = currentSlideElement.querySelectorAll('.square');
+                squares.forEach((square, index) => {
+                    setTimeout(() => {
+                        square.style.opacity = 1;
+                    }, index * 50);
+                });
+            }, 100);
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            document.querySelectorAll('.square').forEach(square => {
+                square.style.opacity = 0;
+            });
+            
+            setTimeout(() => {
+                const currentSlideElement = document.querySelector('.slide.active');
+                const squares = currentSlideElement.querySelectorAll('.square');
+                squares.forEach((square, index) => {
+                    setTimeout(() => {
+                        square.style.opacity = 1;
+                    }, index * 50);
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
