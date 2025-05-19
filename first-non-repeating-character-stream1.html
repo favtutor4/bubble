@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Processing Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .explanation {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .visualization {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+        }
+        td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #FD9F78;
+            transition: background-color 0.5s;
+        }
+        .highlighted {
+            background-color: #FD9F78;
+            font-weight: bold;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #000000;
+            font-weight: bold;
+        }
+        .character {
+            display: inline-block;
+            padding: 5px;
+            margin: 2px;
+            min-width: 20px;
+            text-align: center;
+            border-radius: 3px;
+        }
+        .new-char {
+            background-color: #FD9F78;
+            font-weight: bold;
+        }
+        .non-repeating {
+            border: 2px solid #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stream Processing Visualization</h1>
+        
+        <div class="explanation">
+            <p>This visualization demonstrates how to find the first non-repeating character in a stream of characters. As each character is added to the stream, we track the first non-repeating character based on what we've seen so far.</p>
+        </div>
+        
+        <div class="visualization">
+            <table id="streamTable">
+                <thead>
+                    <tr>
+                        <th>Character Added</th>
+                        <th>Current Stream</th>
+                        <th>First Non-Repeating Character</th>
+                        <th>Output So Far</th>
+                    </tr>
+                </thead>
+                <tbody id="streamTableBody">
+                    <!-- Table rows will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator">
+            Step <span id="currentStep">0</span> of <span id="totalSteps">7</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const streamData = [
+                {
+                    charAdded: 'a',
+                    stream: 'a',
+                    nonRepeating: 'a',
+                    output: 'a'
+                },
+                {
+                    charAdded: 'a',
+                    stream: 'aa',
+                    nonRepeating: 'No non-repeating character',
+                    output: 'a#'
+                },
+                {
+                    charAdded: 'b',
+                    stream: 'aab',
+                    nonRepeating: 'b',
+                    output: 'a#b'
+                },
+                {
+                    charAdded: 'c',
+                    stream: 'aabc',
+                    nonRepeating: 'b',
+                    output: 'a#bb'
+                },
+                {
+                    charAdded: 'b',
+                    stream: 'aabcb',
+                    nonRepeating: 'c',
+                    output: 'a#bbc'
+                },
+                {
+                    charAdded: 'c',
+                    stream: 'aabcbc',
+                    nonRepeating: 'No non-repeating character',
+                    output: 'a#bbc#'
+                },
+                {
+                    charAdded: 'd',
+                    stream: 'aabcbcd',
+                    nonRepeating: 'd',
+                    output: 'a#bbc#d'
+                }
+            ];
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const currentStepSpan = document.getElementById('currentStep');
+            const totalStepsSpan = document.getElementById('totalSteps');
+            const streamTableBody = document.getElementById('streamTableBody');
+            
+            let currentStep = 0;
+            totalStepsSpan.textContent = streamData.length;
+            
+            function updateTable() {
+                streamTableBody.innerHTML = '';
+                
+                for (let i = 0; i <= currentStep; i++) {
+                    const row = document.createElement('tr');
+                    
+                    // Character Added
+                    const charAddedCell = document.createElement('td');
+                    charAddedCell.textContent = streamData[i].charAdded;
+                    if (i === currentStep) {
+                        charAddedCell.classList.add('highlighted');
+                    }
+                    row.appendChild(charAddedCell);
+                    
+                    // Current Stream
+                    const streamCell = document.createElement('td');
+                    const stream = streamData[i].stream;
+                    streamCell.innerHTML = formatStream(stream, i === currentStep ? stream.length - 1 : -1);
+                    row.appendChild(streamCell);
+                    
+                    // First Non-Repeating Character
+                    const nonRepeatingCell = document.createElement('td');
+                    nonRepeatingCell.textContent = streamData[i].nonRepeating;
+                    row.appendChild(nonRepeatingCell);
+                    
+                    // Output So Far
+                    const outputCell = document.createElement('td');
+                    outputCell.textContent = streamData[i].output;
+                    row.appendChild(outputCell);
+                    
+                    streamTableBody.appendChild(row);
+                }
+                
+                currentStepSpan.textContent = currentStep + 1;
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === streamData.length - 1;
+            }
+            
+            function formatStream(stream, highlightIndex) {
+                let result = '';
+                for (let i = 0; i < stream.length; i++) {
+                    const charClass = i === highlightIndex ? 'character new-char' : 'character';
+                    result += `<span class="${charClass}">${stream[i]}</span>`;
+                }
+                return result;
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateTable();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < streamData.length - 1) {
+                    currentStep++;
+                    updateTable();
+                }
+            });
+            
+            // Initialize table
+            updateTable();
+        });
+    </script>
+</body>
+</html>
