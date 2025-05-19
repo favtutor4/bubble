@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra's Algorithm Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .step-info {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .canvas-container {
+            position: relative;
+            width: 700px;
+            height: 400px;
+            border: 2px solid #FF4800;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #description {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 50%;
+        }
+        .queue-state {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .queue-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            gap: 10px;
+        }
+        .queue-item {
+            padding: 8px 12px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+        .distances {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .distances-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            gap: 15px;
+        }
+        .distance-item {
+            padding: 8px 12px;
+            background-color: #000000;
+            border-radius: 5px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dijkstra's Algorithm Visualization</h1>
+
+        <div class="visualization">
+            <div class="step-info" id="step-info">
+                <h2 id="step-title">Initial State</h2>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="graphCanvas" width="700" height="400"></canvas>
+            </div>
+
+            <div class="queue-state">
+                <h3>Priority Queue (Max Heap)</h3>
+                <div class="queue-container" id="queue-container"></div>
+            </div>
+
+            <div class="distances">
+                <h3>Current Distances</h3>
+                <div class="distances-container" id="distances-container"></div>
+            </div>
+
+            <div class="navigation">
+                <button id="prevBtn" disabled>Previous Step</button>
+                <button id="nextBtn">Next Step</button>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FFFFFF; border: 1px solid #000000;"></div>
+                    <span>Unvisited Node</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FD9F78;"></div>
+                    <span>Current Node</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF4800;"></div>
+                    <span>Visited Node</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #000000;"></div>
+                    <span>Destination Node</span>
+                </div>
+            </div>
+
+            <div id="description">
+                <p>Dijkstra's Algorithm is a graph search algorithm that finds the shortest path from a source node to all other nodes in a graph with non-negative edge weights. This visualization demonstrates how the algorithm works with a max-heap implementation, prioritizing nodes with the smallest distance values.</p>
+                <p>Navigate through the steps to see how the algorithm updates distances and explores the graph until it reaches the destination node (Node 4).</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const queueContainer = document.getElementById('queue-container');
+        const distancesContainer = document.getElementById('distances-container');
+        const stepInfo = document.getElementById('step-info');
+        const stepTitle = document.getElementById('step-title');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        let currentStep = 0;
+
+        // Define graph structure - nodes and edges
+        const nodes = [
+            { id: 0, label: "0", x: 150, y: 100 },  // Source node
+            { id: 1, label: "1", x: 300, y: 50 },
+            { id: 2, label: "2", x: 450, y: 100 },
+            { id: 3, label: "3", x: 300, y: 200 },
+            { id: 4, label: "4", x: 500, y: 200 }   // Destination node
+        ];
+
+        const edges = [
+            { from: 0, to: 1, weight: 2 },
+            { from: 0, to: 3, weight: 1 },
+            { from: 1, to: 2, weight: 3 },
+            { from: 1, to: 3, weight: 2 },
+            { from: 2, to: 4, weight: 2 },
+            { from: 3, to: 1, weight: 1 },
+            { from: 3, to: 2, weight: 5 },
+            { from: 3, to: 4, weight: 6 }
+        ];
+
+        // Define the execution steps
+        const steps = [
+            {
+                title: "Initial State",
+                description: "Start at source node 0. Initialize distances: d[0]=0, all others to infinity. Add all nodes to priority queue.",
+                currentNode: 0,
+                visited: [],
+                queue: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: Infinity },
+                    { node: 2, distance: Infinity },
+                    { node: 3, distance: Infinity },
+                    { node: 4, distance: Infinity }
+                ],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: Infinity },
+                    { node: 2, distance: Infinity },
+                    { node: 3, distance: Infinity },
+                    { node: 4, distance: Infinity }
+                ]
+            },
+            {
+                title: "Step 1",
+                description: "Extract node 0 (distance = 0). Examine neighbors: nodes 1 and 3. Update their distances if shorter paths found.",
+                currentNode: 0,
+                visited: [0],
+                queue: [
+                    { node: 3, distance: 1 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: Infinity },
+                    { node: 4, distance: Infinity }
+                ],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: Infinity },
+                    { node: 3, distance: 1 },
+                    { node: 4, distance: Infinity }
+                ]
+            },
+            {
+                title: "Step 2",
+                description: "Extract node 3 (distance = 1). Examine neighbors: nodes 1, 2, and 4. Update their distances if shorter paths found.",
+                currentNode: 3,
+                visited: [0, 3],
+                queue: [
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: 6 },
+                    { node: 4, distance: 7 }
+                ],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: 6 },
+                    { node: 3, distance: 1 },
+                    { node: 4, distance: 7 }
+                ]
+            },
+            {
+                title: "Step 3",
+                description: "Extract node 1 (distance = 2). Examine neighbors: nodes 2 and 3 (already visited). Update distances if shorter paths found.",
+                currentNode: 1,
+                visited: [0, 3, 1],
+                queue: [
+                    { node: 2, distance: 5 },
+                    { node: 4, distance: 7 }
+                ],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: 5 },
+                    { node: 3, distance: 1 },
+                    { node: 4, distance: 7 }
+                ]
+            },
+            {
+                title: "Step 4",
+                description: "Extract node 2 (distance = 5). Examine neighbor: node 4. Update its distance if a shorter path is found.",
+                currentNode: 2,
+                visited: [0, 3, 1, 2],
+                queue: [
+                    { node: 4, distance: 7 }
+                ],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: 5 },
+                    { node: 3, distance: 1 },
+                    { node: 4, distance: 7 }
+                ]
+            },
+            {
+                title: "Step 5",
+                description: "Extract node 4 (distance = 7). This is our destination node, so the algorithm terminates.",
+                currentNode: 4,
+                visited: [0, 3, 1, 2, 4],
+                queue: [],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: 5 },
+                    { node: 3, distance: 1 },
+                    { node: 4, distance: 7 }
+                ]
+            },
+            {
+                title: "Final Result",
+                description: "Dijkstra's algorithm has completed. The shortest path from node 0 to node 4 has length 7. Path: 0 → 3 → 1 → 2 → 4",
+                currentNode: 4,
+                visited: [0, 3, 1, 2, 4],
+                queue: [],
+                distances: [
+                    { node: 0, distance: 0 },
+                    { node: 1, distance: 2 },
+                    { node: 2, distance: 5 },
+                    { node: 3, distance: 1 },
+                    { node: 4, distance: 7 }
+                ],
+                path: [0, 3, 1, 2, 4]
+            }
+        ];
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const currentStepData = steps[currentStep];
+
+            // Draw edges
+            edges.forEach(edge => {
+                const fromNode = nodes.find(n => n.id === edge.from);
+                const toNode = nodes.find(n => n.id === edge.to);
+                
+                ctx.beginPath();
+                ctx.moveTo(fromNode.x, fromNode.y);
+                ctx.lineTo(toNode.x, toNode.y);
+                ctx.strokeStyle = "#999999";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw edge weight
+                const midX = (fromNode.x + toNode.x) / 2;
+                const midY = (fromNode.y + toNode.y) / 2;
+                
+                ctx.fillStyle = "#000000";
+                ctx.font = "14px Arial";
+                ctx.fillText(edge.weight, midX + 10, midY);
+            });
+
+            // Draw path for final step
+            if (currentStep === steps.length - 1 && currentStepData.path) {
+                for (let i = 0; i < currentStepData.path.length - 1; i++) {
+                    const fromNodeId = currentStepData.path[i];
+                    const toNodeId = currentStepData.path[i + 1];
+                    
+                    const fromNode = nodes.find(n => n.id === fromNodeId);
+                    const toNode = nodes.find(n => n.id === toNodeId);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(fromNode.x, fromNode.y);
+                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.strokeStyle = "#FF4800";
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                }
+            }
+
+            // Draw nodes
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
+                
+                if (node.id === 4) { // Destination node
+                    ctx.fillStyle = "#000000";
+                } else if (node.id === currentStepData.currentNode) {
+                    ctx.fillStyle = "#FD9F78";
+                } else if (currentStepData.visited.includes(node.id)) {
+                    ctx.fillStyle = "#FF4800";
+                } else {
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.strokeStyle = "#000000";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                
+                ctx.fill();
+                
+                ctx.fillStyle = node.id === 4 || currentStepData.visited.includes(node.id) ? "#FFFFFF" : "#000000";
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(node.label, node.x, node.y);
+            });
+        }
+
+        function updateQueueDisplay() {
+            queueContainer.innerHTML = '';
+            const currentStepData = steps[currentStep];
+            
+            if (currentStepData.queue.length === 0) {
+                const emptyItem = document.createElement('div');
+                emptyItem.textContent = 'Empty';
+                emptyItem.classList.add('queue-item');
+                emptyItem.style.backgroundColor = '#ccc';
+                queueContainer.appendChild(emptyItem);
+                return;
+            }
+            
+            currentStepData.queue.forEach(item => {
+                const queueItem = document.createElement('div');
+                queueItem.textContent = `Node ${item.node}: ${item.distance === Infinity ? '∞' : item.distance}`;
+                queueItem.classList.add('queue-item');
+                queueContainer.appendChild(queueItem);
+            });
+        }
+
+        function updateDistancesDisplay() {
+            distancesContainer.innerHTML = '';
+            const currentStepData = steps[currentStep];
+            
+            currentStepData.distances.forEach(item => {
+                const distanceItem = document.createElement('div');
+                distanceItem.textContent = `d[${item.node}] = ${item.distance === Infinity ? '∞' : item.distance}`;
+                distanceItem.classList.add('distance-item');
+                distancesContainer.appendChild(distanceItem);
+            });
+        }
+
+        function updateStepInfo() {
+            const currentStepData = steps[currentStep];
+            stepTitle.textContent = currentStepData.title;
+            stepInfo.innerHTML = `<h2>${currentStepData.title}</h2><p>${currentStepData.description}</p>`;
+        }
+
+        function updateDisplay() {
+            drawGraph();
+            updateQueueDisplay();
+            updateDistancesDisplay();
+            updateStepInfo();
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateDisplay();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateDisplay();
+            }
+        });
+
+        // Initial display
+        updateDisplay();
+    </script>
+</body>
+</html>
