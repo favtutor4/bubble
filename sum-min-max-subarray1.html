@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subarrays Visualization</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #FFFFFF;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .array-element {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            border: 2px solid #000000;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+            color: #000000;
+            position: relative;
+        }
+        .subarray-highlight-1 {
+            background-color: rgba(255, 72, 0, 0.3);
+        }
+        .subarray-highlight-2 {
+            background-color: rgba(253, 159, 120, 0.3);
+        }
+        .subarray-highlight-3 {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        .min {
+            border: 2px solid blue;
+        }
+        .max {
+            border: 2px solid red;
+        }
+        .info-box {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #FD9F78;
+            color: #000000;
+            font-size: 18px;
+            line-height: 1.5;
+            max-width: 600px;
+            text-align: left;
+        }
+        .calculation {
+            font-weight: bold;
+            color: #FF4800;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .nav-button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #FD9F78;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .indicator {
+            position: absolute;
+            top: -25px;
+            font-size: 14px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subarrays Visualization</h1>
+        <p>Array [2, 5, 1, 8, 3] with subarrays of size K=3</p>
+        
+        <div class="array-container" id="arrayContainer">
+            <!-- Array elements will be added here -->
+        </div>
+        
+        <div class="info-box" id="infoBox">
+            <!-- Information will be added here -->
+        </div>
+        
+        <div class="navigation">
+            <button id="prevButton" class="nav-button">Previous</button>
+            <button id="nextButton" class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array data
+        const array = [2, 5, 1, 8, 3];
+        const k = 3;
+        
+        // Create subarrays
+        const subarrays = [];
+        for (let i = 0; i <= array.length - k; i++) {
+            subarrays.push(array.slice(i, i + k));
+        }
+        
+        // Current subarray index
+        let currentIndex = 0;
+        
+        // Create array elements
+        const arrayContainer = document.getElementById('arrayContainer');
+        array.forEach((value, index) => {
+            const element = document.createElement('div');
+            element.className = 'array-element';
+            element.id = `element-${index}`;
+            element.textContent = value;
+            
+            // Add index indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'indicator';
+            indicator.textContent = index;
+            element.appendChild(indicator);
+            
+            arrayContainer.appendChild(element);
+        });
+        
+        // Function to update visualization
+        function updateVisualization() {
+            // Reset all elements
+            array.forEach((_, index) => {
+                const element = document.getElementById(`element-${index}`);
+                element.className = 'array-element';
+            });
+            
+            // Highlight current subarray
+            const currentSubarray = subarrays[currentIndex];
+            const startIndex = currentIndex;
+            
+            // Find min and max
+            const minValue = Math.min(...currentSubarray);
+            const maxValue = Math.max(...currentSubarray);
+            const sum = currentSubarray.reduce((a, b) => a + b, 0);
+            
+            // Highlight elements
+            for (let i = 0; i < k; i++) {
+                const element = document.getElementById(`element-${startIndex + i}`);
+                element.classList.add(`subarray-highlight-${currentIndex + 1}`);
+                
+                if (currentSubarray[i] === minValue) {
+                    element.classList.add('min');
+                }
+                if (currentSubarray[i] === maxValue) {
+                    element.classList.add('max');
+                }
+            }
+            
+            // Update info box
+            const infoBox = document.getElementById('infoBox');
+            infoBox.innerHTML = `
+                <p>Subarray ${currentIndex + 1}: [${currentSubarray.join(', ')}]</p>
+                <p>Min value: <span style="color: blue">${minValue}</span></p>
+                <p>Max value: <span style="color: red">${maxValue}</span></p>
+                <p class="calculation">Sum: ${currentSubarray.join(' + ')} = ${sum}</p>
+            `;
+            
+            // Update button states
+            document.getElementById('prevButton').disabled = currentIndex === 0;
+            document.getElementById('nextButton').disabled = currentIndex === subarrays.length - 1;
+        }
+        
+        // Initialize the first visualization
+        updateVisualization();
+        
+        // Add event listeners to navigation buttons
+        document.getElementById('prevButton').addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateVisualization();
+            }
+        });
+        
+        document.getElementById('nextButton').addEventListener('click', () => {
+            if (currentIndex < subarrays.length - 1) {
+                currentIndex++;
+                updateVisualization();
+            }
+        });
+    </script>
+</body>
+</html>
