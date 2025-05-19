@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window with Deques</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .explanation {
+            background-color: #FD9F78;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            color: #000000;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            border: 2px solid #FF4800;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sliding Window with Deques</h1>
+        
+        <div class="explanation">
+            <p>A <strong>sliding window</strong> is a technique used to process arrays or lists by considering a specific window size at a time. <strong>Deques</strong> (double-ended queues) are data structures that allow adding and removing elements from both ends efficiently.</p>
+            <p>In the context of sliding windows, deques can be used to keep track of maximum and minimum values within the current window. This animation demonstrates how min_deque and max_deque are maintained as we process an array [2, 5, 1, 8, 3].</p>
+        </div>
+        
+        <div class="animation-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" class="nav-btn" disabled>Previous</button>
+            <button id="nextBtn" class="nav-btn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 0 of 5</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        
+        // Set canvas dimensions
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const array = [2, 5, 1, 8, 3];
+        let currentStep = 0;
+        const totalSteps = array.length;
+        
+        // Define the state of deques at each step
+        const stateHistory = [
+            { // Initial state
+                step: 0,
+                array: array,
+                windowStart: -1,
+                windowEnd: -1,
+                minDeque: [],
+                maxDeque: [],
+                description: "Initial state: Empty deques, window size 3"
+            },
+            { // After processing index 0 (value 2)
+                step: 1,
+                array: array,
+                windowStart: 0,
+                windowEnd: 0,
+                minDeque: [0],
+                maxDeque: [0],
+                description: "Add index 0 (value 2) to both deques"
+            },
+            { // After processing index 1 (value 5)
+                step: 2,
+                array: array,
+                windowStart: 0,
+                windowEnd: 1,
+                minDeque: [0],
+                maxDeque: [1],
+                description: "Add index 1 (value 5): It's larger than 2, so it replaces all values in max_deque. For min_deque, keep index 0 as 2 < 5."
+            },
+            { // After processing index 2 (value 1)
+                step: 3,
+                array: array,
+                windowStart: 0,
+                windowEnd: 2,
+                minDeque: [2],
+                maxDeque: [1, 2],
+                description: "Add index 2 (value 1): It's smaller than 2, so it replaces all values in min_deque. For max_deque, 5 > 1, so keep both indexes."
+            },
+            { // After processing index 3 (value 8)
+                step: 4,
+                array: array,
+                windowStart: 1,
+                windowEnd: 3,
+                minDeque: [2, 3],
+                maxDeque: [3],
+                description: "Slide window: Remove index 0. Add index 3 (value 8): It's larger than all values, so it replaces max_deque. For min_deque, 1 < 8, so keep 1 and add 8."
+            },
+            { // After processing index 4 (value 3)
+                step: 5,
+                array: array,
+                windowStart: 2,
+                windowEnd: 4,
+                minDeque: [4],
+                maxDeque: [3, 4],
+                description: "Slide window: Remove index 1. Add index 4 (value 3): It's smaller than 8, so keep 8 in max_deque. For min_deque, 1 is out of window, so remove it. Add value 3."
+            }
+        ];
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const state = stateHistory[currentStep];
+            
+            // Set colors
+            const arrayColor = "#000000";
+            const windowColor = "#FF4800";
+            const minDequeColor = "#008000"; // Green
+            const maxDequeColor = "#0000FF"; // Blue
+            
+            const elementWidth = 60;
+            const elementHeight = 60;
+            const elementGap = 10;
+            const topMargin = 50;
+            const arrayY = topMargin;
+            const dequeY = arrayY + elementHeight + 80;
+            const minDequeY = dequeY;
+            const maxDequeY = minDequeY + elementHeight + 40;
+            
+            // Draw array title
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Array: [2, 5, 1, 8, 3]", 20, 30);
+            
+            // Draw array elements
+            const startX = (canvas.width - (array.length * (elementWidth + elementGap) - elementGap)) / 2;
+            
+            for (let i = 0; i < array.length; i++) {
+                const x = startX + i * (elementWidth + elementGap);
+                
+                // Highlight window
+                if (i >= state.windowStart && i <= state.windowEnd && state.windowStart !== -1) {
+                    ctx.fillStyle = "#FD9F78";
+                    ctx.fillRect(x - 5, arrayY - 5, elementWidth + 10, elementHeight + 10);
+                }
+                
+                // Draw element box
+                ctx.fillStyle = "#FFFFFF";
+                ctx.strokeStyle = arrayColor;
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, arrayY, elementWidth, elementHeight);
+                ctx.strokeRect(x, arrayY, elementWidth, elementHeight);
+                
+                // Draw element value
+                ctx.fillStyle = arrayColor;
+                ctx.font = "20px Arial";
+                ctx.fillText(array[i].toString(), x + elementWidth/2 - 6, arrayY + elementHeight/2 + 6);
+                
+                // Draw index below
+                ctx.font = "14px Arial";
+                ctx.fillText(`index ${i}`, x + elementWidth/2 - 25, arrayY + elementHeight + 20);
+            }
+            
+            // Draw min_deque title
+            ctx.font = "16px Arial";
+            ctx.fillStyle = minDequeColor;
+            ctx.fillText("min_deque (tracks minimum values)", 20, minDequeY - 20);
+            
+            // Draw max_deque title
+            ctx.fillStyle = maxDequeColor;
+            ctx.fillText("max_deque (tracks maximum values)", 20, maxDequeY - 20);
+            
+            // Draw deques
+            const minDeque = state.minDeque;
+            const maxDeque = state.maxDeque;
+            
+            // Draw min_deque
+            for (let i = 0; i < minDeque.length; i++) {
+                const index = minDeque[i];
+                const value = array[index];
+                const x = startX + i * (elementWidth + elementGap);
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.strokeStyle = minDequeColor;
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, minDequeY, elementWidth, elementHeight);
+                ctx.strokeRect(x, minDequeY, elementWidth, elementHeight);
+                
+                ctx.fillStyle = minDequeColor;
+                ctx.font = "20px Arial";
+                ctx.fillText(value.toString(), x + elementWidth/2 - 6, minDequeY + elementHeight/2 + 6);
+                
+                ctx.font = "14px Arial";
+                ctx.fillText(`index ${index}`, x + elementWidth/2 - 25, minDequeY + elementHeight + 20);
+                
+                // Draw arrow from array to deque
+                if (i === minDeque.length - 1 && currentStep > 0 && currentStep < totalSteps) {
+                    const arrayX = startX + index * (elementWidth + elementGap) + elementWidth / 2;
+                    const dequeX = x + elementWidth / 2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(arrayX, arrayY + elementHeight + 30);
+                    ctx.lineTo(dequeX, minDequeY - 10);
+                    ctx.strokeStyle = minDequeColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Arrow head
+                    ctx.beginPath();
+                    ctx.moveTo(dequeX, minDequeY - 10);
+                    ctx.lineTo(dequeX - 5, minDequeY - 20);
+                    ctx.lineTo(dequeX + 5, minDequeY - 20);
+                    ctx.closePath();
+                    ctx.fillStyle = minDequeColor;
+                    ctx.fill();
+                }
+            }
+            
+            // Draw max_deque
+            for (let i = 0; i < maxDeque.length; i++) {
+                const index = maxDeque[i];
+                const value = array[index];
+                const x = startX + i * (elementWidth + elementGap);
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.strokeStyle = maxDequeColor;
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, maxDequeY, elementWidth, elementHeight);
+                ctx.strokeRect(x, maxDequeY, elementWidth, elementHeight);
+                
+                ctx.fillStyle = maxDequeColor;
+                ctx.font = "20px Arial";
+                ctx.fillText(value.toString(), x + elementWidth/2 - 6, maxDequeY + elementHeight/2 + 6);
+                
+                ctx.font = "14px Arial";
+                ctx.fillText(`index ${index}`, x + elementWidth/2 - 25, maxDequeY + elementHeight + 20);
+                
+                // Draw arrow from array to deque
+                if (i === maxDeque.length - 1 && currentStep > 0 && currentStep < totalSteps) {
+                    const arrayX = startX + index * (elementWidth + elementGap) + elementWidth / 2;
+                    const dequeX = x + elementWidth / 2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(arrayX, arrayY + elementHeight + 30);
+                    ctx.lineTo(dequeX, maxDequeY - 10);
+                    ctx.strokeStyle = maxDequeColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Arrow head
+                    ctx.beginPath();
+                    ctx.moveTo(dequeX, maxDequeY - 10);
+                    ctx.lineTo(dequeX - 5, maxDequeY - 20);
+                    ctx.lineTo(dequeX + 5, maxDequeY - 20);
+                    ctx.closePath();
+                    ctx.fillStyle = maxDequeColor;
+                    ctx.fill();
+                }
+            }
+            
+            // Draw description
+            ctx.fillStyle = "#000000";
+            ctx.font = "14px Arial";
+            const descLines = wrapText(state.description, canvas.width - 40, 16);
+            let yPos = maxDequeY + elementHeight + 70;
+            
+            for (const line of descLines) {
+                ctx.fillText(line, 20, yPos);
+                yPos += 20;
+            }
+            
+            // Update step indicator
+            stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+        
+        function wrapText(text, maxWidth, fontSize) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            
+            ctx.font = `${fontSize}px Arial`;
+            
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + ' ' + word).width;
+                
+                if (width < maxWidth) {
+                    currentLine += ' ' + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            
+            lines.push(currentLine);
+            return lines;
+        }
+        
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateButtons();
+                draw();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateButtons();
+                draw();
+            }
+        });
+        
+        // Initial draw
+        updateButtons();
+        draw();
+    </script>
+</body>
+</html>
