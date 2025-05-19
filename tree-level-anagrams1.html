@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Examples with Anagram Levels</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        canvas {
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #FFFFFF;
+        }
+        
+        .explanation {
+            background-color: #FD9F78;
+            color: #000000;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tree Examples with Anagram Levels</h1>
+        
+        <div class="explanation" id="explanation">
+            In this animation, we'll explore two trees with anagram levels. Two trees have anagram levels if corresponding levels in both trees form anagrams - meaning they contain the same characters, just arranged differently.
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="treeCanvas" width="800" height="400"></canvas>
+        </div>
+        
+        <div class="navigation-buttons">
+            <button id="prevButton" disabled>Previous</button>
+            <div class="step-indicator" id="stepIndicator">Step 1 of 5</div>
+            <button id="nextButton">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const explanation = document.getElementById('explanation');
+        
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        // Tree nodes data
+        const tree1 = {
+            value: 'A',
+            x: 200,
+            y: 50,
+            children: [
+                {
+                    value: 'B',
+                    x: 100,
+                    y: 120,
+                    children: [
+                        { value: 'D', x: 50, y: 190, children: [] },
+                        { value: 'E', x: 150, y: 190, children: [] }
+                    ]
+                },
+                {
+                    value: 'C',
+                    x: 300,
+                    y: 120,
+                    children: [
+                        { value: 'F', x: 300, y: 190, children: [] }
+                    ]
+                }
+            ]
+        };
+        
+        const tree2 = {
+            value: 'A',
+            x: 600,
+            y: 50,
+            children: [
+                {
+                    value: 'C',
+                    x: 500,
+                    y: 120,
+                    children: [
+                        { value: 'F', x: 500, y: 190, children: [] }
+                    ]
+                },
+                {
+                    value: 'B',
+                    x: 700,
+                    y: 120,
+                    children: [
+                        { value: 'E', x: 650, y: 190, children: [] },
+                        { value: 'D', x: 750, y: 190, children: [] }
+                    ]
+                }
+            ]
+        };
+        
+        // Explanations for each step
+        const explanations = [
+            "In this animation, we'll explore two trees with anagram levels. Two trees have anagram levels if corresponding levels in both trees form anagrams - meaning they contain the same characters, just arranged differently.",
+            "Let's look at our two trees. Both trees have three levels. Notice how they have the same structure but with different arrangements of nodes.",
+            "Level 0 (Root Level): Both trees have 'A' as the root. Since they're identical, they form an anagram.",
+            "Level 1: Tree 1 has nodes 'B' and 'C'. Tree 2 has nodes 'C' and 'B'. These levels form anagrams because they contain the same characters, just arranged differently.",
+            "Level 2: Tree 1 has nodes 'D', 'E', and 'F'. Tree 2 has nodes 'F', 'E', and 'D'. Again, these form anagrams. Therefore, these two trees have anagram levels at every level!"
+        ];
+        
+        // Function to draw a tree node
+        function drawNode(node, highlight = false) {
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
+            ctx.fillStyle = highlight ? "#FF4800" : "#FD9F78";
+            ctx.fill();
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(node.value, node.x, node.y);
+        }
+        
+        // Function to draw connections between nodes
+        function drawConnection(parent, child) {
+            ctx.beginPath();
+            ctx.moveTo(parent.x, parent.y + 20);
+            ctx.lineTo(child.x, child.y - 20);
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // Function to draw a tree
+        function drawTree(tree, highlight = false, level = null) {
+            const queue = [{node: tree, level: 0}];
+            
+            while (queue.length > 0) {
+                const {node, level: nodeLevel} = queue.shift();
+                
+                const shouldHighlight = highlight && (level === null || nodeLevel === level);
+                drawNode(node, shouldHighlight);
+                
+                for (const child of node.children) {
+                    drawConnection(node, child);
+                    queue.push({node: child, level: nodeLevel + 1});
+                }
+            }
+        }
+        
+        // Function to draw labels for trees
+        function drawLabels() {
+            ctx.fillStyle = "#000000";
+            ctx.font = "16px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Tree 1", 200, 250);
+            ctx.fillText("Tree 2", 600, 250);
+        }
+        
+        // Function to highlight specific level in both trees
+        function highlightLevel(level) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawTree(tree1, true, level);
+            drawTree(tree2, true, level);
+            drawLabels();
+        }
+        
+        // Function to render the current step
+        function renderStep(step) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            explanation.textContent = explanations[step - 1];
+            
+            switch(step) {
+                case 1:
+                    // Introduction - just show the explanation
+                    break;
+                case 2:
+                    // Show both trees
+                    drawTree(tree1);
+                    drawTree(tree2);
+                    drawLabels();
+                    break;
+                case 3:
+                    // Highlight level 0 (root)
+                    highlightLevel(0);
+                    break;
+                case 4:
+                    // Highlight level 1
+                    highlightLevel(1);
+                    break;
+                case 5:
+                    // Highlight level 2
+                    highlightLevel(2);
+                    break;
+            }
+            
+            stepIndicator.textContent = `Step ${step} of ${totalSteps}`;
+        }
+        
+        // Initialize the visualization
+        function init() {
+            renderStep(currentStep);
+            updateButtons();
+        }
+        
+        // Update button states
+        function updateButtons() {
+            prevButton.disabled = currentStep === 1;
+            nextButton.disabled = currentStep === totalSteps;
+        }
+        
+        // Event listeners for navigation buttons
+        prevButton.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                renderStep(currentStep);
+                updateButtons();
+            }
+        });
+        
+        nextButton.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                renderStep(currentStep);
+                updateButtons();
+            }
+        });
+        
+        // Initialize the visualization
+        init();
+    </script>
+</body>
+</html>
