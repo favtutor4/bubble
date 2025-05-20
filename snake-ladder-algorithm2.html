@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFS Graph Traversal for Snake and Ladder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        canvas {
+            background-color: #FFFFFF;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FFF;
+            border-left: 4px solid #FF4800;
+        }
+        .slide-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BFS Graph Traversal for Snake and Ladder</h1>
+        
+        <div class="animation-container">
+            <canvas id="bfsCanvas" width="900" height="500"></canvas>
+        </div>
+        
+        <div class="slide-indicator">
+            <span id="currentSlide">1</span>/<span id="totalSlides">4</span>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>BFS (Breadth-First Search) starts at position 1 on the board. In Snake and Ladder, each move represents rolling a dice (1-6) and moving that many positions forward.</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bfsCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Define slides
+        const slides = [
+            {
+                explanation: "BFS (Breadth-First Search) starts at position 1 on the board. In Snake and Ladder, each move represents rolling a dice (1-6) and moving that many positions forward.",
+                draw: function() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw title
+                    ctx.fillStyle = "#FF4800";
+                    ctx.font = "bold 24px Arial";
+                    ctx.fillText("Snake and Ladder BFS Traversal - Starting Position", 20, 40);
+                    
+                    // Draw starting node
+                    ctx.fillStyle = "#FF4800";
+                    ctx.beginPath();
+                    ctx.arc(canvas.width/2, 150, 30, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.font = "bold 20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("1", canvas.width/2, 157);
+                    
+                    // Draw explanation
+                    ctx.fillStyle = "#000000";
+                    ctx.font = "18px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("We start BFS from position 1 on the Snake and Ladder board", canvas.width/2, 250);
+                    ctx.fillText("From here, we can roll a dice and move to positions 2, 3, 4, 5, 6, or 7", canvas.width/2, 280);
+                    ctx.fillText("BFS explores all these possibilities in the first level", canvas.width/2, 310);
+                }
+            },
+            {
+                explanation: "From position 1, we can roll a dice (1-6) to reach positions 2, 3, 4, 5, 6, or 7. This forms our first level of the BFS traversal.",
+                draw: function() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw title
+                    ctx.fillStyle = "#FF4800";
+                    ctx.font = "bold 24px Arial";
+                    ctx.fillText("Level 1: First Dice Roll from Position 1", 20, 40);
+                    
+                    // Draw starting node
+                    ctx.fillStyle = "#FF4800";
+                    ctx.beginPath();
+                    ctx.arc(canvas.width/2, 100, 30, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.font = "bold 20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("1", canvas.width/2, 107);
+                    
+                    // Draw first level nodes
+                    const positions = [2, 3, 4, 5, 6, 7];
+                    const nodeRadius = 25;
+                    const startX = 100;
+                    const endX = canvas.width - 100;
+                    const spacing = (endX - startX) / (positions.length - 1);
+                    const y = 250;
+                    
+                    // Draw arrows from start to first level
+                    ctx.strokeStyle = "#FD9F78";
+                    ctx.lineWidth = 2;
+                    
+                    for (let i = 0; i < positions.length; i++) {
+                        const x = startX + i * spacing;
+                        
+                        // Draw arrow
+                        ctx.beginPath();
+                        ctx.moveTo(canvas.width/2, 130);
+                        ctx.lineTo(x, y - nodeRadius);
+                        ctx.stroke();
+                        
+                        // Label arrow with dice roll
+                        ctx.fillStyle = "#000000";
+                        ctx.font = "14px Arial";
+                        ctx.textAlign = "center";
+                        
+                        // Calculate midpoint of the line
+                        const midX = (canvas.width/2 + x) / 2;
+                        const midY = (130 + (y - nodeRadius)) / 2;
+                        ctx.fillText(`Roll ${i+1}`, midX, midY);
+                        
+                        // Draw node
+                        ctx.fillStyle = "#FD9F78";
+                        ctx.beginPath();
+                        ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        // Node label
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.font = "bold 18px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(positions[i].toString(), x, y + 6);
+                    }
+                    
+                    // Add explanation
+                    ctx.fillStyle = "#000000";
+                    ctx.font = "16px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Level 1: After the first dice roll, we can reach positions 2-7", canvas.width/2, 350);
+                    ctx.fillText("Each position corresponds to a dice roll value (1-6) from the starting position", canvas.width/2, 380);
+                }
+            },
+            {
+                explanation: "Let's assume position 3 has a ladder that takes us to position 22, and position 5 has a snake that drops us to position 2. This changes our graph structure.",
+                draw: function() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw title
+                    ctx.fillStyle = "#FF4800";
+                    ctx.font = "bold 24px Arial";
+                    ctx.fillText("Level 1 with Snakes and Ladders", 20, 40);
+                    
+                    // Draw starting node
+                    ctx.fillStyle = "#FF4800";
+                    ctx.beginPath();
+                    ctx.arc(canvas.width/2, 100, 30, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.font = "bold 20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("1", canvas.width/2, 107);
+                    
+                    // Draw first level nodes
+                    const positions = [2, 3, 4, 5, 6, 7];
+                    const actualPositions = [2, 22, 4, 2, 6, 7]; // After ladder/snake
+                    const nodeRadius = 25;
+                    const startX = 100;
+                    const endX = canvas.width - 100;
+                    const spacing = (endX - startX) / (positions.length - 1);
+                    const y = 250;
+                    
+                    // Draw arrows from start to first level
+                    ctx.strokeStyle = "#FD9F78";
+                    ctx.lineWidth = 2;
+                    
+                    for (let i = 0; i < positions.length; i++) {
+                        const x = startX + i * spacing;
+                        
+                        // Draw arrow
+                        ctx.beginPath();
+                        ctx.moveTo(canvas.width/2, 130);
+                        ctx.lineTo(x, y - nodeRadius);
+                        ctx.stroke();
+                        
+                        // Label arrow with dice roll
+                        ctx.fillStyle = "#000000";
+                        ctx.font = "14px Arial";
+                        ctx.textAlign = "center";
+                        
+                        // Calculate midpoint of the line
+                        const midX = (canvas.width/2 + x) / 2;
+                        const midY = (130 + (y - nodeRadius)) / 2;
+                        ctx.fillText(`Roll ${i+1}`, midX, midY);
+                        
+                        // Draw node
+                        let nodeColor = "#FD9F78";
+                        
+                        // Special coloring for ladder and snake positions
+                        if (i === 1) { // Position 3 has ladder
+                            nodeColor = "#4CAF50"; // Green for ladder
+                        } else if (i === 3) { // Position 5 has snake
+                            nodeColor = "#F44336"; // Red for snake
+                        }
+                        
+                        ctx.fillStyle = nodeColor;
+                        ctx.beginPath();
+                        ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        // Node label - original position
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.font = "bold 18px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(positions[i].toString(), x, y + 6);
+                        
+                        // If it's a ladder or snake, show the actual position after the effect
+                        if (positions[i] !== actualPositions[i]) {
+                            // Draw the actual position
+                            ctx.fillStyle = nodeColor;
+                            ctx.beginPath();
+                            ctx.arc(x, y + 80, nodeRadius, 0, 2 * Math.PI);
+                            ctx.fill();
+                            
+                            // Node label - actual position
+                            ctx.fillStyle = "#FFFFFF";
+                            ctx.font = "bold 18px Arial";
+                            ctx.textAlign = "center";
+                            ctx.fillText(actualPositions[i].toString(), x, y + 86);
+                            
+                            // Draw arrow connecting the positions
+                            ctx.strokeStyle = nodeColor;
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(x, y + nodeRadius);
+                            ctx.lineTo(x, y + 80 - nodeRadius);
+                            ctx.stroke();
+                            
+                            // Add arrowhead
+                            ctx.beginPath();
+                            ctx.moveTo(x, y + 80 - nodeRadius);
+                            ctx.lineTo(x - 5, y + 70 - nodeRadius);
+                            ctx.lineTo(x + 5, y + 70 - nodeRadius);
+                            ctx.closePath();
+                            ctx.fill();
+                            
+                            // Add ladder/snake label
+                            ctx.fillStyle = "#000000";
+                            ctx.font = "14px Arial";
+                            ctx.textAlign = "center";
+                            if (i === 1) {
+                                ctx.fillText("Ladder", x + 40, y + 40);
+                            } else if (i === 3) {
+                                ctx.fillText("Snake", x + 40, y + 40);
+                            }
+                        }
+                    }
+                    
+                    // Add explanation
+                    ctx.fillStyle = "#000000";
+                    ctx.font = "16px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Position 3 has a ladder that takes us to position 22", canvas.width/2, 400);
+                    ctx.fillText("Position 5 has a snake that takes us back to position 2", canvas.width/2, 430);
+                    ctx.fillText("These shortcuts change our BFS traversal path", canvas.width/2, 460);
+                }
+            },
+            {
+                explanation: "When we continue BFS to the second level (a second dice roll), some positions may be visited multiple times through different paths. BFS ensures we find the shortest path to each position.",
+                draw: function() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw title
+                    ctx.fillStyle = "#FF4800";
+                    ctx.font = "bold 22px Arial";
+                    ctx.fillText("Level 2: Second Dice Roll (Some Examples)", 20, 40);
+                    
+                    const nodeRadius = 25;
+                    
+                    // Define selected level 1 nodes
+                    const level1Nodes = [
+                        { position: 2, x: 150, y: 120, color: "#FD9F78" },
+                        { position: 22, x: 450, y: 120, color: "#4CAF50" }, // From ladder at pos 3
+                        { position: 7, x: 750, y: 120, color: "#FD9F78" }
+                    ];
+                    
+                    // Draw level 1 nodes
+                    for (let node of level1Nodes) {
+                        ctx.fillStyle = node.color;
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.font = "bold 18px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(node.position.toString(), node.x, node.y + 6);
+                    }
+                    
+                    // Define level 2 nodes (just showing some examples)
+                    // For each level 1 node, show 2-3 possible moves
+                    const level2Nodes = [
+                        // From position 2
+                        { position: 3, x: 80, y: 220, color: "#FD9F78", parent: level1Nodes[0], roll: 1 },
+                        { position: 4, x: 150, y: 220, color: "#FD9F78", parent: level1Nodes[0], roll: 2 },
+                        { position: 8, x: 220, y: 220, color: "#FD9F78", parent: level1Nodes[0], roll: 6 },
+                        
+                        // From position 22
+                        { position: 23, x: 380, y: 220, color: "#FD9F78", parent: level1Nodes[1], roll: 1 },
+                        { position: 25, x: 450, y: 220, color: "#FD9F78", parent: level1Nodes[1], roll: 3 },
+                        { position: 28, x: 520, y: 220, color: "#FD9F78", parent: level1Nodes[1], roll: 6 },
+                        
+                        // From position 7
+                        { position: 8, x: 680, y: 220, color: "#FD9F78", parent: level1Nodes[2], roll: 1 },
+                        { position: 10, x: 750, y: 220, color: "#FD9F78", parent: level1Nodes[2], roll: 3 },
+                        { position: 13, x: 820, y: 220, color: "#FD9F78", parent: level1Nodes[2], roll: 6 }
+                    ];
+                    
+                    // Draw connections and level 2 nodes
+                    for (let node of level2Nodes) {
+                        // Draw arrow
+                        ctx.strokeStyle = "#FD9F78";
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(node.parent.x, node.parent.y + nodeRadius);
+                        ctx.lineTo(node.x, node.y - nodeRadius);
+                        ctx.stroke();
+                        
+                        // Add roll label
+                        ctx.fillStyle = "#000000";
+                        ctx.font = "12px Arial";
+                        ctx.textAlign = "center";
+                        const midX = (node.parent.x + node.x) / 2;
+                        const midY = (node.parent.y + nodeRadius + node.y - nodeRadius) / 2;
+                        ctx.fillText(`Roll ${node.roll}`, midX, midY);
+                        
+                        // Draw node
+                        ctx.fillStyle = node.color;
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        // Node label
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.font = "bold 16px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(node.position.toString(), node.x, node.y + 6);
+                    }
+                    
+                    // Highlight that position 8 appears twice (duplicate paths)
+                    ctx.strokeStyle = "#FF4800";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(220, 220, nodeRadius + 5, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(680, 220, nodeRadius + 5, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    // Connect the duplicates with a dashed line
+                    ctx.strokeStyle = "#FF4800";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(220, 220);
+                    ctx.lineTo(680, 220);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Add explanation
+                    ctx.fillStyle = "#000000";
+                    ctx.font = "16px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Notice position 8 can be reached from both position 2 (roll 6) and position 7 (roll 1)", canvas.width/2, 290);
+                    ctx.fillText("BFS always finds the shortest path (fewest dice rolls) to each position", canvas.width/2, 320);
+                    ctx.fillText("This is why BFS is used to find the minimum number of dice rolls needed to reach the end", canvas.width/2, 350);
+                    
+                    // Add more details
+                    ctx.textAlign = "left";
+                    ctx.font = "14px Arial";
+                    ctx.fillText("• BFS creates 'levels' - each level represents one more dice roll", 50, 390);
+                    ctx.fillText("• Snakes and ladders create shortcuts in the graph", 50, 420);
+                    ctx.fillText("• In a real game with 100 positions, BFS would continue until reaching position 100", 50, 450);
+                    ctx.fillText("• The number of levels (dice rolls) needed to reach 100 is the answer", 50, 480);
+                }
+            }
+        ];
+        
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+        
+        // Update slide indicator
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        // Initial draw
+        slides[currentSlide].draw();
+        document.getElementById('explanation').innerHTML = `<p>${slides[currentSlide].explanation}</p>`;
+        
+        // Navigation handlers
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        });
+        
+        function updateSlide() {
+            // Update buttons state
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            
+            // Update slide content
+            slides[currentSlide].draw();
+            document.getElementById('explanation').innerHTML = `<p>${slides[currentSlide].explanation}</p>`;
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+        }
+    </script>
+</body>
+</html>
