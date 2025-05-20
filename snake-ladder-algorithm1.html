@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake and Ladder Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .board-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 20px 0;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            width: 100%;
+            height: 100%;
+            border: 2px solid #000000;
+        }
+        .cell {
+            border: 1px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            position: relative;
+        }
+        .odd-row {
+            background-color: #FD9F78;
+        }
+        .even-row {
+            background-color: #FFFFFF;
+        }
+        .snake, .ladder {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .player {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #FF4800;
+            position: absolute;
+            z-index: 20;
+            transition: all 0.5s ease-in-out;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #FF4800;
+            border-radius: 10px;
+            background-color: #FFFFFF;
+            max-width: 500px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Snake and Ladder Game</h1>
+        
+        <div class="board-container">
+            <div class="board" id="board"></div>
+            <div class="player" id="player"></div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>Welcome to Snake and Ladder! This is a classic board game played with a 10×10 grid numbered from 1 to 100.</p>
+            <p>Use the navigation buttons to learn more about how the game works.</p>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        // Create the board
+        const boardEl = document.getElementById('board');
+        const playerEl = document.getElementById('player');
+        const explanationEl = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        let currentStep = 0;
+        
+        // Board creation
+        function createBoard() {
+            let cellNumber = 100;
+            
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    // Alternate row colors
+                    if (row % 2 === 0) {
+                        cell.classList.add(col % 2 === 0 ? 'even-row' : 'odd-row');
+                    } else {
+                        cell.classList.add(col % 2 === 0 ? 'odd-row' : 'even-row');
+                    }
+                    
+                    // Set cell number (alternating direction for each row)
+                    let number;
+                    if (row % 2 === 0) {
+                        number = cellNumber - col;
+                    } else {
+                        number = cellNumber - 9 + col;
+                    }
+                    
+                    cell.textContent = number;
+                    cell.id = `cell-${number}`;
+                    boardEl.appendChild(cell);
+                }
+                cellNumber -= 10;
+            }
+        }
+        
+        // Draw snakes and ladders
+        function drawSnakesAndLadders() {
+            drawLadder(3, 21);
+            drawLadder(16, 80);
+            drawSnake(62, 19);
+            drawSnake(87, 36);
+        }
+        
+        function drawLadder(start, end) {
+            const startCell = document.getElementById(`cell-${start}`);
+            const endCell = document.getElementById(`cell-${end}`);
+            
+            if (!startCell || !endCell) return;
+            
+            const startRect = startCell.getBoundingClientRect();
+            const endRect = endCell.getBoundingClientRect();
+            const boardRect = boardEl.getBoundingClientRect();
+            
+            const ladder = document.createElement('svg');
+            ladder.className = 'ladder';
+            ladder.style.position = 'absolute';
+            ladder.style.left = '0';
+            ladder.style.top = '0';
+            ladder.style.width = '100%';
+            ladder.style.height = '100%';
+            ladder.style.pointerEvents = 'none';
+            
+            const startX = startRect.left - boardRect.left + startRect.width / 2;
+            const startY = startRect.top - boardRect.top + startRect.height / 2;
+            const endX = endRect.left - boardRect.left + endRect.width / 2;
+            const endY = endRect.top - boardRect.top + endRect.height / 2;
+            
+            ladder.innerHTML = `
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#FF4800" />
+                    </marker>
+                </defs>
+                <line x1="${startX}" y1="${startY}" x2="${endX}" y2="${endY}" 
+                      stroke="#FF4800" stroke-width="3" marker-end="url(#arrowhead)" />
+            `;
+            
+            boardEl.parentNode.appendChild(ladder);
+        }
+        
+        function drawSnake(start, end) {
+            const startCell = document.getElementById(`cell-${start}`);
+            const endCell = document.getElementById(`cell-${end}`);
+            
+            if (!startCell || !endCell) return;
+            
+            const startRect = startCell.getBoundingClientRect();
+            const endRect = endCell.getBoundingClientRect();
+            const boardRect = boardEl.getBoundingClientRect();
+            
+            const snake = document.createElement('svg');
+            snake.className = 'snake';
+            snake.style.position = 'absolute';
+            snake.style.left = '0';
+            snake.style.top = '0';
+            snake.style.width = '100%';
+            snake.style.height = '100%';
+            snake.style.pointerEvents = 'none';
+            
+            const startX = startRect.left - boardRect.left + startRect.width / 2;
+            const startY = startRect.top - boardRect.top + startRect.height / 2;
+            const endX = endRect.left - boardRect.left + endRect.width / 2;
+            const endY = endRect.top - boardRect.top + endRect.height / 2;
+            
+            // Create a wavy path for the snake
+            const midX1 = startX + (endX - startX) * 0.25;
+            const midY1 = startY + (endY - startY) * 0.25 + 15;
+            const midX2 = startX + (endX - startX) * 0.75;
+            const midY2 = startY + (endY - startY) * 0.75 - 15;
+            
+            snake.innerHTML = `
+                <defs>
+                    <marker id="snakehead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#000000" />
+                    </marker>
+                </defs>
+                <path d="M ${startX} ${startY} C ${midX1} ${midY1}, ${midX2} ${midY2}, ${endX} ${endY}"
+                      stroke="#000000" stroke-width="3" fill="none" marker-end="url(#snakehead)" />
+            `;
+            
+            boardEl.parentNode.appendChild(snake);
+        }
+        
+        function movePlayer(position) {
+            const cell = document.getElementById(`cell-${position}`);
+            if (!cell) return;
+            
+            const cellRect = cell.getBoundingClientRect();
+            const boardRect = boardEl.getBoundingClientRect();
+            
+            const x = cellRect.left - boardRect.left + (cellRect.width - playerEl.offsetWidth) / 2;
+            const y = cellRect.top - boardRect.top + (cellRect.height - playerEl.offsetHeight) / 2;
+            
+            playerEl.style.left = `${x}px`;
+            playerEl.style.top = `${y}px`;
+        }
+        
+        const steps = [
+            {
+                explanation: "Welcome to Snake and Ladder! This is a classic board game played with a 10×10 grid numbered from 1 to 100.",
+                position: null
+            },
+            {
+                explanation: "The game starts at position 1. Each player takes turns rolling a dice and moving that many steps.",
+                position: 1
+            },
+            {
+                explanation: "If you land on the bottom of a ladder, you climb up to the top! Here's a ladder at position 3 that takes you to position 21.",
+                position: 3
+            },
+            {
+                explanation: "Let's see the ladder in action! You climb up to position 21.",
+                position: 21
+            },
+            {
+                explanation: "Here's another ladder at position 16 that takes you all the way to position 80!",
+                position: 16
+            },
+            {
+                explanation: "Going up the ladder to position 80. This is a huge advantage!",
+                position: 80
+            },
+            {
+                explanation: "But beware of snakes! If you land on a snake's head, you slide down to its tail.",
+                position: 62
+            },
+            {
+                explanation: "Oh no! You landed on a snake at position 62. You slide down to position 19.",
+                position: 19
+            },
+            {
+                explanation: "Here's another snake at position 87. Landing on it will make you slide down.",
+                position: 87
+            },
+            {
+                explanation: "Sliding down to position 36. Snakes can be a major setback!",
+                position: 36
+            },
+            {
+                explanation: "The goal is to reach position 100 exactly. If your dice roll would take you beyond 100, you don't move.",
+                position: 95
+            },
+            {
+                explanation: "Congratulations! You've reached position 100 and won the game!",
+                position: 100
+            }
+        ];
+        
+        function updateStep() {
+            const step = steps[currentStep];
+            explanationEl.innerHTML = `<p>${step.explanation}</p>`;
+            
+            if (step.position !== null) {
+                movePlayer(step.position);
+                playerEl.style.display = 'block';
+            } else {
+                playerEl.style.display = 'none';
+            }
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateStep();
+            }
+        });
+        
+        // Initialize the board
+        createBoard();
+        drawSnakesAndLadders();
+        updateStep();
+        
+        // Adjust player position on window resize
+        window.addEventListener('resize', () => {
+            const step = steps[currentStep];
+            if (step.position !== null) {
+                movePlayer(step.position);
+            }
+        });
+    </script>
+</body>
+</html>
