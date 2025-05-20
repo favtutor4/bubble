@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directed Weighted Graph Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .container {
+            width: 800px;
+            max-width: 100%;
+            margin: 20px auto;
+            position: relative;
+        }
+        
+        canvas {
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FFFFFF;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Directed Weighted Graph Example</h1>
+    <div class="container">
+        <canvas id="graphCanvas" width="800" height="400"></canvas>
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        <div class="explanation" id="explanation">
+            Welcome to the Directed Weighted Graph tutorial! This animation will show you the components of a directed weighted graph with 5 nodes (0-4).
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const explanationEl = document.getElementById('explanation');
+        
+        // Define nodes
+        const nodes = [
+            { id: 0, x: 100, y: 200, label: '0 (s)', isSource: true },
+            { id: 1, x: 250, y: 100, label: '1' },
+            { id: 2, x: 250, y: 300, label: '2' },
+            { id: 3, x: 400, y: 200, label: '3' },
+            { id: 4, x: 550, y: 200, label: '4 (d)', isDestination: true }
+        ];
+        
+        // Define edges with weights
+        const edges = [
+            { from: 0, to: 1, weight: 2 },
+            { from: 0, to: 2, weight: 3 },
+            { from: 1, to: 3, weight: 5 },
+            { from: 2, to: 3, weight: 1 },
+            { from: 3, to: 4, weight: 4 }
+        ];
+        
+        // Animation steps
+        const steps = [
+            {
+                title: "Introduction to Directed Weighted Graph",
+                explanation: "A directed weighted graph consists of nodes connected by directed edges. Each edge has a weight representing some value (e.g., distance, cost, time).",
+                render: function() {
+                    drawNodes(false);
+                }
+            },
+            {
+                title: "Nodes",
+                explanation: "Our graph has 5 nodes (0-4). Node 0 is our source node 's' and node 4 is our destination node 'd'.",
+                render: function() {
+                    drawNodes(true);
+                }
+            },
+            {
+                title: "Adding Edge: 0→1 (Weight 2)",
+                explanation: "An edge connects node 0 to node 1 with a weight of 2. The arrow indicates direction - you can only travel from 0 to 1, not from 1 to 0.",
+                render: function() {
+                    drawNodes(true);
+                    drawEdge(edges[0], true);
+                }
+            },
+            {
+                title: "Adding Edge: 0→2 (Weight 3)",
+                explanation: "An edge connects node 0 to node 2 with a weight of 3. Node 0 now has two outgoing edges.",
+                render: function() {
+                    drawNodes(true);
+                    drawEdge(edges[0], true);
+                    drawEdge(edges[1], true);
+                }
+            },
+            {
+                title: "Adding Edge: 1→3 (Weight 5)",
+                explanation: "An edge connects node 1 to node 3 with a weight of 5. This creates a path from 0→1→3.",
+                render: function() {
+                    drawNodes(true);
+                    drawEdge(edges[0], true);
+                    drawEdge(edges[1], true);
+                    drawEdge(edges[2], true);
+                }
+            },
+            {
+                title: "Adding Edge: 2→3 (Weight 1)",
+                explanation: "An edge connects node 2 to node 3 with a weight of 1. Now we have two different paths to reach node 3: 0→1→3 (total weight 7) or 0→2→3 (total weight 4).",
+                render: function() {
+                    drawNodes(true);
+                    drawEdge(edges[0], true);
+                    drawEdge(edges[1], true);
+                    drawEdge(edges[2], true);
+                    drawEdge(edges[3], true);
+                }
+            },
+            {
+                title: "Adding Edge: 3→4 (Weight 4)",
+                explanation: "Finally, an edge connects node 3 to node 4 (our destination) with a weight of 4. We've now completed our graph with all 5 edges.",
+                render: function() {
+                    drawNodes(true);
+                    edges.forEach(edge => drawEdge(edge, true));
+                }
+            },
+            {
+                title: "Complete Directed Weighted Graph",
+                explanation: "This complete graph has 5 nodes and 5 edges. Two possible paths from source (0) to destination (4) are: Path 1: 0→1→3→4 (total weight 11) and Path 2: 0→2→3→4 (total weight 8). Path 2 has a smaller total weight, making it the more efficient route.",
+                render: function() {
+                    drawNodes(true);
+                    edges.forEach(edge => drawEdge(edge, true));
+                    highlightPath([0, 2, 3, 4]);
+                }
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        function drawNodes(showLabels) {
+            nodes.forEach(node => {
+                // Node fill color
+                if (node.isSource) {
+                    ctx.fillStyle = '#FF4800'; // Source node
+                } else if (node.isDestination) {
+                    ctx.fillStyle = '#FD9F78'; // Destination node
+                } else {
+                    ctx.fillStyle = '#FFFFFF'; // Regular node
+                }
+                
+                // Draw node
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 25, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw label
+                if (showLabels) {
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.label, node.x, node.y);
+                }
+            });
+        }
+        
+        function drawEdge(edge, showWeight) {
+            const fromNode = nodes[edge.from];
+            const toNode = nodes[edge.to];
+            
+            // Calculate edge direction and offsets for arrow
+            const dx = toNode.x - fromNode.x;
+            const dy = toNode.y - fromNode.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const unitX = dx / length;
+            const unitY = dy / length;
+            
+            // Calculate start and end points (adjust for node radius)
+            const startX = fromNode.x + unitX * 25;
+            const startY = fromNode.y + unitY * 25;
+            const endX = toNode.x - unitX * 25;
+            const endY = toNode.y - unitY * 25;
+            
+            // Draw the edge line
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw the arrowhead
+            const arrowSize = 10;
+            const angle = Math.atan2(dy, dx);
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(
+                endX - arrowSize * Math.cos(angle - Math.PI / 6),
+                endY - arrowSize * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                endX - arrowSize * Math.cos(angle + Math.PI / 6),
+                endY - arrowSize * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            
+            // Draw the weight
+            if (showWeight) {
+                // Calculate position for weight (midpoint of the edge with a small offset)
+                const weightX = (fromNode.x + toNode.x) / 2;
+                const weightY = (fromNode.y + toNode.y) / 2;
+                
+                // Add a small background for better readability
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(weightX, weightY, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#FD9F78';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw the weight value
+                ctx.fillStyle = '#FF4800';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(edge.weight.toString(), weightX, weightY);
+            }
+        }
+        
+        function highlightPath(path) {
+            // Draw highlighted edges along the path
+            for (let i = 0; i < path.length - 1; i++) {
+                const fromNode = nodes[path[i]];
+                const toNode = nodes[path[i+1]];
+                
+                // Find the edge between these nodes
+                const edge = edges.find(e => e.from === path[i] && e.to === path[i+1]);
+                
+                if (edge) {
+                    // Calculate edge direction
+                    const dx = toNode.x - fromNode.x;
+                    const dy = toNode.y - fromNode.y;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    const unitX = dx / length;
+                    const unitY = dy / length;
+                    
+                    // Calculate start and end points (adjust for node radius)
+                    const startX = fromNode.x + unitX * 25;
+                    const startY = fromNode.y + unitY * 25;
+                    const endX = toNode.x - unitX * 25;
+                    const endY = toNode.y - unitY * 25;
+                    
+                    // Draw highlighted edge
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = '#FF4800';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    
+                    // Draw highlighted arrowhead
+                    const arrowSize = 12;
+                    const angle = Math.atan2(dy, dx);
+                    ctx.beginPath();
+                    ctx.moveTo(endX, endY);
+                    ctx.lineTo(
+                        endX - arrowSize * Math.cos(angle - Math.PI / 6),
+                        endY - arrowSize * Math.sin(angle - Math.PI / 6)
+                    );
+                    ctx.lineTo(
+                        endX - arrowSize * Math.cos(angle + Math.PI / 6),
+                        endY - arrowSize * Math.sin(angle + Math.PI / 6)
+                    );
+                    ctx.closePath();
+                    ctx.fillStyle = '#FF4800';
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            steps[currentStep].render();
+            explanationEl.innerHTML = `<strong>${steps[currentStep].title}</strong><br>${steps[currentStep].explanation}`;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                render();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                render();
+            }
+        });
+        
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
