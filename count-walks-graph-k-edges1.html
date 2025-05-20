@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directed Graph Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background-color: white;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        .graph-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 30px 0;
+        }
+        .node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            border: 2px solid #FF4800;
+            color: #000000;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .node:hover {
+            transform: scale(1.1);
+        }
+        .edge {
+            position: absolute;
+            background-color: #000000;
+            height: 2px;
+            transform-origin: 0 0;
+            z-index: -1;
+        }
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #000000;
+            transform-origin: 50% 100%;
+        }
+        .highlighted-edge {
+            background-color: #FF4800;
+            height: 3px;
+        }
+        .highlighted-arrow {
+            border-bottom-color: #FF4800;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Directed Graph Visualization</h1>
+        
+        <div class="graph-container" id="graph"></div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>This visualization shows a directed graph with vertices 0-3. Let's explore the connections and paths step by step.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Graph data
+        const nodes = [
+            { id: 0, x: 100, y: 200 },
+            { id: 1, x: 250, y: 100 },
+            { id: 2, x: 250, y: 300 },
+            { id: 3, x: 400, y: 200 }
+        ];
+        
+        const edges = [
+            { from: 0, to: 1 },
+            { from: 0, to: 2 },
+            { from: 1, to: 2 },
+            { from: 1, to: 3 },
+            { from: 2, to: 3 }
+        ];
+        
+        // Animation steps
+        const steps = [
+            {
+                desc: "This is a directed graph with vertices labeled 0 to 3. The arrows show the direction of possible travel between vertices.",
+                highlighted: []
+            },
+            {
+                desc: "The graph has the following connections: 0→1, 0→2, 1→2, 1→3, and 2→3.",
+                highlighted: []
+            },
+            {
+                desc: "We want to find all 2-edge paths from vertex 0 to vertex 3. These are paths that use exactly 2 edges to travel from 0 to 3.",
+                highlighted: []
+            },
+            {
+                desc: "First path: 0→1→3. This is a valid 2-edge path from vertex 0 to vertex 3.",
+                highlighted: [
+                    { from: 0, to: 1 },
+                    { from: 1, to: 3 }
+                ]
+            },
+            {
+                desc: "Second path: 0→2→3. This is another valid 2-edge path from vertex 0 to vertex 3.",
+                highlighted: [
+                    { from: 0, to: 2 },
+                    { from: 2, to: 3 }
+                ]
+            },
+            {
+                desc: "The graph has exactly two valid 2-edge paths from vertex 0 to vertex 3: 0→1→3 and 0→2→3.",
+                highlighted: [
+                    { from: 0, to: 1 },
+                    { from: 1, to: 3 },
+                    { from: 0, to: 2 },
+                    { from: 2, to: 3 }
+                ]
+            }
+        ];
+        
+        let currentStep = 0;
+        const graphContainer = document.getElementById('graph');
+        const explanationEl = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // Create graph visualization
+        function createGraph() {
+            // Create nodes
+            nodes.forEach(node => {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = 'node';
+                nodeEl.id = `node-${node.id}`;
+                nodeEl.textContent = node.id;
+                nodeEl.style.left = `${node.x}px`;
+                nodeEl.style.top = `${node.y}px`;
+                graphContainer.appendChild(nodeEl);
+            });
+            
+            // Create edges
+            edges.forEach(edge => {
+                createEdge(edge.from, edge.to);
+            });
+        }
+        
+        function createEdge(from, to) {
+            const fromNode = nodes.find(n => n.id === from);
+            const toNode = nodes.find(n => n.id === to);
+            
+            // Calculate edge length and angle
+            const dx = toNode.x - fromNode.x;
+            const dy = toNode.y - fromNode.y;
+            const length = Math.sqrt(dx * dx + dy * dy) - 40; // Subtract node diameter
+            const angle = Math.atan2(dy, dx);
+            
+            // Create edge line
+            const edgeEl = document.createElement('div');
+            edgeEl.className = 'edge';
+            edgeEl.id = `edge-${from}-${to}`;
+            edgeEl.style.width = `${length}px`;
+            edgeEl.style.left = `${fromNode.x + 20}px`;
+            edgeEl.style.top = `${fromNode.y + 20}px`;
+            edgeEl.style.transform = `rotate(${angle}rad)`;
+            graphContainer.appendChild(edgeEl);
+            
+            // Create arrow
+            const arrowEl = document.createElement('div');
+            arrowEl.className = 'arrow';
+            arrowEl.id = `arrow-${from}-${to}`;
+            arrowEl.style.left = `${fromNode.x + 20 + length - 8}px`;
+            arrowEl.style.top = `${fromNode.y + 20 - 6}px`;
+            arrowEl.style.transform = `rotate(${angle + Math.PI/2}rad)`;
+            graphContainer.appendChild(arrowEl);
+        }
+        
+        // Render the current step
+        function renderStep() {
+            // Reset all highlights
+            document.querySelectorAll('.edge, .arrow').forEach(el => {
+                el.classList.remove('highlighted-edge', 'highlighted-arrow');
+            });
+            
+            // Apply highlights for the current step
+            const step = steps[currentStep];
+            step.highlighted.forEach(highlight => {
+                const edgeEl = document.getElementById(`edge-${highlight.from}-${highlight.to}`);
+                const arrowEl = document.getElementById(`arrow-${highlight.from}-${highlight.to}`);
+                
+                if (edgeEl) edgeEl.classList.add('highlighted-edge');
+                if (arrowEl) arrowEl.classList.add('highlighted-arrow');
+            });
+            
+            // Update explanation
+            explanationEl.innerHTML = `<p>${step.desc}</p>`;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        // Event listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep();
+            }
+        });
+        
+        // Initialize
+        createGraph();
+        renderStep();
+    </script>
+</body>
+</html>
