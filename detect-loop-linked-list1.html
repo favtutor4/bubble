@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List with Loop Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            margin: 20px 0;
+            height: 350px;
+        }
+        
+        canvas {
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            background-color: white;
+        }
+        
+        .explanation {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border-left: 4px solid #FF4800;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .step-indicator {
+            text-align: center;
+            margin: 10px 0;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linked List with Loop</h1>
+        
+        <div class="canvas-container">
+            <canvas id="linkedListCanvas" width="800" height="350"></canvas>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            This is a visualization of a linked list with a loop. Each node contains data and a pointer to the next node.
+        </div>
+        
+        <div class="step-indicator">
+            Step <span id="currentStep">1</span> of <span id="totalSteps">4</span>
+        </div>
+        
+        <div class="navigation">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('linkedListCanvas');
+        const ctx = canvas.getContext('2d');
+        const explanationEl = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentStepEl = document.getElementById('currentStep');
+        
+        // Animation parameters
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        // Node positions
+        const nodePositions = [
+            { x: 100, y: 150 }, // Node 1
+            { x: 225, y: 150 }, // Node 2
+            { x: 350, y: 150 }, // Node 3
+            { x: 475, y: 150 }, // Node 4
+            { x: 600, y: 150 }  // Node 5
+        ];
+        
+        // Node size
+        const nodeRadius = 30;
+        
+        // Explanation texts for each step
+        const explanations = [
+            "This is a linked list with 5 nodes. Each node contains a value and a reference to the next node. Let's examine the structure step by step.",
+            
+            "In a normal linked list, the last node points to null, indicating the end of the list. But in this case, we have a special situation where node 5 points back to node 3, creating a cycle or loop.",
+            
+            "When traversing this list, after reaching node 5, you would follow its pointer back to node 3. Then you would visit nodes 4 and 5 again, and return to node 3, creating an infinite cycle: 1 → 2 → 3 → 4 → 5 → 3 → 4 → 5 → 3...",
+            
+            "Loops in linked lists are usually unintentional and can cause problems like infinite loops in algorithms. Detecting such loops is an important problem in computer science, commonly solved using techniques like Floyd's Cycle-Finding Algorithm (also known as the 'tortoise and hare' algorithm)."
+        ];
+        
+        // Function to draw a node
+        function drawNode(x, y, value, isHighlighted = false) {
+            // Draw circle
+            ctx.beginPath();
+            ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+            ctx.fillStyle = isHighlighted ? '#FD9F78' : '#FFFFFF';
+            ctx.fill();
+            ctx.strokeStyle = '#FF4800';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw value
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(value, x, y);
+        }
+        
+        // Function to draw an arrow between nodes
+        function drawArrow(fromX, fromY, toX, toY, isCurved = false, isHighlighted = false) {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const fromOutsideX = fromX + nodeRadius * Math.cos(angle);
+            const fromOutsideY = fromY + nodeRadius * Math.sin(angle);
+            const toOutsideX = toX - nodeRadius * Math.cos(angle);
+            const toOutsideY = toY - nodeRadius * Math.sin(angle);
+            
+            ctx.beginPath();
+            
+            if (isCurved) {
+                // Draw a curved arrow for the loop
+                const controlPointX = (fromX + toX) / 2;
+                const controlPointY = fromY + 100; // Curve downward
+                
+                ctx.moveTo(fromOutsideX, fromOutsideY);
+                ctx.quadraticCurveTo(controlPointX, controlPointY, toOutsideX, toOutsideY);
+            } else {
+                ctx.moveTo(fromOutsideX, fromOutsideY);
+                ctx.lineTo(toOutsideX, toOutsideY);
+            }
+            
+            ctx.strokeStyle = isHighlighted ? '#FF4800' : '#000000';
+            ctx.lineWidth = isHighlighted ? 3 : 2;
+            ctx.stroke();
+            
+            // Arrow head
+            const headLen = 15;
+            let arrowAngle;
+            
+            if (isCurved) {
+                // Estimate the angle at the end of the curve
+                const dx = toOutsideX - ((fromOutsideX + toOutsideX) / 2);
+                const dy = toOutsideY - ((fromOutsideY + 100 + toOutsideY) / 2);
+                arrowAngle = Math.atan2(dy, dx);
+            } else {
+                arrowAngle = angle;
+            }
+            
+            ctx.beginPath();
+            ctx.moveTo(toOutsideX, toOutsideY);
+            ctx.lineTo(
+                toOutsideX - headLen * Math.cos(arrowAngle - Math.PI / 6),
+                toOutsideY - headLen * Math.sin(arrowAngle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                toOutsideX - headLen * Math.cos(arrowAngle + Math.PI / 6),
+                toOutsideY - headLen * Math.sin(arrowAngle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fillStyle = isHighlighted ? '#FF4800' : '#000000';
+            ctx.fill();
+        }
+        
+        // Draw the linked list based on current step
+        function drawLinkedList() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw nodes
+            for (let i = 0; i < 5; i++) {
+                const { x, y } = nodePositions[i];
+                drawNode(x, y, i + 1, false);
+            }
+            
+            // Draw regular arrows
+            for (let i = 0; i < 4; i++) {
+                drawArrow(
+                    nodePositions[i].x, 
+                    nodePositions[i].y, 
+                    nodePositions[i+1].x, 
+                    nodePositions[i+1].y,
+                    false,
+                    currentStep > 1 && i === 2 && currentStep < 4
+                );
+            }
+            
+            // Based on current step, show different parts of the visualization
+            if (currentStep >= 2) {
+                // Draw the looping arrow from node 5 back to node 3
+                drawArrow(
+                    nodePositions[4].x, 
+                    nodePositions[4].y, 
+                    nodePositions[2].x, 
+                    nodePositions[2].y,
+                    true,
+                    currentStep > 2
+                );
+            }
+            
+            // Step-specific highlights
+            if (currentStep === 3) {
+                // Highlight the cycle path
+                drawNode(nodePositions[2].x, nodePositions[2].y, 3, true);
+                drawNode(nodePositions[3].x, nodePositions[3].y, 4, true);
+                drawNode(nodePositions[4].x, nodePositions[4].y, 5, true);
+            }
+            
+            // Update explanation
+            explanationEl.textContent = explanations[currentStep - 1];
+        }
+        
+        // Initialize
+        drawLinkedList();
+        
+        // Event listeners for navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                currentStepEl.textContent = currentStep;
+                prevBtn.disabled = currentStep === 1;
+                nextBtn.disabled = false;
+                drawLinkedList();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                currentStepEl.textContent = currentStep;
+                nextBtn.disabled = currentStep === totalSteps;
+                prevBtn.disabled = false;
+                drawLinkedList();
+            }
+        });
+    </script>
+</body>
+</html>
