@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Tour Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .explanation {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #FD9F78;
+            border-radius: 10px;
+            color: #000000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status-content {
+            color: #000000;
+        }
+        
+        .petrol-display {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #FF4800;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Circular Tour Visualization</h1>
+        
+        <div class="canvas-container">
+            <canvas id="circularTour" width="500" height="500"></canvas>
+        </div>
+        
+        <div class="petrol-display">
+            Car Petrol: <span id="petrolLevel">0</span> units
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <h3>Circular Tour Problem</h3>
+            <p>In this visualization, we have 5 petrol pumps arranged in a circle. Each pump has two values:</p>
+            <ul>
+                <li><strong>Petrol Available:</strong> The amount of petrol available at that pump</li>
+                <li><strong>Distance to Next:</strong> The distance (and therefore petrol required) to reach the next pump</li>
+            </ul>
+            <p>The car starts with an empty tank. The goal is to find a starting point from where the car can complete a full circular tour without running out of fuel.</p>
+            <p>Click "Next" to see the tour in action!</p>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+        
+        <div class="status">
+            <div class="status-content" id="status">Ready to start. Car is at Pump 0 with empty tank.</div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('circularTour');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) / 3;
+        
+        // Petrol pumps data: [petrol available, distance to next]
+        const pumps = [
+            [4, 6], // Pump 0
+            [6, 5], // Pump 1
+            [7, 3], // Pump 2
+            [4, 5], // Pump 3
+            [6, 7]  // Pump 4
+        ];
+        
+        // Animation state
+        let currentStep = 0;
+        let carPosition = 0;
+        let petrolInTank = 0;
+        let animationHistory = [{
+            position: 0,
+            petrol: 0,
+            message: "Ready to start. Car is at Pump 0 with empty tank."
+        }];
+        
+        // Car image
+        const carImage = new Image();
+        carImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTgwIDMzNkM4MCAzNDkuMjU1IDY5LjI1NSAzNjAgNTYgMzYwQzQyLjc0NSAzNjAgMzIgMzQ5LjI1NSAzMiAzMzZDMzIgMzIyLjc0NSA0Mi43NDUgMzEyIDU2IDMxMkM2OS4yNTUgMzEyIDgwIDMyMi43NDUgODAgMzM2WiIgZmlsbD0iIzAwMDAwMCIvPjxwYXRoIGQ9Ik00ODAgMzM2QzQ4MCAzNDkuMjU1IDQ2OS4yNTUgMzYwIDQ1NiAzNjBDNDQyLjc0NSAzNjAgNDMyIDM0OS4yNTUgNDMyIDMzNkM0MzIgMzIyLjc0NSA0NDIuNzQ1IDMxMiA0NTYgMzEyQzQ2OS4yNTUgMzEyIDQ4MCAzMjIuNzQ1IDQ4MCAzMzZaIiBmaWxsPSIjMDAwMDAwIi8+PHBhdGggZD0iTTQyNCAyMDhIMzUyTDMyOCAxNTJIMTk0LjY0NEwxNDQgMjA4SDg4QzY2Ljc4NCAyMDggNTIuOTMgMjE0Ljg4OCA0NS4yMjQgMjIxLjc0NEMzOC4zNjIgMjI3LjkxNiAzNC41NTQgMjM1LjA2NCAzMi44OTggMjQwLjc2OEMzMi4zMTYgMjQyLjg4OCAzMiAyNDUuMDg4IDMyIDI0Ny4zMjhWMjgwSDQ4MEgyNDhIMzJWMzU5LjAwOEMzMiAzNzIuODQ4IDQzLjE2IDM4NCA1NiAzODRINzJIODhDMTAwLjg0IDM4NCAxMTIgMzcyLjg0OCAxMTIgMzU5LjAwOFYzNTJIMjkyLjc4NEgzMTJINDAwVjM1OS4wMDhDNDAwIDM3Mi44NDggNDExLjE2IDM4NCA0MjQgMzg0SDQ0MEg0NTZDNDc4LjA5IDM4NCA0ODAgMzYyLjUzNiA0ODAgMzUyVjI4MEg0ODhDNTAxLjIgMjgwIDUxMiAyNjkuMjA4IDUxMiAyNTZWMjQwQzUxMiAyMjIuNDMyIDQ0OS4yNDkgMjA4IDQyNCAyMDhaIiBmaWxsPSIjRkY0ODAwIi8+PC9zdmc+';
+        
+        // Control buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusElement = document.getElementById('status');
+        const petrolLevelElement = document.getElementById('petrolLevel');
+        
+        // Event listeners
+        prevBtn.addEventListener('click', previousStep);
+        nextBtn.addEventListener('click', nextStep);
+        resetBtn.addEventListener('click', resetSimulation);
+        
+        // Draw the initial state
+        carImage.onload = function() {
+            drawScene();
+        };
+        
+        function drawScene() {
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#FF4800';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw pumps
+            for (let i = 0; i < pumps.length; i++) {
+                const angle = (i * 2 * Math.PI / pumps.length) - Math.PI / 2;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                // Pump circle
+                ctx.beginPath();
+                ctx.arc(x, y, 25, 0, 2 * Math.PI);
+                ctx.fillStyle = (i === carPosition) ? '#FD9F78' : '#FFFFFF';
+                ctx.fill();
+                ctx.strokeStyle = '#FF4800';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Pump label
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`Pump ${i}`, x, y - 8);
+                
+                // Pump values
+                ctx.font = '12px Arial';
+                ctx.fillText(`P: ${pumps[i][0]}, D: ${pumps[i][1]}`, x, y + 10);
+            }
+            
+            // Draw the car at the current position
+            const carAngle = (carPosition * 2 * Math.PI / pumps.length) - Math.PI / 2;
+            const carX = centerX + radius * Math.cos(carAngle);
+            const carY = centerY + radius * Math.sin(carAngle);
+            
+            ctx.drawImage(carImage, carX - 15, carY - 15, 30, 30);
+            
+            // Update petrol level display
+            petrolLevelElement.textContent = petrolInTank;
+        }
+        
+        function nextStep() {
+            if (currentStep < 15) { // Limit to a reasonable number of steps
+                currentStep++;
+                
+                if (currentStep === 1) {
+                    // Car gets fuel at the first pump
+                    petrolInTank += pumps[carPosition][0];
+                    updateStatus(`Car fills up with ${pumps[carPosition][0]} units of petrol at Pump ${carPosition}.`);
+                } else if (currentStep % 2 === 0) {
+                    // Car travels to next pump
+                    const distanceToNext = pumps[carPosition][1];
+                    petrolInTank -= distanceToNext;
+                    
+                    if (petrolInTank < 0) {
+                        updateStatus(`Car ran out of fuel! Cannot reach Pump ${(carPosition + 1) % pumps.length}.`);
+                        petrolInTank = 0;
+                    } else {
+                        carPosition = (carPosition + 1) % pumps.length;
+                        updateStatus(`Car travels to Pump ${carPosition} using ${distanceToNext} units of petrol.`);
+                    }
+                } else {
+                    // Car refuels at current pump
+                    petrolInTank += pumps[carPosition][0];
+                    updateStatus(`Car refuels with ${pumps[carPosition][0]} units at Pump ${carPosition}.`);
+                }
+                
+                animationHistory.push({
+                    position: carPosition,
+                    petrol: petrolInTank,
+                    message: statusElement.textContent
+                });
+                
+                prevBtn.disabled = false;
+                drawScene();
+                
+                // Check if we've gone full circle
+                if (carPosition === 0 && currentStep > 5) {
+                    updateStatus(`Success! The car has completed a full circular tour starting from Pump 0.`);
+                    nextBtn.disabled = true;
+                }
+            }
+        }
+        
+        function previousStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                
+                if (animationHistory.length > 1) {
+                    animationHistory.pop();
+                    const previousState = animationHistory[animationHistory.length - 1];
+                    carPosition = previousState.position;
+                    petrolInTank = previousState.petrol;
+                    statusElement.textContent = previousState.message;
+                }
+                
+                nextBtn.disabled = false;
+                
+                if (currentStep === 0) {
+                    prevBtn.disabled = true;
+                }
+                
+                drawScene();
+            }
+        }
+        
+        function resetSimulation() {
+            currentStep = 0;
+            carPosition = 0;
+            petrolInTank = 0;
+            
+            animationHistory = [{
+                position: 0,
+                petrol: 0,
+                message: "Ready to start. Car is at Pump 0 with empty tank."
+            }];
+            
+            updateStatus("Ready to start. Car is at Pump 0 with empty tank.");
+            prevBtn.disabled = true;
+            nextBtn.disabled = false;
+            drawScene();
+        }
+        
+        function updateStatus(message) {
+            statusElement.textContent = message;
+        }
+        
+        // Initialize the scene
+        drawScene();
+    </script>
+</body>
+</html>
