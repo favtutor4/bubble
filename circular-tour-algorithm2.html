@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skip Invalid Starting Points Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .animation-container {
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            height: 450px;
+            overflow: hidden;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .pump {
+            width: 60px;
+            height: 120px;
+            position: absolute;
+            bottom: 100px;
+        }
+        
+        .pump-base {
+            width: 60px;
+            height: 20px;
+            background-color: #000000;
+            border-radius: 5px;
+        }
+        
+        .pump-body {
+            width: 40px;
+            height: 80px;
+            margin: 0 auto;
+            background-color: #FF4800;
+            border-radius: 5px 5px 0 0;
+            position: relative;
+        }
+        
+        .pump-top {
+            width: 20px;
+            height: 20px;
+            margin: 0 auto;
+            background-color: #000000;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .pump-label {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .pump-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FFFFFF;
+            font-weight: bold;
+        }
+        
+        .car {
+            width: 80px;
+            height: 40px;
+            background-color: #000000;
+            position: absolute;
+            bottom: 60px;
+            border-radius: 10px;
+            transition: left 1s ease;
+        }
+        
+        .wheel {
+            width: 20px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -10px;
+        }
+        
+        .wheel.front {
+            right: 10px;
+        }
+        
+        .wheel.rear {
+            left: 10px;
+        }
+        
+        .car-top {
+            width: 50px;
+            height: 20px;
+            background-color: #000000;
+            position: absolute;
+            top: -15px;
+            left: 15px;
+            border-radius: 5px;
+        }
+        
+        .road {
+            height: 10px;
+            background-color: #333;
+            position: absolute;
+            bottom: 60px;
+            width: 100%;
+        }
+        
+        .fuel-indicator {
+            width: 200px;
+            height: 30px;
+            border: 2px solid #000000;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .fuel-level {
+            height: 100%;
+            background-color: #FF4800;
+            width: 100%;
+            transition: width 0.5s;
+        }
+        
+        .explanation {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #FD9F78;
+        }
+        
+        .step-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+        
+        .highlight {
+            box-shadow: 0 0 15px 5px rgba(255, 72, 0, 0.7);
+            animation: pulse 1s infinite alternate;
+        }
+        
+        .skipped {
+            opacity: 0.4;
+        }
+        
+        .valid-start {
+            background-color: #4CAF50;
+        }
+        
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 15px 5px rgba(255, 72, 0, 0.7);
+            }
+            to {
+                box-shadow: 0 0 20px 10px rgba(255, 72, 0, 0.9);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Skip Invalid Starting Points Algorithm</h1>
+        
+        <div class="animation-container" id="animation-container">
+            <div class="step-counter" id="step-counter">Step 1/8</div>
+            <div class="fuel-indicator">
+                <div class="fuel-level" id="fuel-level"></div>
+            </div>
+            <div class="road"></div>
+            <div class="car" id="car">
+                <div class="car-top"></div>
+                <div class="wheel front"></div>
+                <div class="wheel rear"></div>
+            </div>
+            <div class="explanation" id="explanation">
+                We have a series of gas pumps. Each pump has a value representing the amount of gas you can gain (positive) or lose (negative) at that pump. The objective is to find a valid starting point that allows us to visit all pumps without running out of gas.
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const animationContainer = document.getElementById('animation-container');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const stepCounter = document.getElementById('step-counter');
+        const explanationDiv = document.getElementById('explanation');
+        const car = document.getElementById('car');
+        const fuelLevel = document.getElementById('fuel-level');
+        
+        // Pump data: amount of gas at each pump (positive or negative values)
+        const pumps = [
+            { label: "A", value: 4 },  // Pump A gives 4 units of gas
+            { label: "B", value: -6 }, // Pump B takes 6 units of gas
+            { label: "C", value: -2 }, // Pump C takes 2 units of gas
+            { label: "D", value: 7 },  // Pump D gives 7 units of gas
+            { label: "E", value: 3 }   // Pump E gives 3 units of gas
+        ];
+        
+        let currentStep = 0;
+        const totalSteps = 8;
+        
+        // Create pumps
+        function createPumps() {
+            for (let i = 0; i < pumps.length; i++) {
+                const pump = document.createElement('div');
+                pump.className = 'pump';
+                pump.id = `pump${i}`;
+                pump.style.left = `${120 + i * 150}px`;
+                
+                const pumpTop = document.createElement('div');
+                pumpTop.className = 'pump-top';
+                
+                const pumpBody = document.createElement('div');
+                pumpBody.className = 'pump-body';
+                
+                const pumpValue = document.createElement('div');
+                pumpValue.className = 'pump-value';
+                pumpValue.textContent = pumps[i].value > 0 ? `+${pumps[i].value}` : pumps[i].value;
+                pumpBody.appendChild(pumpValue);
+                
+                const pumpBase = document.createElement('div');
+                pumpBase.className = 'pump-base';
+                
+                const pumpLabel = document.createElement('div');
+                pumpLabel.className = 'pump-label';
+                pumpLabel.textContent = pumps[i].label;
+                
+                pump.appendChild(pumpTop);
+                pump.appendChild(pumpBody);
+                pump.appendChild(pumpBase);
+                pump.appendChild(pumpLabel);
+                
+                animationContainer.appendChild(pump);
+            }
+        }
+        
+        // Update car position and fuel level
+        function updateCar(position, fuelPercentage) {
+            car.style.left = `${position}px`;
+            fuelLevel.style.width = `${fuelPercentage}%`;
+        }
+        
+        // Clear all highlighting and skipped states
+        function clearHighlights() {
+            for (let i = 0; i < pumps.length; i++) {
+                const pump = document.getElementById(`pump${i}`);
+                pump.classList.remove('highlight', 'skipped', 'valid-start');
+            }
+        }
+        
+        // Setup the initial animation state
+        function init() {
+            createPumps();
+            updateCar(50, 100);
+            showStep(0);
+        }
+        
+        // Show specific animation step
+        function showStep(step) {
+            clearHighlights();
+            currentStep = step;
+            stepCounter.textContent = `Step ${currentStep + 1}/${totalSteps}`;
+            
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+            
+            switch(step) {
+                case 0:
+                    explanationDiv.innerHTML = "We have 5 gas pumps (A, B, C, D, E). Each pump has a value representing the amount of gas you can gain (positive) or lose (negative) at that pump. The objective is to find a valid starting point that allows us to visit all pumps without running out of gas.";
+                    updateCar(50, 100);
+                    break;
+                case 1:
+                    explanationDiv.innerHTML = "Let's start at pump A. We begin with an empty tank (0 fuel). At pump A, we gain 4 units of fuel.";
+                    const pumpA = document.getElementById('pump0');
+                    pumpA.classList.add('highlight');
+                    updateCar(150, 40);
+                    break;
+                case 2:
+                    explanationDiv.innerHTML = "Moving to pump B with 4 units of fuel. At pump B, we lose 6 units. This would leave us with -2 fuel, which means we run out of gas before reaching the next pump!";
+                    const pumpB = document.getElementById('pump1');
+                    pumpB.classList.add('highlight');
+                    updateCar(300, 0);
+                    break;
+                case 3:
+                    explanationDiv.innerHTML = "Starting at pump A doesn't work because we run out of gas at pump B. Important optimization: Since we ran out of gas when going from A to B, we can skip all pumps between A and B as starting points.";
+                    const pumpASkip = document.getElementById('pump0');
+                    pumpASkip.classList.add('skipped');
+                    updateCar(50, 100);
+                    break;
+                case 4:
+                    explanationDiv.innerHTML = "Since we have no pumps between A and B, we'll try starting at pump B. At pump B, we lose 6 units of fuel. Since we start with 0, this would immediately put us at -6, which is invalid.";
+                    const pumpBTry = document.getElementById('pump1');
+                    pumpBTry.classList.add('highlight');
+                    updateCar(300, 0);
+                    break;
+                case 5:
+                    explanationDiv.innerHTML = "Let's try starting at pump C. At pump C, we lose 2 units of fuel. Since we start with 0, this would immediately put us at -2, which is invalid.";
+                    document.getElementById('pump1').classList.add('skipped');
+                    const pumpCTry = document.getElementById('pump2');
+                    pumpCTry.classList.add('highlight');
+                    updateCar(450, 0);
+                    break;
+                case 6:
+                    explanationDiv.innerHTML = "Let's try starting at pump D. At pump D, we gain 7 units of fuel. We then move to pump E, where we gain 3 more units, for a total of 10. Then we loop back to A (+4), then B (-6), and finally C (-2). We end with 6 units of fuel, which is valid!";
+                    document.getElementById('pump2').classList.add('skipped');
+                    const pumpDTry = document.getElementById('pump3');
+                    pumpDTry.classList.add('highlight', 'valid-start');
+                    updateCar(600, 70);
+                    break;
+                case 7:
+                    explanationDiv.innerHTML = "We found a valid starting point: pump D! By skipping invalid starting points using our optimization, we save computational steps. Instead of checking every pump, we intelligently skip points where we know we would run out of gas.";
+                    document.getElementById('pump3').classList.add('valid-start');
+                    updateCar(600, 100);
+                    break;
+            }
+        }
+        
+        // Event listeners for navigation
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                showStep(currentStep + 1);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                showStep(currentStep - 1);
+            }
+        });
+        
+        // Initialize the animation
+        init();
+    </script>
+</body>
+</html>
