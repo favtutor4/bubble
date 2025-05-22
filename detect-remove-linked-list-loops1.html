@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List with Loop Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .canvas-container {
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            height: 400px;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #FFF;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #FF4800;
+        }
+        .explanation h2 {
+            color: #FF4800;
+        }
+        #stepDescription {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linked List with Loop Visualization</h1>
+        
+        <div class="canvas-container">
+            <canvas id="linkedListCanvas" width="800" height="400"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn">Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="explanation">
+            <h2>Step Explanation</h2>
+            <p id="stepDescription">Welcome to Linked List with Loop visualization. Press Next to start the animation.</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('linkedListCanvas');
+        const ctx = canvas.getContext('2d');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepDescription = document.getElementById('stepDescription');
+
+        // Colors
+        const PRIMARY_COLOR = '#FF4800';
+        const SECONDARY_COLOR = '#FD9F78';
+        const BLACK = '#000000';
+        const WHITE = '#FFFFFF';
+        const HIGHLIGHT_COLOR = '#FF4800';
+        const LOOP_COLOR = '#FF4800';
+        const POINTER_COLOR = '#FD9F78';
+
+        // Animation constants
+        const NODE_RADIUS = 30;
+        const NODE_SPACING = 120;
+        const START_X = 100;
+        const START_Y = 150;
+        const LOOP_OFFSET_Y = 80;
+
+        // Define nodes for the linked list: 1->2->3->4->5->3
+        const nodes = [
+            { value: 1, x: START_X, y: START_Y },
+            { value: 2, x: START_X + NODE_SPACING, y: START_Y },
+            { value: 3, x: START_X + NODE_SPACING * 2, y: START_Y },
+            { value: 4, x: START_X + NODE_SPACING * 3, y: START_Y },
+            { value: 5, x: START_X + NODE_SPACING * 4, y: START_Y },
+        ];
+
+        // Define animation steps
+        const steps = [
+            {
+                description: "This is a linked list with 5 nodes. Each node contains a value and a pointer to the next node.",
+                pointers: {},
+                highlightNode: null,
+                showLoop: false,
+                loopActive: false
+            },
+            {
+                description: "In a regular linked list, the last node points to NULL, indicating the end of the list.",
+                pointers: {},
+                highlightNode: 4, // Highlight the last node (index 4 = value 5)
+                showLoop: false,
+                loopActive: false
+            },
+            {
+                description: "However, in this example, we have a special case: the last node (5) points back to node 3, creating a loop.",
+                pointers: {},
+                highlightNode: 4, // Highlight node 5
+                showLoop: true,
+                loopActive: false
+            },
+            {
+                description: "Let's introduce two pointers: 'slow' (moves one step at a time) and 'fast' (moves two steps at a time). We'll use them to detect the loop.",
+                pointers: { slow: 0, fast: 0 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: false
+            },
+            {
+                description: "Slow pointer moves to node 2, and fast pointer moves to node 3.",
+                pointers: { slow: 1, fast: 2 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: false
+            },
+            {
+                description: "Slow pointer moves to node 3, and fast pointer moves to node 5.",
+                pointers: { slow: 2, fast: 4 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: false
+            },
+            {
+                description: "Slow pointer moves to node 4, and fast pointer moves to node 3 (following the loop).",
+                pointers: { slow: 3, fast: 2 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: true
+            },
+            {
+                description: "Slow pointer moves to node 5, and fast pointer moves to node 5.",
+                pointers: { slow: 4, fast: 4 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: true
+            },
+            {
+                description: "Slow pointer moves to node 3 (following the loop), and fast pointer moves to node 4.",
+                pointers: { slow: 2, fast: 3 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: true
+            },
+            {
+                description: "Slow pointer moves to node 4, and fast pointer moves to node 3 (following the loop). They will eventually meet!",
+                pointers: { slow: 3, fast: 2 },
+                highlightNode: null,
+                showLoop: true,
+                loopActive: true
+            },
+            {
+                description: "The slow and fast pointers meet at node 3! This confirms there is a loop in the linked list.",
+                pointers: { slow: 2, fast: 2 },
+                highlightNode: 2,
+                showLoop: true,
+                loopActive: true
+            },
+            {
+                description: "Loops in linked lists are typically programming errors. They can cause infinite traversals and memory issues if not detected and handled properly.",
+                pointers: {},
+                highlightNode: null,
+                showLoop: true,
+                loopActive: true
+            }
+        ];
+
+        let currentStep = 0;
+
+        // Initial setup
+        updateUI();
+
+        // Button event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        });
+
+        function updateUI() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw the linked list
+            drawLinkedList();
+            
+            // Update description
+            stepDescription.textContent = steps[currentStep].description;
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        function drawLinkedList() {
+            const step = steps[currentStep];
+            
+            // Draw nodes and connections
+            for (let i = 0; i < nodes.length; i++) {
+                // Draw connection to next node
+                if (i < nodes.length - 1) {
+                    drawArrow(nodes[i].x + NODE_RADIUS, nodes[i].y, nodes[i + 1].x - NODE_RADIUS, nodes[i + 1].y);
+                }
+                
+                // Draw node
+                const isHighlighted = step.highlightNode === i;
+                drawNode(nodes[i].x, nodes[i].y, nodes[i].value, isHighlighted);
+            }
+            
+            // Draw the loop
+            if (step.showLoop) {
+                drawLoop(nodes[4], nodes[2], step.loopActive);
+            }
+            
+            // Draw pointers if they exist in this step
+            if (step.pointers.hasOwnProperty('slow')) {
+                drawPointer(nodes[step.pointers.slow], 'Slow', -20);
+            }
+            
+            if (step.pointers.hasOwnProperty('fast')) {
+                drawPointer(nodes[step.pointers.fast], 'Fast', 20);
+            }
+        }
+
+        function drawNode(x, y, value, isHighlighted) {
+            ctx.beginPath();
+            ctx.arc(x, y, NODE_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = isHighlighted ? HIGHLIGHT_COLOR : WHITE;
+            ctx.fill();
+            ctx.strokeStyle = isHighlighted ? HIGHLIGHT_COLOR : PRIMARY_COLOR;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Draw the value inside the node
+            ctx.font = '16px Arial';
+            ctx.fillStyle = isHighlighted ? WHITE : BLACK;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(value, x, y);
+        }
+
+        function drawArrow(fromX, fromY, toX, toY) {
+            const headSize = 10;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            // Draw the line
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = SECONDARY_COLOR;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw the arrowhead
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headSize * Math.cos(angle - Math.PI / 6), toY - headSize * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headSize * Math.cos(angle + Math.PI / 6), toY - headSize * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = SECONDARY_COLOR;
+            ctx.fill();
+        }
+
+        function drawLoop(fromNode, toNode, active) {
+            // Draw a curved line from the last node to node 3
+            ctx.beginPath();
+            ctx.moveTo(fromNode.x + NODE_RADIUS, fromNode.y);
+            
+            // Control points for the curve
+            const cp1x = fromNode.x + NODE_RADIUS + 40;
+            const cp1y = fromNode.y + LOOP_OFFSET_Y;
+            const cp2x = toNode.x - NODE_RADIUS - 40;
+            const cp2y = toNode.y + LOOP_OFFSET_Y;
+            
+            ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, toNode.x - NODE_RADIUS, toNode.y);
+            ctx.strokeStyle = active ? LOOP_COLOR : SECONDARY_COLOR;
+            ctx.lineWidth = active ? 3 : 2;
+            ctx.stroke();
+            
+            // Draw arrowhead at the end
+            const headSize = 10;
+            const angle = Math.atan2(toNode.y - cp2y, toNode.x - NODE_RADIUS - cp2x);
+            
+            ctx.beginPath();
+            ctx.moveTo(toNode.x - NODE_RADIUS, toNode.y);
+            ctx.lineTo(toNode.x - NODE_RADIUS - headSize * Math.cos(angle - Math.PI / 6), 
+                     toNode.y - headSize * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toNode.x - NODE_RADIUS - headSize * Math.cos(angle + Math.PI / 6), 
+                     toNode.y - headSize * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = active ? LOOP_COLOR : SECONDARY_COLOR;
+            ctx.fill();
+        }
+
+        function drawPointer(node, label, yOffset) {
+            ctx.beginPath();
+            ctx.moveTo(node.x, node.y - NODE_RADIUS - 10);
+            ctx.lineTo(node.x, node.y - NODE_RADIUS);
+            ctx.strokeStyle = POINTER_COLOR;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw pointer label
+            ctx.font = '14px Arial';
+            ctx.fillStyle = POINTER_COLOR;
+            ctx.textAlign = 'center';
+            ctx.fillText(label, node.x + yOffset, node.y - NODE_RADIUS - 15);
+        }
+    </script>
+</body>
+</html>
