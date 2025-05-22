@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Reversal and Carry Propagation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        .arrow {
+            position: absolute;
+            background-color: #FF4800;
+            height: 4px;
+            transition: all 0.5s ease;
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #FF4800;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+        .carry {
+            position: absolute;
+            color: #FF4800;
+            font-weight: bold;
+            font-size: 20px;
+            transition: all 0.5s ease;
+        }
+        .explanation {
+            background-color: #FFFFFF;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 80px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>List Reversal and Carry Propagation</h1>
+        <h2>Adding 1 to 999 using a Linked List</h2>
+        
+        <div class="animation-container" id="animationContainer">
+            <!-- Nodes and arrows will be added by JavaScript -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <!-- Explanation text will be updated by JavaScript -->
+        </div>
+        
+        <div class="buttons">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="stepIndicator">Step 1 of 8</div>
+    </div>
+
+    <script>
+        // Animation state
+        let currentStep = 0;
+        const totalSteps = 8;
+        
+        // Elements
+        const container = document.getElementById('animationContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        
+        // Explanation texts for each step
+        const explanations = [
+            "We start with the number 999 represented as a linked list. Each digit is stored in a separate node.",
+            "To add 1 to 999, we first reverse the linked list to make addition easier, resulting in 9→9→9.",
+            "Now we add 1 to the first node (9). 9+1=10, so we store 0 and carry 1.",
+            "Move to the next node and add the carry: 9+1=10. Store 0 and carry 1 again.",
+            "Move to the final node and add the carry: 9+1=10. Store 0 and carry 1.",
+            "Since we have a carry after processing all nodes, we create a new node with value 1 and add it to the end.",
+            "Our result is now 0→0→0→1, which is 1000 in reverse.",
+            "Finally, we reverse the list again to get the correct representation: 1→0→0→0, which is 1000."
+        ];
+        
+        // Update step indicator
+        function updateStepIndicator() {
+            stepIndicator.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
+        }
+        
+        // Clear the animation container
+        function clearContainer() {
+            container.innerHTML = '';
+        }
+        
+        // Create a node element
+        function createNode(value, x, y, id) {
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.id = id;
+            node.textContent = value;
+            node.style.left = `${x}px`;
+            node.style.top = `${y}px`;
+            container.appendChild(node);
+            return node;
+        }
+        
+        // Create an arrow element
+        function createArrow(x1, y1, length, id) {
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            arrow.id = id;
+            arrow.style.left = `${x1}px`;
+            arrow.style.top = `${y1}px`;
+            arrow.style.width = `${length}px`;
+            container.appendChild(arrow);
+            return arrow;
+        }
+        
+        // Create a carry element
+        function createCarry(value, x, y, id) {
+            const carry = document.createElement('div');
+            carry.className = 'carry';
+            carry.id = id;
+            carry.textContent = value;
+            carry.style.left = `${x}px`;
+            carry.style.top = `${y}px`;
+            container.appendChild(carry);
+            return carry;
+        }
+        
+        // Render animations for each step
+        function renderStep(step) {
+            clearContainer();
+            explanation.textContent = explanations[step];
+            
+            switch(step) {
+                case 0: // Initial state: 999
+                    createNode('9', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('9', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('9', 500, 175, 'node3');
+                    break;
+                    
+                case 1: // Reversed list: 9→9→9
+                    createNode('9', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('9', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('9', 500, 175, 'node3');
+                    break;
+                    
+                case 2: // Add 1 to first node
+                    createNode('0', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('9', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('9', 500, 175, 'node3');
+                    createCarry('carry: 1', 200, 130, 'carry1');
+                    break;
+                    
+                case 3: // Propagate carry to second node
+                    createNode('0', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('0', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('9', 500, 175, 'node3');
+                    createCarry('carry: 1', 350, 130, 'carry1');
+                    break;
+                    
+                case 4: // Propagate carry to third node
+                    createNode('0', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('0', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('0', 500, 175, 'node3');
+                    createCarry('carry: 1', 500, 130, 'carry1');
+                    break;
+                    
+                case 5: // Add new node for final carry
+                    createNode('0', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('0', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('0', 500, 175, 'node3');
+                    createArrow(550, 200, 100, 'arrow3');
+                    createNode('1', 650, 175, 'node4');
+                    break;
+                    
+                case 6: // Result in reverse order: 0→0→0→1
+                    createNode('0', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('0', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('0', 500, 175, 'node3');
+                    createArrow(550, 200, 100, 'arrow3');
+                    createNode('1', 650, 175, 'node4');
+                    break;
+                    
+                case 7: // Final result after reversing: 1→0→0→0
+                    createNode('1', 200, 175, 'node1');
+                    createArrow(250, 200, 100, 'arrow1');
+                    createNode('0', 350, 175, 'node2');
+                    createArrow(400, 200, 100, 'arrow2');
+                    createNode('0', 500, 175, 'node3');
+                    createArrow(550, 200, 100, 'arrow3');
+                    createNode('0', 650, 175, 'node4');
+                    break;
+            }
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+                updateStepIndicator();
+                nextBtn.disabled = false;
+                
+                if (currentStep === 0) {
+                    prevBtn.disabled = true;
+                }
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                renderStep(currentStep);
+                updateStepIndicator();
+                prevBtn.disabled = false;
+                
+                if (currentStep === totalSteps - 1) {
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+        
+        // Initialize the first step
+        renderStep(currentStep);
+        updateStepIndicator();
+        prevBtn.disabled = true;
+    </script>
+</body>
+</html>
