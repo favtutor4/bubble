@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force vs Optimized Approach Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .approach {
+            width: 48%;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .approach h2 {
+            color: #FF4800;
+            text-align: center;
+            margin-top: 0;
+        }
+        .node-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            position: relative;
+            height: 200px;
+        }
+        .node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            font-weight: bold;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        .node.highlight-current {
+            background-color: #FF4800;
+            color: white;
+            transform: scale(1.2);
+        }
+        .node.highlight-checking {
+            background-color: #000000;
+            color: white;
+        }
+        .node.highlight-found {
+            background-color: #00AA00;
+            color: white;
+        }
+        .node.highlight-hash {
+            border: 3px solid #FF4800;
+        }
+        .arrow {
+            position: absolute;
+            height: 2px;
+            background-color: #000000;
+            transform-origin: left center;
+        }
+        .arrow:after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #000000;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        .explanation {
+            margin-top: 20px;
+            text-align: center;
+            height: 80px;
+            font-size: 14px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .nav-btn:disabled {
+            background-color: #FD9F78;
+            cursor: not-allowed;
+        }
+        .hash-table {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .hash-item {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #FD9F78;
+            border-radius: 3px;
+            transition: all 0.5s ease;
+        }
+        .hash-item.new {
+            background-color: #FF4800;
+            color: white;
+            animation: pulse 0.5s;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .complexity {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force vs Optimized Approach Comparison</h1>
+        
+        <div class="animation-container">
+            <div class="approach">
+                <h2>Brute Force Approach</h2>
+                <div id="brute-force-container" class="node-container"></div>
+                <div class="complexity">Time Complexity: O(n²)</div>
+                <div id="brute-force-explanation" class="explanation">
+                    In brute force, for each node, we check all subsequent nodes to find duplicates.
+                </div>
+            </div>
+            
+            <div class="approach">
+                <h2>Optimized Approach</h2>
+                <div id="optimized-container" class="node-container"></div>
+                <div class="complexity">Time Complexity: O(n)</div>
+                <div id="hash-table" class="hash-table"></div>
+                <div id="optimized-explanation" class="explanation">
+                    The optimized approach uses a hash set to track seen values in a single pass.
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-btn" disabled>Previous</button>
+            <button id="next-btn" class="nav-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of nodes with values
+        const nodeValues = [4, 7, 2, 8, 4, 9, 1];
+        
+        // Setup nodes for both approaches
+        const bruteForceContainer = document.getElementById('brute-force-container');
+        const optimizedContainer = document.getElementById('optimized-container');
+        const bruteForceExplanation = document.getElementById('brute-force-explanation');
+        const optimizedExplanation = document.getElementById('optimized-explanation');
+        const hashTable = document.getElementById('hash-table');
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        let currentStep = 0;
+        const totalSteps = 30; // Adjust based on the number of steps in your animation
+        
+        // Create nodes for both approaches
+        for (let i = 0; i < nodeValues.length; i++) {
+            // Brute force nodes
+            const bruteNode = document.createElement('div');
+            bruteNode.className = 'node';
+            bruteNode.id = `brute-node-${i}`;
+            bruteNode.textContent = nodeValues[i];
+            bruteNode.style.left = `${(i * 60) + 50}px`;
+            bruteNode.style.top = '80px';
+            bruteForceContainer.appendChild(bruteNode);
+            
+            // Optimized approach nodes
+            const optimizedNode = document.createElement('div');
+            optimizedNode.className = 'node';
+            optimizedNode.id = `optimized-node-${i}`;
+            optimizedNode.textContent = nodeValues[i];
+            optimizedNode.style.left = `${(i * 60) + 50}px`;
+            optimizedNode.style.top = '80px';
+            optimizedContainer.appendChild(optimizedNode);
+        }
+        
+        // Initialize the animation state
+        function resetAnimation() {
+            // Reset all nodes
+            document.querySelectorAll('.node').forEach(node => {
+                node.className = 'node';
+            });
+            
+            // Remove all arrows
+            document.querySelectorAll('.arrow').forEach(arrow => {
+                arrow.remove();
+            });
+            
+            // Reset hash table
+            hashTable.innerHTML = '';
+            
+            // Reset explanations
+            bruteForceExplanation.textContent = 'In brute force, for each node, we check all subsequent nodes to find duplicates.';
+            optimizedExplanation.textContent = 'The optimized approach uses a hash set to track seen values in a single pass.';
+        }
+        
+        function createArrow(container, fromId, toId) {
+            const fromNode = document.getElementById(fromId);
+            const toNode = document.getElementById(toId);
+            
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            
+            // Calculate the center of both nodes
+            const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
+            const toX = toRect.left + toRect.width / 2 - containerRect.left;
+            const toY = toRect.top + toRect.height / 2 - containerRect.top;
+            
+            // Calculate the distance and angle
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            // Position and rotate the arrow
+            arrow.style.width = `${length - 20}px`; // Adjust for arrow head
+            arrow.style.left = `${fromX}px`;
+            arrow.style.top = `${fromY}px`;
+            arrow.style.transform = `rotate(${angle}deg)`;
+            
+            container.appendChild(arrow);
+            return arrow;
+        }
+        
+        function updateStep(step) {
+            resetAnimation();
+            
+            // Brute Force Animation Logic
+            if (step < 25) {
+                const i = Math.floor(step / 5);
+                const j = (step % 5) + i + 1;
+                
+                if (i < nodeValues.length - 1 && j < nodeValues.length) {
+                    // Highlight current node
+                    document.getElementById(`brute-node-${i}`).classList.add('highlight-current');
+                    
+                    // Highlight node being checked
+                    document.getElementById(`brute-node-${j}`).classList.add('highlight-checking');
+                    
+                    // Create arrow
+                    createArrow(bruteForceContainer, `brute-node-${i}`, `brute-node-${j}`);
+                    
+                    // Update explanation
+                    bruteForceExplanation.textContent = `Comparing node ${i+1} (value ${nodeValues[i]}) with node ${j+1} (value ${nodeValues[j]})`;
+                    
+                    // Check if duplicate found
+                    if (nodeValues[i] === nodeValues[j]) {
+                        document.getElementById(`brute-node-${j}`).classList.add('highlight-found');
+                        bruteForceExplanation.textContent = `Found duplicate! Node ${i+1} and node ${j+1} both have value ${nodeValues[i]}`;
+                    }
+                }
+            }
+            
+            // Optimized Approach Animation Logic
+            const seenValues = new Set();
+            const optimizedStep = Math.min(step, nodeValues.length);
+            
+            for (let i = 0; i < optimizedStep; i++) {
+                const node = document.getElementById(`optimized-node-${i}`);
+                
+                if (i === optimizedStep - 1) {
+                    node.classList.add('highlight-current');
+                } else {
+                    node.classList.add('highlight-hash');
+                }
+                
+                // Check if value already in hash set
+                if (seenValues.has(nodeValues[i])) {
+                    if (i === optimizedStep - 1) {
+                        node.classList.add('highlight-found');
+                        optimizedExplanation.textContent = `Found duplicate! Value ${nodeValues[i]} was already in our hash set.`;
+                    }
+                } else {
+                    seenValues.add(nodeValues[i]);
+                    
+                    // Add to visual hash table
+                    if (i === optimizedStep - 1) {
+                        const hashItem = document.createElement('div');
+                        hashItem.className = 'hash-item new';
+                        hashItem.textContent = nodeValues[i];
+                        hashTable.appendChild(hashItem);
+                        optimizedExplanation.textContent = `Adding value ${nodeValues[i]} to our hash set.`;
+                    } else {
+                        const hashItem = document.createElement('div');
+                        hashItem.className = 'hash-item';
+                        hashItem.textContent = nodeValues[i];
+                        hashTable.appendChild(hashItem);
+                    }
+                }
+            }
+            
+            // Update button states
+            prevBtn.disabled = step === 0;
+            nextBtn.disabled = step === totalSteps - 1;
+        }
+        
+        // Button event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateStep(currentStep);
+            }
+        });
+        
+        // Initialize the first step
+        updateStep(0);
+    </script>
+</body>
+</html>
