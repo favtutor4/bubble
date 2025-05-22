@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List Representation of Numbers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .slide.active {
+            display: flex;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        canvas {
+            border: 1px solid #FD9F78;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+        }
+        
+        .explanation {
+            background-color: #FD9F78;
+            color: #000000;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Linked List Representation of Numbers</h1>
+    
+    <div class="container">
+        <div id="slide1" class="slide active">
+            <div class="explanation">
+                <h2>Introduction to Linked List Representation</h2>
+                <p>In some problems, we need to represent numbers as linked lists. Each node contains a single digit, and the digits are stored in reverse order.</p>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas1" width="800" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div id="slide2" class="slide">
+            <div class="explanation">
+                <h2>Example 1: The Number 342</h2>
+                <p>The number 342 is represented as [2,4,3] in a linked list. Notice how the digits are in reverse order!</p>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas2" width="800" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div id="slide3" class="slide">
+            <div class="explanation">
+                <h2>Example 2: The Number 465</h2>
+                <p>The number 465 is represented as [5,6,4] in a linked list. Again, the digits are stored in reverse order.</p>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas3" width="800" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div id="slide4" class="slide">
+            <div class="explanation">
+                <h2>Why Reverse Order?</h2>
+                <p>Storing digits in reverse order makes certain operations (like addition) easier to implement, as we typically add numbers from right to left.</p>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas4" width="800" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Previous</button>
+            <button id="nextBtn" onclick="changeSlide(1)">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 4;
+        
+        function changeSlide(n) {
+            document.getElementById(`slide${currentSlide}`).classList.remove('active');
+            currentSlide += n;
+            document.getElementById(`slide${currentSlide}`).classList.add('active');
+            
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+            
+            // Redraw current canvas
+            drawCanvas(currentSlide);
+        }
+        
+        function drawNode(ctx, x, y, value, isLast = false) {
+            // Draw node rectangle
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = '#FF4800';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x, y, 80, 60, 10);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw value
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(value, x + 40, y + 30);
+            
+            // Draw arrow if not last node
+            if (!isLast) {
+                ctx.strokeStyle = '#FF4800';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x + 80, y + 30);
+                ctx.lineTo(x + 120, y + 30);
+                ctx.stroke();
+                
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(x + 120, y + 30);
+                ctx.lineTo(x + 110, y + 25);
+                ctx.lineTo(x + 110, y + 35);
+                ctx.closePath();
+                ctx.fillStyle = '#FF4800';
+                ctx.fill();
+            }
+        }
+        
+        function drawCanvas(slideNum) {
+            const canvas = document.getElementById(`canvas${slideNum}`);
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            switch(slideNum) {
+                case 1:
+                    // Introduction slide
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Linked List: A chain of nodes connected by pointers', canvas.width/2, 80);
+                    
+                    ctx.font = '20px Arial';
+                    ctx.fillText('In this representation, each node contains a single digit', canvas.width/2, 120);
+                    ctx.fillText('and digits are stored in reverse order', canvas.width/2, 150);
+                    
+                    // Draw a generic linked list
+                    drawNode(ctx, 200, 220, "?");
+                    drawNode(ctx, 320, 220, "?");
+                    drawNode(ctx, 440, 220, "?", true);
+                    
+                    ctx.font = 'italic 18px Arial';
+                    ctx.fillText('This format allows us to work with large numbers more easily', canvas.width/2, 350);
+                    break;
+                    
+                case 2:
+                    // Example 1: 342 as [2,4,3]
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Number: 342', canvas.width/2, 50);
+                    
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText('Array Representation: [2, 4, 3]', canvas.width/2, 90);
+                    
+                    // Draw the linked list
+                    drawNode(ctx, 200, 150, "2");
+                    drawNode(ctx, 320, 150, "4");
+                    drawNode(ctx, 440, 150, "3", true);
+                    
+                    // Draw the explanation arrows
+                    ctx.fillStyle = '#FF4800';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    
+                    // Draw arrows from digits to positions
+                    ctx.beginPath();
+                    ctx.moveTo(260, 250);
+                    ctx.lineTo(240, 210);
+                    ctx.stroke();
+                    ctx.fillText('Units (2)', 260, 280);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(360, 250);
+                    ctx.lineTo(360, 210);
+                    ctx.stroke();
+                    ctx.fillText('Tens (4)', 360, 280);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(460, 250);
+                    ctx.lineTo(480, 210);
+                    ctx.stroke();
+                    ctx.fillText('Hundreds (3)', 460, 280);
+                    
+                    // Draw the actual number
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText('So, the number is: 3 × 100 + 4 × 10 + 2 × 1 = 342', canvas.width/2, 340);
+                    break;
+                    
+                case 3:
+                    // Example 2: 465 as [5,6,4]
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Number: 465', canvas.width/2, 50);
+                    
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText('Array Representation: [5, 6, 4]', canvas.width/2, 90);
+                    
+                    // Draw the linked list
+                    drawNode(ctx, 200, 150, "5");
+                    drawNode(ctx, 320, 150, "6");
+                    drawNode(ctx, 440, 150, "4", true);
+                    
+                    // Draw the explanation arrows
+                    ctx.fillStyle = '#FF4800';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    
+                    // Draw arrows from digits to positions
+                    ctx.beginPath();
+                    ctx.moveTo(260, 250);
+                    ctx.lineTo(240, 210);
+                    ctx.stroke();
+                    ctx.fillText('Units (5)', 260, 280);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(360, 250);
+                    ctx.lineTo(360, 210);
+                    ctx.stroke();
+                    ctx.fillText('Tens (6)', 360, 280);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(460, 250);
+                    ctx.lineTo(480, 210);
+                    ctx.stroke();
+                    ctx.fillText('Hundreds (4)', 460, 280);
+                    
+                    // Draw the actual number
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText('So, the number is: 4 × 100 + 6 × 10 + 5 × 1 = 465', canvas.width/2, 340);
+                    break;
+                    
+                case 4:
+                    // Why reverse order
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Why Store in Reverse Order?', canvas.width/2, 50);
+                    
+                    // Draw example of addition
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText('Addition Example: 342 + 465 = 807', canvas.width/2, 100);
+                    
+                    // First linked list (342 as [2,4,3])
+                    drawNode(ctx, 150, 160, "2");
+                    drawNode(ctx, 270, 160, "4");
+                    drawNode(ctx, 390, 160, "3", true);
+                    
+                    // Second linked list (465 as [5,6,4])
+                    drawNode(ctx, 150, 240, "5");
+                    drawNode(ctx, 270, 240, "6");
+                    drawNode(ctx, 390, 240, "4", true);
+                    
+                    // Result linked list (807 as [7,0,8])
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 22px Arial';
+                    ctx.fillText('Result:', 80, 320);
+                    
+                    drawNode(ctx, 150, 320, "7");
+                    drawNode(ctx, 270, 320, "0");
+                    drawNode(ctx, 390, 320, "8", true);
+                    
+                    // Add some arrows showing the addition
+                    ctx.strokeStyle = '#FF4800';
+                    ctx.lineWidth = 2;
+                    
+                    // First column addition (2+5=7)
+                    ctx.beginPath();
+                    ctx.moveTo(190, 190);
+                    ctx.lineTo(190, 210);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(190, 270);
+                    ctx.lineTo(190, 300);
+                    ctx.stroke();
+                    
+                    // Second column addition (4+6=10, carry 1)
+                    ctx.beginPath();
+                    ctx.moveTo(310, 190);
+                    ctx.lineTo(310, 210);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(310, 270);
+                    ctx.lineTo(310, 300);
+                    ctx.stroke();
+                    
+                    // Third column addition (3+4+carry=8)
+                    ctx.beginPath();
+                    ctx.moveTo(430, 190);
+                    ctx.lineTo(430, 210);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(430, 270);
+                    ctx.lineTo(430, 300);
+                    ctx.stroke();
+                    
+                    // Explain the benefit
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '18px Arial';
+                    ctx.fillText('Starting with the least significant digit (units) makes arithmetic operations', canvas.width/2, 370);
+                    ctx.fillText('like addition more intuitive, just like how we add numbers by hand!', canvas.width/2, 395);
+                    break;
+            }
+        }
+        
+        // Initialize the first canvas
+        window.onload = function() {
+            drawCanvas(1);
+        };
+    </script>
+</body>
+</html>
