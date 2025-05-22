@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit-by-Digit Addition Process</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #FF4800;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 30px 0;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .digit {
+            position: absolute;
+            font-size: 36px;
+            font-weight: bold;
+            transition: all 0.8s ease;
+        }
+        .carry {
+            position: absolute;
+            font-size: 20px;
+            color: #FF4800;
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+        .result {
+            position: absolute;
+            font-size: 36px;
+            font-weight: bold;
+            color: #FF4800;
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+        .operation {
+            position: absolute;
+            font-size: 36px;
+            font-weight: bold;
+            transition: all 0.8s ease;
+        }
+        .explanation {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+            min-height: 60px;
+            color: #000000;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            background-color: #FF4800;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Digit-by-Digit Addition Process</h1>
+        
+        <div class="animation-container" id="animation-container">
+            <!-- Animation elements will be added by JavaScript -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Let's add the arrays [2,4,3] and [5,6,4] digit by digit.
+        </div>
+        
+        <div class="progress-indicator" id="progress-indicator">
+            <!-- Step indicators will be added by JavaScript -->
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const animationContainer = document.getElementById('animation-container');
+        const explanationDiv = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressIndicator = document.getElementById('progress-indicator');
+        
+        // Array numbers
+        const array1 = [2, 4, 3];
+        const array2 = [5, 6, 4];
+        const result = [7, 0, 8];
+        
+        // Step explanations
+        const explanations = [
+            "Let's add the arrays [2,4,3] and [5,6,4] digit by digit.",
+            "First, let's position the arrays for addition.",
+            "Step 1: Add the hundreds place digits: 2 + 5 = 7",
+            "Step 2: Add the tens place digits: 4 + 6 = 10. Write down 0 and carry 1.",
+            "Step 3: Add the ones place digits: 3 + 4 + 1 (carry) = 8",
+            "The final result is [7,0,8], which is 708 in decimal."
+        ];
+        
+        let currentStep = 0;
+        const totalSteps = explanations.length;
+        
+        // Initialize step indicators
+        for (let i = 0; i < totalSteps; i++) {
+            const dot = document.createElement('div');
+            dot.className = i === 0 ? 'step-dot active' : 'step-dot';
+            dot.onclick = () => goToStep(i);
+            progressIndicator.appendChild(dot);
+        }
+        
+        // Create initial display elements
+        function initializeElements() {
+            // Clear container
+            animationContainer.innerHTML = '';
+            
+            // Create operation sign
+            const plus = document.createElement('div');
+            plus.className = 'operation';
+            plus.textContent = '+';
+            plus.style.left = '390px';
+            plus.style.top = '180px';
+            plus.style.opacity = '0';
+            animationContainer.appendChild(plus);
+            
+            // Create line
+            const line = document.createElement('div');
+            line.className = 'operation';
+            line.textContent = '____________________';
+            line.style.left = '320px';
+            line.style.top = '220px';
+            line.style.opacity = '0';
+            animationContainer.appendChild(line);
+            
+            // Create array elements
+            for (let i = 0; i < 3; i++) {
+                // First array
+                const digit1 = document.createElement('div');
+                digit1.className = 'digit';
+                digit1.textContent = array1[i];
+                digit1.style.left = (350 + i * 60) + 'px';
+                digit1.style.top = '130px';
+                digit1.style.opacity = '0';
+                digit1.id = `digit1-${i}`;
+                animationContainer.appendChild(digit1);
+                
+                // Second array
+                const digit2 = document.createElement('div');
+                digit2.className = 'digit';
+                digit2.textContent = array2[i];
+                digit2.style.left = (350 + i * 60) + 'px';
+                digit2.style.top = '180px';
+                digit2.style.opacity = '0';
+                digit2.id = `digit2-${i}`;
+                animationContainer.appendChild(digit2);
+                
+                // Result
+                const resultDigit = document.createElement('div');
+                resultDigit.className = 'result';
+                resultDigit.textContent = result[i];
+                resultDigit.style.left = (350 + i * 60) + 'px';
+                resultDigit.style.top = '260px';
+                resultDigit.style.opacity = '0';
+                resultDigit.id = `result-${i}`;
+                animationContainer.appendChild(resultDigit);
+            }
+            
+            // Create carry elements
+            for (let i = 0; i < 2; i++) {
+                const carry = document.createElement('div');
+                carry.className = 'carry';
+                carry.textContent = '1';
+                carry.style.left = (410 + i * 60) + 'px';
+                carry.style.top = '110px';
+                carry.style.opacity = '0';
+                carry.id = `carry-${i}`;
+                animationContainer.appendChild(carry);
+            }
+        }
+        
+        initializeElements();
+        
+        // Go to specific step
+        function goToStep(step) {
+            if (step >= 0 && step < totalSteps) {
+                currentStep = step;
+                updateAnimation();
+                updateExplanation();
+                updateButtons();
+                updateProgress();
+            }
+        }
+        
+        // Update the dots to show current progress
+        function updateProgress() {
+            const dots = document.querySelectorAll('.step-dot');
+            dots.forEach((dot, index) => {
+                if (index === currentStep) {
+                    dot.className = 'step-dot active';
+                } else {
+                    dot.className = 'step-dot';
+                }
+            });
+        }
+        
+        // Update the animation based on current step
+        function updateAnimation() {
+            const plus = document.querySelector('.operation:nth-child(1)');
+            const line = document.querySelector('.operation:nth-child(2)');
+            
+            // Reset all elements
+            document.querySelectorAll('.digit, .carry, .result').forEach(el => {
+                el.style.opacity = '0';
+            });
+            
+            plus.style.opacity = '0';
+            line.style.opacity = '0';
+            
+            if (currentStep >= 1) {
+                // Show arrays
+                for (let i = 0; i < 3; i++) {
+                    document.getElementById(`digit1-${i}`).style.opacity = '1';
+                    document.getElementById(`digit2-${i}`).style.opacity = '1';
+                }
+                plus.style.opacity = '1';
+                line.style.opacity = '1';
+            }
+            
+            if (currentStep >= 2) {
+                // Highlight hundreds place and show result
+                document.getElementById('result-0').style.opacity = '1';
+            }
+            
+            if (currentStep >= 3) {
+                // Highlight tens place and show carry and result
+                document.getElementById('carry-0').style.opacity = '1';
+                document.getElementById('result-1').style.opacity = '1';
+            }
+            
+            if (currentStep >= 4) {
+                // Highlight ones place and show result
+                document.getElementById('result-2').style.opacity = '1';
+            }
+        }
+        
+        // Update explanation text
+        function updateExplanation() {
+            explanationDiv.textContent = explanations[currentStep];
+        }
+        
+        // Update button states
+        function updateButtons() {
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateAnimation();
+                updateExplanation();
+                updateButtons();
+                updateProgress();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateAnimation();
+                updateExplanation();
+                updateButtons();
+                updateProgress();
+            }
+        });
+        
+        // Initialize
+        updateAnimation();
+        updateExplanation();
+        updateButtons();
+    </script>
+</body>
+</html>
