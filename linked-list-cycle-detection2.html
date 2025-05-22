@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floyd's Algorithm Proof</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+        }
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .node {
+            width: 40px;
+            height: 40px;
+            background-color: #FD9F78;
+            color: #000000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        .pointer {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        .slow-pointer {
+            background-color: #FF4800;
+        }
+        .fast-pointer {
+            background-color: #000000;
+        }
+        .arrow {
+            position: absolute;
+            border-top: 2px solid #FF4800;
+            transition: all 0.5s ease;
+        }
+        .label {
+            position: absolute;
+            color: #000000;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .equation {
+            margin: 15px 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .highlight {
+            color: #FF4800;
+        }
+        .step-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mathematical Proof of Floyd's Algorithm</h1>
+        
+        <div class="animation-container" id="animation-container">
+            <!-- Nodes and pointers will be added dynamically with JavaScript -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>Floyd's Algorithm (also known as Floyd's Cycle-Finding Algorithm or the "Tortoise and Hare" algorithm) is used to detect cycles in a linked list.</p>
+        </div>
+
+        <div class="equation" id="equation"></div>
+        
+        <div class="button-container">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">Step 1 of 6</div>
+    </div>
+
+    <script>
+        // Animation states
+        const states = [
+            {
+                explanation: "In Floyd's Algorithm, we use two pointers: slow (moving one step at a time) and fast (moving two steps at a time). The linked list has a cycle, and we need to prove why the algorithm works to find the start of the cycle.",
+                equation: "",
+                setup: (container) => {
+                    // Clear container
+                    container.innerHTML = '';
+                    
+                    // Create nodes for linked list
+                    const nodeCount = 10;
+                    const cycleStart = 3; // Node index where cycle starts (0-based)
+                    
+                    // First create a straight line of nodes
+                    for (let i = 0; i < nodeCount; i++) {
+                        const node = document.createElement('div');
+                        node.className = 'node';
+                        node.textContent = i + 1;
+                        
+                        if (i < 5) { // First 5 nodes in a line
+                            node.style.left = `${80 + i * 80}px`;
+                            node.style.top = '80px';
+                        } else if (i < 7) { // Next 2 nodes going down
+                            node.style.left = `${80 + 4 * 80}px`;
+                            node.style.top = `${80 + (i - 4) * 80}px`;
+                        } else { // Last 3 nodes going left
+                            node.style.left = `${80 + 4 * 80 - (i - 6) * 80}px`;
+                            node.style.top = `${80 + 2 * 80}px`;
+                        }
+                        
+                        container.appendChild(node);
+                        
+                        // Mark the cycle start
+                        if (i === cycleStart) {
+                            const label = document.createElement('div');
+                            label.className = 'label';
+                            label.textContent = 'Cycle Start';
+                            label.style.left = `${80 + i * 80 - 30}px`;
+                            label.style.top = '40px';
+                            label.style.color = '#FF4800';
+                            container.appendChild(label);
+                        }
+                    }
+                    
+                    // Add arrows between nodes
+                    for (let i = 0; i < nodeCount - 1; i++) {
+                        const arrow = document.createElement('div');
+                        arrow.className = 'arrow';
+                        
+                        if (i < 4) { // First 4 arrows going right
+                            arrow.style.width = '40px';
+                            arrow.style.left = `${100 + i * 80}px`;
+                            arrow.style.top = '80px';
+                            arrow.style.transform = 'translateY(0)';
+                        } else if (i === 4) { // Arrow going down
+                            arrow.style.width = '2px';
+                            arrow.style.height = '40px';
+                            arrow.style.left = `${100 + 4 * 80}px`;
+                            arrow.style.top = `${100}px`;
+                            arrow.style.transform = 'rotate(90deg) translateX(20px)';
+                        } else if (i === 5) { // Arrow going down
+                            arrow.style.width = '2px';
+                            arrow.style.height = '40px';
+                            arrow.style.left = `${100 + 4 * 80}px`;
+                            arrow.style.top = `${100 + 80}px`;
+                            arrow.style.transform = 'rotate(90deg) translateX(20px)';
+                        } else if (i >= 6) { // Arrows going left
+                            arrow.style.width = '40px';
+                            arrow.style.left = `${100 + 4 * 80 - (i - 5) * 80}px`;
+                            arrow.style.top = `${80 + 2 * 80}px`;
+                            arrow.style.transform = 'translateY(0) rotate(180deg)';
+                        }
+                        
+                        container.appendChild(arrow);
+                    }
+                    
+                    // Add the last arrow to complete the cycle
+                    const cycleArrow = document.createElement('div');
+                    cycleArrow.className = 'arrow';
+                    cycleArrow.style.width = '2px';
+                    cycleArrow.style.height = '140px';
+                    cycleArrow.style.left = `${80 + cycleStart * 80 + 20}px`;
+                    cycleArrow.style.top = `${100 + 2 * 80}px`;
+                    cycleArrow.style.transform = 'rotate(-90deg) translateX(-80px)';
+                    container.appendChild(cycleArrow);
+                    
+                    // Add distance labels
+                    const labelF = document.createElement('div');
+                    labelF.className = 'label';
+                    labelF.textContent = 'F';
+                    labelF.style.left = `${80 + Math.floor(cycleStart / 2) * 80}px`;
+                    labelF.style.top = '40px';
+                    container.appendChild(labelF);
+                    
+                    // Add pointer start positions
+                    const slowPointer = document.createElement('div');
+                    slowPointer.className = 'pointer slow-pointer';
+                    slowPointer.style.left = '70px';
+                    slowPointer.style.top = '80px';
+                    slowPointer.id = 'slow-pointer';
+                    container.appendChild(slowPointer);
+                    
+                    const fastPointer = document.createElement('div');
+                    fastPointer.className = 'pointer fast-pointer';
+                    fastPointer.style.left = '70px';
+                    fastPointer.style.top = '80px';
+                    fastPointer.id = 'fast-pointer';
+                    container.appendChild(fastPointer);
+                    
+                    // Add pointer labels
+                    const slowLabel = document.createElement('div');
+                    slowLabel.className = 'label';
+                    slowLabel.textContent = 'Slow';
+                    slowLabel.style.left = '50px';
+                    slowLabel.style.top = '50px';
+                    slowLabel.style.color = '#FF4800';
+                    container.appendChild(slowLabel);
+                    
+                    const fastLabel = document.createElement('div');
+                    fastLabel.className = 'label';
+                    fastLabel.textContent = 'Fast';
+                    fastLabel.style.left = '50px';
+                    fastLabel.style.top = '110px';
+                    fastLabel.style.color = '#000000';
+                    container.appendChild(fastLabel);
+                }
+            },
+            {
+                explanation: "Let's define our variables: F is the distance from the head to the cycle start, a is the distance from cycle start to the meeting point, and b is the remaining length of the cycle.",
+                equation: "",
+                setup: (container) => {
+                    // Add more detailed distance labels
+                    const labelA = document.createElement('div');
+                    labelA.className = 'label';
+                    labelA.textContent = 'a';
+                    labelA.style.left = '400px';
+                    labelA.style.top = '280px';
+                    container.appendChild(labelA);
+                    
+                    const labelB = document.createElement('div');
+                    labelB.className = 'label';
+                    labelB.textContent = 'b';
+                    labelB.style.left = '200px';
+                    labelB.style.top = '280px';
+                    container.appendChild(labelB);
+                    
+                    // Meeting point label
+                    const meetLabel = document.createElement('div');
+                    meetLabel.className = 'label';
+                    meetLabel.textContent = 'Meeting Point';
+                    meetLabel.style.left = '400px';
+                    meetLabel.style.top = '320px';
+                    meetLabel.style.color = '#FF4800';
+                    container.appendChild(meetLabel);
+                }
+            },
+            {
+                explanation: "When the pointers meet, the slow pointer has traveled F+a distance, while the fast pointer has traveled F+a+b+a = F+2a+b distance (it went around the cycle one more time).",
+                equation: "Distance traveled by slow pointer = F+a",
+                setup: (container) => {
+                    // Move both pointers to meeting point
+                    const slowPointer = document.getElementById('slow-pointer');
+                    const fastPointer = document.getElementById('fast-pointer');
+                    
+                    slowPointer.style.left = '400px';
+                    slowPointer.style.top = '240px';
+                    
+                    fastPointer.style.left = '400px';
+                    fastPointer.style.top = '240px';
+                }
+            },
+            {
+                explanation: "Since the fast pointer moves at twice the speed of the slow pointer, the distance traveled by the fast pointer is twice the distance traveled by the slow pointer.",
+                equation: "Distance traveled by fast pointer = F+2a+b = 2(F+a)",
+                setup: (container) => {
+                    // Add movement path visualization
+                    const slowPath = document.createElement('div');
+                    slowPath.style.position = 'absolute';
+                    slowPath.style.left = '150px';
+                    slowPath.style.top = '40px';
+                    slowPath.style.color = '#FF4800';
+                    slowPath.style.fontWeight = 'bold';
+                    slowPath.textContent = 'Slow pointer path: F+a';
+                    container.appendChild(slowPath);
+                    
+                    const fastPath = document.createElement('div');
+                    fastPath.style.position = 'absolute';
+                    fastPath.style.left = '150px';
+                    fastPath.style.top = '340px';
+                    fastPath.style.color = '#000000';
+                    fastPath.style.fontWeight = 'bold';
+                    fastPath.textContent = 'Fast pointer path: F+a+b+a = F+2a+b';
+                    container.appendChild(fastPath);
+                }
+            },
+            {
+                explanation: "Setting up the equation: Since the fast pointer moves twice as fast as the slow pointer, we can write: 2(F+a) = F+2a+b",
+                equation: "2(F+a) = F+2a+b",
+                setup: (container) => {
+                    // Add equation steps visualization
+                    const eqStep1 = document.createElement('div');
+                    eqStep1.style.position = 'absolute';
+                    eqStep1.style.left = '50px';
+                    eqStep1.style.top = '350px';
+                    eqStep1.style.fontWeight = 'bold';
+                    eqStep1.innerHTML = '2(F+a) = F+2a+b<br>2F+2a = F+2a+b<br>2F = F+b<br>F = b';
+                    container.appendChild(eqStep1);
+                }
+            },
+            {
+                explanation: "Solving the equation: 2F+2a = F+2a+b, which simplifies to F = b. This is the key insight! It means the distance from head to cycle start (F) equals the distance from meeting point to cycle start (b).",
+                equation: "F = b",
+                setup: (container) => {
+                    // Reset pointers
+                    const slowPointer = document.getElementById('slow-pointer');
+                    const fastPointer = document.getElementById('fast-pointer');
+                    
+                    slowPointer.style.left = '70px';
+                    slowPointer.style.top = '80px';
+                    
+                    fastPointer.style.left = '400px';
+                    fastPointer.style.top = '240px';
+                    
+                    // Add conclusion
+                    const conclusion = document.createElement('div');
+                    conclusion.style.position = 'absolute';
+                    conclusion.style.left = '50px';
+                    conclusion.style.top = '180px';
+                    conclusion.style.color = '#FF4800';
+                    conclusion.style.fontWeight = 'bold';
+                    conclusion.style.fontSize = '16px';
+                    conclusion.style.width = '800px';
+                    conclusion.style.textAlign = 'center';
+                    conclusion.innerHTML = 'Since F = b, if we place one pointer at the head and another at the meeting point<br>and move both one step at a time, they will meet at the cycle start!';
+                    container.appendChild(conclusion);
+                }
+            }
+        ];
+
+        // Current state index
+        let currentState = 0;
+
+        // DOM elements
+        const container = document.getElementById('animation-container');
+        const explanation = document.getElementById('explanation');
+        const equation = document.getElementById('equation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const stepIndicator = document.getElementById('step-indicator');
+
+        // Initialize first state
+        function renderState(stateIndex) {
+            const state = states[stateIndex];
+            explanation.innerHTML = `<p>${state.explanation}</p>`;
+            equation.textContent = state.equation;
+            state.setup(container);
+            stepIndicator.textContent = `Step ${stateIndex + 1} of ${states.length}`;
+            
+            // Update button states
+            prevBtn.disabled = stateIndex === 0;
+            nextBtn.disabled = stateIndex === states.length - 1;
+        }
+
+        // Button event handlers
+        prevBtn.addEventListener('click', () => {
+            if (currentState > 0) {
+                currentState--;
+                renderState(currentState);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentState < states.length - 1) {
+                currentState++;
+                renderState(currentState);
+            }
+        });
+
+        // Initialize the first state
+        renderState(currentState);
+    </script>
+</body>
+</html>
