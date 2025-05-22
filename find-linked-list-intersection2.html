@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Pointer Technique Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .animation-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .list {
+            display: flex;
+            position: relative;
+        }
+        
+        .node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 40px;
+            position: relative;
+            border: 2px solid #000000;
+        }
+        
+        .node::after {
+            content: "";
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background-color: #000000;
+            top: 50%;
+            left: 100%;
+        }
+        
+        .node:last-child::after {
+            display: none;
+        }
+        
+        .node.intersection {
+            background-color: #FF4800;
+            color: #FFFFFF;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -35px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .pointer-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid;
+            margin-top: 5px;
+        }
+        
+        .pointer.pointerA {
+            color: #FF4800;
+        }
+        
+        .pointer.pointerB {
+            color: #000000;
+        }
+        
+        .pointer.pointerA .pointer-arrow {
+            border-top-color: #FF4800;
+        }
+        
+        .pointer.pointerB .pointer-arrow {
+            border-top-color: #000000;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            background-color: #FFF;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #FF4800;
+            margin-top: 20px;
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 40px;
+            width: 2px;
+            background-color: #000000;
+            transform-origin: top;
+        }
+    </style>
+</head>
+<body>
+    <h1>Two-Pointer Technique Visualization</h1>
+    
+    <div class="container">
+        <div class="animation-container">
+            <div class="list-container">
+                <div class="list list1">
+                    <div class="node">A</div>
+                    <div class="node">B</div>
+                    <div class="node">C</div>
+                    <div class="node intersection">D</div>
+                    <div class="node">E</div>
+                    <div class="node">F</div>
+                </div>
+                <div class="list list2">
+                    <div class="node">P</div>
+                    <div class="node">Q</div>
+                    <div class="node intersection">D</div>
+                    <div class="node">E</div>
+                    <div class="node">F</div>
+                </div>
+            </div>
+            
+            <div class="pointer pointerA" id="pointerA">
+                <div>PointerA</div>
+                <div class="pointer-arrow"></div>
+            </div>
+            
+            <div class="pointer pointerB" id="pointerB">
+                <div>PointerB</div>
+                <div class="pointer-arrow"></div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            Starting the two-pointer technique. PointerA begins at the start of List 1, and PointerB begins at the start of List 2.
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        const steps = [
+            {
+                pointerA: { list: 0, node: 0 },
+                pointerB: { list: 1, node: 0 },
+                explanation: "Starting the two-pointer technique. PointerA begins at the start of List 1, and PointerB begins at the start of List 2."
+            },
+            {
+                pointerA: { list: 0, node: 1 },
+                pointerB: { list: 1, node: 1 },
+                explanation: "Both pointers move one step forward in their respective lists."
+            },
+            {
+                pointerA: { list: 0, node: 2 },
+                pointerB: { list: 1, node: 2 },
+                explanation: "Both pointers move forward again. Notice that PointerB is now at node D, which is the intersection point."
+            },
+            {
+                pointerA: { list: 0, node: 3 },
+                pointerB: { list: 1, node: 3 },
+                explanation: "PointerA reaches node D, which is the intersection point. PointerB moves to node E."
+            },
+            {
+                pointerA: { list: 0, node: 4 },
+                pointerB: { list: 1, node: 4 },
+                explanation: "Both pointers continue moving through the common part of the lists."
+            },
+            {
+                pointerA: { list: 0, node: 5 },
+                pointerB: { list: 1, node: 0, switched: true },
+                explanation: "PointerA reaches the last node F. PointerB reaches the end of List 2 and is redirected to the start of List 1."
+            },
+            {
+                pointerA: { list: 1, node: 0, switched: true },
+                pointerB: { list: 1, node: 1 },
+                explanation: "PointerA reaches the end of List 1 and is redirected to the start of List 2. PointerB moves through List 1."
+            },
+            {
+                pointerA: { list: 1, node: 1 },
+                pointerB: { list: 1, node: 2 },
+                explanation: "Both pointers continue moving. They are now on different parts of the lists."
+            },
+            {
+                pointerA: { list: 1, node: 2 },
+                pointerB: { list: 0, node: 2 },
+                explanation: "PointerA reaches node D (intersection) again. PointerB is at node C in List 1."
+            },
+            {
+                pointerA: { list: 1, node: 3 },
+                pointerB: { list: 0, node: 3 },
+                explanation: "Both pointers move forward. PointerB has also reached node D (intersection)!"
+            },
+            {
+                pointerA: { list: 1, node: 3, highlight: true },
+                pointerB: { list: 0, node: 3, highlight: true },
+                explanation: "Success! Both pointers are at the intersection point D. The algorithm has found the intersection point of the two lists."
+            }
+        ];
+        
+        let currentStep = 0;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pointerA = document.getElementById('pointerA');
+        const pointerB = document.getElementById('pointerB');
+        const explanation = document.getElementById('explanation');
+        const lists = document.querySelectorAll('.list');
+        
+        function updateVisualization() {
+            const step = steps[currentStep];
+            
+            // Position pointers
+            const listA = lists[step.pointerA.list];
+            const listB = lists[step.pointerB.list];
+            
+            const nodeA = listA.children[step.pointerA.node];
+            const nodeB = listB.children[step.pointerB.node];
+            
+            const nodeARect = nodeA.getBoundingClientRect();
+            const nodeBRect = nodeB.getBoundingClientRect();
+            const listContainerRect = document.querySelector('.list-container').getBoundingClientRect();
+            
+            pointerA.style.left = (nodeARect.left + nodeARect.width / 2 - listContainerRect.left) + 'px';
+            pointerA.style.top = (nodeARect.top - listContainerRect.top - 35) + 'px';
+            
+            pointerB.style.left = (nodeBRect.left + nodeBRect.width / 2 - listContainerRect.left) + 'px';
+            pointerB.style.top = (nodeBRect.top - listContainerRect.top - 35) + 'px';
+            
+            // Update explanation
+            explanation.textContent = step.explanation;
+            
+            // Reset highlight
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.boxShadow = '';
+            });
+            
+            // Add highlight if needed
+            if (step.pointerA.highlight) {
+                nodeA.style.boxShadow = '0 0 10px 3px #FF4800';
+            }
+            if (step.pointerB.highlight) {
+                nodeB.style.boxShadow = '0 0 10px 3px #000000';
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === steps.length - 1;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateVisualization();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateVisualization();
+            }
+        });
+        
+        // Draw connection from intersection node in list 1 to list 2
+        function drawConnectionLine() {
+            const intersectionNodes = document.querySelectorAll('.node.intersection');
+            if (intersectionNodes.length >= 2) {
+                const rect1 = intersectionNodes[0].getBoundingClientRect();
+                const rect2 = intersectionNodes[1].getBoundingClientRect();
+                const containerRect = document.querySelector('.list-container').getBoundingClientRect();
+                
+                const line = document.createElement('div');
+                line.className = 'connection-line';
+                
+                const distance = rect2.top - rect1.bottom;
+                line.style.height = distance + 'px';
+                line.style.left = (rect1.left + rect1.width / 2 - containerRect.left) + 'px';
+                line.style.top = (rect1.bottom - containerRect.top) + 'px';
+                
+                document.querySelector('.animation-container').appendChild(line);
+            }
+        }
+        
+        // Initialize
+        window.onload = function() {
+            updateVisualization();
+            drawConnectionLine();
+            
+            // Adjust positions on window resize
+            window.addEventListener('resize', function() {
+                updateVisualization();
+                
+                // Remove old connection line and redraw
+                const oldLine = document.querySelector('.connection-line');
+                if (oldLine) oldLine.remove();
+                drawConnectionLine();
+            });
+        };
+    </script>
+</body>
+</html>
