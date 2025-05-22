@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List with a Loop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .description {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 350px;
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 2px solid #FD9F78;
+            border-radius: 8px;
+        }
+        
+        canvas {
+            background-color: #FFFFFF;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #FD9F78;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .explanation {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #FF4800;
+        }
+
+        .status {
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #FF4800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linked List with a Loop</h1>
+        
+        <div class="description">
+            <p>A visual representation of a linked list with a loop and how to detect and remove it.</p>
+        </div>
+        
+        <div class="status" id="status">Step 1: Original Linked List with a Loop</div>
+        
+        <div class="canvas-container">
+            <canvas id="linkedListCanvas" width="900" height="350"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>This shows a linked list where node 5 points back to node 3, creating a loop. In a normal linked list, the last node should point to null (nothing).</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('linkedListCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusElement = document.getElementById('status');
+        const explanationElement = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        // Colors
+        const primaryColor = '#FF4800';
+        const secondaryColor = '#FD9F78';
+        const blackColor = '#000000';
+        const whiteColor = '#FFFFFF';
+        
+        // Node properties
+        const nodeRadius = 30;
+        const nodeDistance = 120;
+        
+        // Animation properties
+        let animationFrameId;
+        let animationProgress = 0;
+        const animationDuration = 60; // frames
+        
+        class Node {
+            constructor(x, y, value) {
+                this.x = x;
+                this.y = y;
+                this.value = value;
+                this.next = null;
+                this.highlighted = false;
+                this.loopTarget = false;
+            }
+            
+            draw() {
+                // Draw node circle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, nodeRadius, 0, Math.PI * 2);
+                ctx.fillStyle = this.highlighted ? secondaryColor : whiteColor;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = primaryColor;
+                ctx.stroke();
+                
+                // Draw node value
+                ctx.font = '20px Arial';
+                ctx.fillStyle = blackColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.value, this.x, this.y);
+                
+                // Draw arrow to next node if exists
+                if (this.next) {
+                    this.drawArrow(this.next);
+                } else {
+                    // Draw null pointer
+                    this.drawNullPointer();
+                }
+            }
+            
+            drawArrow(nextNode) {
+                // Calculate the direction vector
+                let dx = nextNode.x - this.x;
+                let dy = nextNode.y - this.y;
+                
+                // For loop pointer, calculate curved path
+                if (this.loopTarget) {
+                    this.drawLoopArrow(nextNode);
+                    return;
+                }
+                
+                // Normalize the vector
+                const length = Math.sqrt(dx * dx + dy * dy);
+                dx = dx / length;
+                dy = dy / length;
+                
+                // Calculate start point (outside current node)
+                const startX = this.x + dx * nodeRadius;
+                const startY = this.y + dy * nodeRadius;
+                
+                // Calculate end point (outside next node)
+                const endX = nextNode.x - dx * nodeRadius;
+                const endY = nextNode.y - dy * nodeRadius;
+                
+                // Draw line
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw arrowhead
+                const arrowSize = 10;
+                const angle = Math.atan2(dy, dx);
+                ctx.beginPath();
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(
+                    endX - arrowSize * Math.cos(angle - Math.PI / 6),
+                    endY - arrowSize * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.lineTo(
+                    endX - arrowSize * Math.cos(angle + Math.PI / 6),
+                    endY - arrowSize * Math.sin(angle + Math.PI / 6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = primaryColor;
+                ctx.fill();
+            }
+            
+            drawLoopArrow(nextNode) {
+                // Draw a curved arrow for the loop
+                ctx.beginPath();
+                
+                // Start point (outside current node)
+                const startX = this.x;
+                const startY = this.y + nodeRadius;
+                
+                // Control points for the curve
+                const cp1x = this.x - 50;
+                const cp1y = this.y + 100;
+                const cp2x = nextNode.x + 50;
+                const cp2y = nextNode.y + 100;
+                
+                // End point (outside target node)
+                const endX = nextNode.x;
+                const endY = nextNode.y + nodeRadius;
+                
+                // Draw curved path
+                ctx.moveTo(startX, startY);
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw arrowhead
+                const arrowSize = 10;
+                // Calculate the angle at the end of the curve
+                const dx = endX - cp2x;
+                const dy = endY - cp2y;
+                const angle = Math.atan2(dy, dx);
+                
+                ctx.beginPath();
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(
+                    endX - arrowSize * Math.cos(angle - Math.PI / 6),
+                    endY - arrowSize * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.lineTo(
+                    endX - arrowSize * Math.cos(angle + Math.PI / 6),
+                    endY - arrowSize * Math.sin(angle + Math.PI / 6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = primaryColor;
+                ctx.fill();
+            }
+            
+            drawNullPointer() {
+                // Draw a line and null symbol
+                const endX = this.x + nodeRadius + 30;
+                const endY = this.y;
+                
+                // Draw line
+                ctx.beginPath();
+                ctx.moveTo(this.x + nodeRadius, this.y);
+                ctx.lineTo(endX - 15, endY);
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw the null symbol (diagonal line through a box)
+                ctx.beginPath();
+                ctx.strokeRect(endX - 15, endY - 10, 20, 20);
+                ctx.moveTo(endX - 15, endY - 10);
+                ctx.lineTo(endX + 5, endY + 10);
+                ctx.stroke();
+            }
+        }
+        
+        // Create initial linked list
+        let nodes = [];
+        
+        function createLinkedList() {
+            nodes = [];
+            const centerY = canvas.height / 2;
+            
+            // Create nodes
+            for (let i = 1; i <= 5; i++) {
+                const x = 100 + (i - 1) * nodeDistance;
+                nodes.push(new Node(x, centerY, i));
+            }
+            
+            // Connect nodes
+            for (let i = 0; i < nodes.length - 1; i++) {
+                nodes[i].next = nodes[i + 1];
+            }
+            
+            // Create the loop (node 5 points to node 3)
+            nodes[4].next = nodes[2];
+            nodes[4].loopTarget = true;
+        }
+        
+        function drawLinkedList() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw nodes and connections
+            for (const node of nodes) {
+                node.draw();
+            }
+        }
+        
+        function updateStep() {
+            switch (currentStep) {
+                case 1: // Original list with loop
+                    statusElement.textContent = "Step 1: Original Linked List with a Loop";
+                    explanationElement.innerHTML = "<p>This shows a linked list where node 5 points back to node 3, creating a loop. In a normal linked list, the last node should point to null (nothing).</p>";
+                    createLinkedList();
+                    nodes[4].loopTarget = true;
+                    nodes[4].next = nodes[2];
+                    break;
+                    
+                case 2: // Detecting the loop with slow and fast pointers
+                    statusElement.textContent = "Step 2: Detecting the Loop with Floyd's Cycle-Finding Algorithm";
+                    explanationElement.innerHTML = "<p>To detect a loop, we use two pointers: a slow pointer (moves one step at a time) and a fast pointer (moves two steps at a time). If they meet, there's a loop!</p>";
+                    animateFloydAlgorithm();
+                    return; // Animation will handle the drawing
+                    
+                case 3: // Finding the start of the loop
+                    statusElement.textContent = "Step 3: Finding the Start of the Loop";
+                    explanationElement.innerHTML = "<p>To find where the loop begins, we reset one pointer to the head of the list and move both pointers at the same pace. The point where they meet is the start of the loop (node 3 in this case).</p>";
+                    animateFindLoopStart();
+                    return; // Animation will handle the drawing
+                    
+                case 4: // Loop removed
+                    statusElement.textContent = "Step 4: Linked List After Loop Removal";
+                    explanationElement.innerHTML = "<p>To fix the linked list, we make the last node (node 5) point to null instead of node 3. Now the list is linear as it should be.</p>";
+                    nodes[4].loopTarget = false;
+                    nodes[4].next = null;
+                    break;
+            }
+            
+            drawLinkedList();
+        }
+        
+        function animateFloydAlgorithm() {
+            let slowPointer = 0; // Start at node 1
+            let fastPointer = 0; // Start at node 1
+            let steps = 0;
+            let maxSteps = 10; // Prevent infinite loop
+            let meetingPoint = -1;
+            
+            // Reset highlights
+            nodes.forEach(node => node.highlighted = false);
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Update pointers
+                if (steps < maxSteps && meetingPoint === -1) {
+                    // Move slow pointer by 1
+                    slowPointer = nodes[slowPointer].next ? nodes.indexOf(nodes[slowPointer].next) : -1;
+                    
+                    // Move fast pointer by 2
+                    fastPointer = nodes[fastPointer].next ? nodes.indexOf(nodes[fastPointer].next) : -1;
+                    if (fastPointer !== -1 && nodes[fastPointer].next) {
+                        fastPointer = nodes.indexOf(nodes[fastPointer].next);
+                    } else {
+                        fastPointer = -1;
+                    }
+                    
+                    // Check if pointers meet
+                    if (slowPointer === fastPointer && slowPointer !== -1) {
+                        meetingPoint = slowPointer;
+                    }
+                    
+                    steps++;
+                }
+                
+                // Draw nodes and connections
+                for (const node of nodes) {
+                    node.draw();
+                }
+                
+                // Draw pointers
+                if (slowPointer !== -1) {
+                    drawPointer(nodes[slowPointer].x, nodes[slowPointer].y - 60, "Slow", "#FD9F78");
+                    nodes[slowPointer].highlighted = true;
+                }
+                
+                if (fastPointer !== -1) {
+                    drawPointer(nodes[fastPointer].x, nodes[fastPointer].y - 90, "Fast", "#FF4800");
+                    nodes[fastPointer].highlighted = true;
+                }
+                
+                // Continue animation or finish
+                if (meetingPoint === -1 && steps < maxSteps) {
+                    setTimeout(() => {
+                        requestAnimationFrame(animate);
+                    }, 1000); // Slow down animation
+                } else {
+                    // Show meeting point
+                    if (meetingPoint !== -1) {
+                        ctx.font = '16px Arial';
+                        ctx.fillStyle = '#FF4800';
+                        ctx.fillText("Pointers meet here! Loop detected!", 
+                                    nodes[meetingPoint].x, 
+                                    nodes[meetingPoint].y - 120);
+                    }
+                }
+            }
+            
+            animate();
+        }
+        
+        function animateFindLoopStart() {
+            let pointer1 = 0; // Start at node 1
+            let pointer2 = 2; // Start at node 3 (where they met in previous step)
+            let steps = 0;
+            let maxSteps = 10;
+            let foundStart = false;
+            
+            // Reset highlights
+            nodes.forEach(node => node.highlighted = false);
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Update pointers
+                if (steps < maxSteps && !foundStart) {
+                    if (pointer1 === pointer2) {
+                        foundStart = true;
+                    } else {
+                        pointer1 = nodes[pointer1].next ? nodes.indexOf(nodes[pointer1].next) : -1;
+                        pointer2 = nodes[pointer2].next ? nodes.indexOf(nodes[pointer2].next) : -1;
+                        steps++;
+                    }
+                }
+                
+                // Draw nodes and connections
+                for (const node of nodes) {
+                    node.draw();
+                }
+                
+                // Draw pointers
+                if (pointer1 !== -1) {
+                    drawPointer(nodes[pointer1].x, nodes[pointer1].y - 60, "Pointer 1", "#FD9F78");
+                    nodes[pointer1].highlighted = true;
+                }
+                
+                if (pointer2 !== -1) {
+                    drawPointer(nodes[pointer2].x, nodes[pointer2].y - 90, "Pointer 2", "#FF4800");
+                    nodes[pointer2].highlighted = true;
+                }
+                
+                // Continue animation or finish
+                if (!foundStart && steps < maxSteps) {
+                    setTimeout(() => {
+                        requestAnimationFrame(animate);
+                    }, 1000); // Slow down animation
+                } else if (foundStart) {
+                    // Show loop start
+                    ctx.font = '16px Arial';
+                    ctx.fillStyle = '#FF4800';
+                    ctx.fillText("Loop starts here!", 
+                                nodes[pointer1].x, 
+                                nodes[pointer1].y - 120);
+                }
+            }
+            
+            animate();
+        }
+        
+        function drawPointer(x, y, label, color) {
+            // Draw arrow pointing down
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + 20);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw arrowhead
+            ctx.beginPath();
+            ctx.moveTo(x, y + 20);
+            ctx.lineTo(x - 5, y + 15);
+            ctx.lineTo(x + 5, y + 15);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            // Draw label
+            ctx.font = '14px Arial';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y - 5);
+        }
+        
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStep();
+                prevBtn.disabled = false;
+                nextBtn.disabled = currentStep === totalSteps;
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+                nextBtn.disabled = false;
+                prevBtn.disabled = currentStep === 1;
+            }
+        }
+        
+        // Initialize
+        prevBtn.addEventListener('click', prevStep);
+        nextBtn.addEventListener('click', nextStep);
+        
+        createLinkedList();
+        drawLinkedList();
+    </script>
+</body>
+</html>
