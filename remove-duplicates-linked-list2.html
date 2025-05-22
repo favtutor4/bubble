@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force vs. Optimized Approach</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .approach {
+            flex: 1;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+        .approach h2 {
+            text-align: center;
+            color: #FF4800;
+            margin-top: 0;
+        }
+        .visualization {
+            height: 400px;
+            position: relative;
+            border: 1px solid #FD9F78;
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .hashbox {
+            width: 140px;
+            height: 180px;
+            border: 2px dashed #FF4800;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(253, 159, 120, 0.1);
+        }
+        .hashbox-title {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background-color: #FFFFFF;
+            padding: 0 5px;
+            color: #FF4800;
+            font-weight: bold;
+        }
+        .hash-item {
+            margin: 5px;
+            padding: 5px;
+            background-color: rgba(255, 72, 0, 0.2);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        .message {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #FF4800;
+            font-weight: bold;
+            padding: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .complexity {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .time {
+            color: #FF4800;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #FD9F78;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .connector {
+            position: absolute;
+            background-color: #FF4800;
+            height: 3px;
+            transform-origin: 0% 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            border-left: 4px solid #FF4800;
+        }
+        .step-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force vs. Optimized Approach Comparison</h1>
+        
+        <div class="comparison">
+            <div class="approach">
+                <h2>Brute Force Approach</h2>
+                <div class="complexity">Time Complexity: <span class="time">O(n²)</span></div>
+                <div id="brute-force" class="visualization">
+                    <div class="step-count" id="brute-steps">Steps: 0</div>
+                    <div class="message" id="brute-message"></div>
+                </div>
+                <div class="explanation">
+                    <p>The brute force approach uses nested loops to compare each pair of elements in the array. This results in checking every possible combination, which is inefficient for large datasets.</p>
+                </div>
+            </div>
+            
+            <div class="approach">
+                <h2>Optimized Approach</h2>
+                <div class="complexity">Time Complexity: <span class="time">O(n)</span></div>
+                <div id="optimized" class="visualization">
+                    <div class="hashbox">
+                        <span class="hashbox-title">Hash Set</span>
+                        <div id="hash-content"></div>
+                    </div>
+                    <div class="step-count" id="optimized-steps">Steps: 0</div>
+                    <div class="message" id="optimized-message"></div>
+                </div>
+                <div class="explanation">
+                    <p>The optimized approach uses a hash set to track previously seen values. By scanning the array only once and checking if each element has been seen before, we can find pairs much more efficiently.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Animation configuration
+        const array = [4, 2, 7, 5, 3, 4];
+        const targetSum = 9;
+        const nodeRadius = 20;
+        const bruteContainer = document.getElementById('brute-force');
+        const optimizedContainer = document.getElementById('optimized');
+        const bruteMessage = document.getElementById('brute-message');
+        const optimizedMessage = document.getElementById('optimized-message');
+        const bruteSteps = document.getElementById('brute-steps');
+        const optimizedSteps = document.getElementById('optimized-steps');
+        const hashContent = document.getElementById('hash-content');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        
+        let currentStep = 0;
+        let maxStep = 0;
+        let bruteNodesCreated = false;
+        let optimizedNodesCreated = false;
+        let bruteStepCount = 0;
+        let optimizedStepCount = 0;
+        
+        const bruteNodes = [];
+        const optimizedNodes = [];
+        const bruteConnectors = [];
+        const hashItems = [];
+        
+        // Create nodes for brute force approach
+        function createBruteNodes() {
+            if (bruteNodesCreated) return;
+            
+            const containerWidth = bruteContainer.offsetWidth;
+            const containerHeight = bruteContainer.offsetHeight;
+            const nodeSpacing = containerWidth / (array.length + 1);
+            
+            for (let i = 0; i < array.length; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.textContent = array[i];
+                node.style.left = `${nodeSpacing * (i + 1) - nodeRadius}px`;
+                node.style.top = `${containerHeight / 3 - nodeRadius}px`;
+                bruteContainer.appendChild(node);
+                bruteNodes.push(node);
+            }
+            
+            // Create duplicate set of nodes for inner loop visualization
+            for (let i = 0; i < array.length; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.textContent = array[i];
+                node.style.left = `${nodeSpacing * (i + 1) - nodeRadius}px`;
+                node.style.top = `${containerHeight * 2/3 - nodeRadius}px`;
+                node.style.opacity = '0.6';
+                bruteContainer.appendChild(node);
+                bruteNodes.push(node);
+            }
+            
+            // Create connectors for brute force
+            for (let i = 0; i < array.length; i++) {
+                for (let j = 0; j < array.length; j++) {
+                    const connector = document.createElement('div');
+                    connector.className = 'connector';
+                    bruteContainer.appendChild(connector);
+                    bruteConnectors.push({
+                        element: connector,
+                        i: i,
+                        j: j
+                    });
+                }
+            }
+            
+            bruteNodesCreated = true;
+        }
+        
+        // Create nodes for optimized approach
+        function createOptimizedNodes() {
+            if (optimizedNodesCreated) return;
+            
+            const containerWidth = optimizedContainer.offsetWidth;
+            const containerHeight = optimizedContainer.offsetHeight;
+            const nodeSpacing = containerWidth / (array.length + 1);
+            
+            for (let i = 0; i < array.length; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.textContent = array[i];
+                node.style.left = `${nodeSpacing * (i + 1) - nodeRadius}px`;
+                node.style.top = `${containerHeight / 2 - nodeRadius}px`;
+                optimizedContainer.appendChild(node);
+                optimizedNodes.push(node);
+                
+                // Create hash items
+                const hashItem = document.createElement('div');
+                hashItem.className = 'hash-item';
+                hashItem.textContent = `${targetSum - array[i]}`;
+                hashItem.style.opacity = '0';
+                hashContent.appendChild(hashItem);
+                hashItems.push(hashItem);
+            }
+            
+            optimizedNodesCreated = true;
+        }
+        
+        // Animation steps
+        const animationSteps = [
+            // Step 0: Initial state
+            function() {
+                createBruteNodes();
+                createOptimizedNodes();
+                
+                bruteMessage.textContent = "Starting brute force approach";
+                bruteMessage.style.opacity = "1";
+                
+                optimizedMessage.textContent = "Starting optimized approach";
+                optimizedMessage.style.opacity = "1";
+                
+                bruteStepCount = 0;
+                optimizedStepCount = 0;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            
+            // Brute Force Steps (1-14)
+            function() {
+                // First outer loop, i=0
+                bruteNodes[0].style.backgroundColor = "#FF4800";
+                bruteMessage.textContent = "Outer loop: i=0, value=" + array[0];
+                bruteStepCount++;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Inner loop j=0
+                bruteNodes[array.length].style.backgroundColor = "#FF4800";
+                updateBruteConnector(0, 0);
+                bruteMessage.textContent = `Checking if ${array[0]} + ${array[0]} = ${targetSum}`;
+                bruteStepCount++;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Inner loop j=1
+                bruteNodes[array.length].style.backgroundColor = "#FD9F78";
+                bruteNodes[array.length + 1].style.backgroundColor = "#FF4800";
+                resetBruteConnector(0, 0);
+                updateBruteConnector(0, 1);
+                bruteMessage.textContent = `Checking if ${array[0]} + ${array[1]} = ${targetSum}`;
+                bruteStepCount++;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Inner loop j=2, found pair!
+                bruteNodes[array.length + 1].style.backgroundColor = "#FD9F78";
+                bruteNodes[array.length + 2].style.backgroundColor = "#FF4800";
+                resetBruteConnector(0, 1);
+                updateBruteConnector(0, 2);
+                bruteMessage.textContent = `Found pair! ${array[0]} + ${array[2]} = ${targetSum}`;
+                bruteStepCount++;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Continue checking all pairs
+                bruteNodes[array.length + 2].style.backgroundColor = "#FD9F78";
+                bruteNodes[array.length + 3].style.backgroundColor = "#FF4800";
+                resetBruteConnector(0, 2);
+                updateBruteConnector(0, 3);
+                bruteMessage.textContent = `Checking if ${array[0]} + ${array[3]} = ${targetSum}`;
+                bruteStepCount++;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Complete first outer iteration
+                for (let j = 3; j < array.length; j++) {
+                    bruteNodes[array.length + j].style.backgroundColor = "#FD9F78";
+                    resetBruteConnector(0, j);
+                }
+                bruteNodes[0].style.backgroundColor = "#FD9F78";
+                bruteMessage.textContent = "Completed i=0 iteration";
+                bruteStepCount += 2;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Second outer loop, i=1
+                bruteNodes[1].style.backgroundColor = "#FF4800";
+                bruteMessage.textContent = "Outer loop: i=1, value=" + array[1];
+                bruteStepCount++;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Inner loop checks for i=1
+                for (let j = 0; j < array.length; j++) {
+                    bruteNodes[array.length + j].style.backgroundColor = "#FD9F78";
+                }
+                bruteNodes[array.length + 3].style.backgroundColor = "#FF4800";
+                updateBruteConnector(1, 3);
+                bruteMessage.textContent = `Found pair! ${array[1]} + ${array[3]} = ${targetSum}`;
+                bruteStepCount += 4;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            function() {
+                // Complete all remaining iterations
+                for (let j = 0; j < array.length; j++) {
+                    bruteNodes[j].style.backgroundColor = "#FD9F78";
+                    bruteNodes[array.length + j].style.backgroundColor = "#FD9F78";
+                    resetBruteConnector(1, j);
+                }
+                bruteMessage.textContent = "Completed all iterations, found all pairs";
+                bruteStepCount += 16;
+                bruteSteps.textContent = `Steps: ${bruteStepCount}`;
+            },
+            
+            // Optimized Steps (10-16)
+            function() {
+                // Start optimized approach
+                optimizedNodes[0].style.backgroundColor = "#FF4800";
+                optimizedMessage.textContent = `Checking ${array[0]}, need ${targetSum - array[0]}`;
+                hashItems[0].style.opacity = "1";
+                optimizedStepCount++;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            function() {
+                // Check second element
+                optimizedNodes[0].style.backgroundColor = "#FD9F78";
+                optimizedNodes[1].style.backgroundColor = "#FF4800";
+                optimizedMessage.textContent = `Checking ${array[1]}, need ${targetSum - array[1]}`;
+                hashItems[1].style.opacity = "1";
+                optimizedStepCount++;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            function() {
+                // Check third element, found a pair!
+                optimizedNodes[1].style.backgroundColor = "#FD9F78";
+                optimizedNodes[2].style.backgroundColor = "#FF4800";
+                optimizedNodes[0].style.backgroundColor = "#FF4800";
+                
+                const connector = document.createElement('div');
+                connector.className = 'connector';
+                connector.style.opacity = '1';
+                connector.style.position = 'absolute';
+                
+                const node1Rect = optimizedNodes[0].getBoundingClientRect();
+                const node2Rect = optimizedNodes[2].getBoundingClientRect();
+                const containerRect = optimizedContainer.getBoundingClientRect();
+                
+                const x1 = node1Rect.left + nodeRadius - containerRect.left;
+                const y1 = node1Rect.top + nodeRadius - containerRect.top;
+                const x2 = node2Rect.left + nodeRadius - containerRect.left;
+                const y2 = node2Rect.top + nodeRadius - containerRect.top;
+                
+                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                connector.style.width = `${distance}px`;
+                connector.style.left = `${x1}px`;
+                connector.style.top = `${y1}px`;
+                connector.style.transform = `rotate(${angle}deg)`;
+                
+                optimizedContainer.appendChild(connector);
+                
+                optimizedMessage.textContent = `Found pair! ${array[0]} + ${array[2]} = ${targetSum}`;
+                optimizedStepCount++;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            function() {
+                // Continue checking elements
+                optimizedNodes[0].style.backgroundColor = "#FD9F78";
+                optimizedNodes[2].style.backgroundColor = "#FD9F78";
+                optimizedNodes[3].style.backgroundColor = "#FF4800";
+                optimizedMessage.textContent = `Checking ${array[3]}, need ${targetSum - array[3]}`;
+                hashItems[3].style.opacity = "1";
+                optimizedStepCount++;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            function() {
+                // Found another pair
+                optimizedNodes[3].style.backgroundColor = "#FD9F78";
+                optimizedNodes[4].style.backgroundColor = "#FF4800";
+                optimizedNodes[1].style.backgroundColor = "#FF4800";
+                
+                const connector = document.createElement('div');
+                connector.className = 'connector';
+                connector.style.opacity = '1';
+                connector.style.position = 'absolute';
+                
+                const node1Rect = optimizedNodes[1].getBoundingClientRect();
+                const node2Rect = optimizedNodes[4].getBoundingClientRect();
+                const containerRect = optimizedContainer.getBoundingClientRect();
+                
+                const x1 = node1Rect.left + nodeRadius - containerRect.left;
+                const y1 = node1Rect.top + nodeRadius - containerRect.top;
+                const x2 = node2Rect.left + nodeRadius - containerRect.left;
+                const y2 = node2Rect.top + nodeRadius - containerRect.top;
+                
+                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                connector.style.width = `${distance}px`;
+                connector.style.left = `${x1}px`;
+                connector.style.top = `${y1}px`;
+                connector.style.transform = `rotate(${angle}deg)`;
+                
+                optimizedContainer.appendChild(connector);
+                
+                hashItems[4].style.opacity = "1";
+                optimizedMessage.textContent = `Found pair! ${array[1]} + ${array[4]} = ${targetSum}`;
+                optimizedStepCount++;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            function() {
+                // Complete optimized approach
+                optimizedNodes[1].style.backgroundColor = "#FD9F78";
+                optimizedNodes[4].style.backgroundColor = "#FD9F78";
+                optimizedNodes[5].style.backgroundColor = "#FF4800";
+                hashItems[5].style.opacity = "1";
+                optimizedMessage.textContent = "Completed in one pass through the array";
+                optimizedStepCount++;
+                optimizedSteps.textContent = `Steps: ${optimizedStepCount}`;
+            },
+            
+            // Final comparison
+            function() {
+                bruteMessage.textContent = `Completed with ${bruteStepCount} operations`;
+                optimizedMessage.textContent = `Completed with ${optimizedStepCount} operations`;
+                
+                for (let i = 0; i < array.length; i++) {
+                    bruteNodes[i].style.backgroundColor = "#FD9F78";
+                    bruteNodes[array.length + i].style.backgroundColor = "#FD9F78";
+                    optimizedNodes[i].style.backgroundColor = "#FD9F78";
+                }
+            }
+        ];
+        
+        maxStep = animationSteps.length - 1;
+        
+        // Helper functions
+        function updateBruteConnector(i, j) {
+            const connector = bruteConnectors.find(c => c.i === i && c.j === j);
+            if (connector) {
+                const node1Rect = bruteNodes[i].getBoundingClientRect();
+                const node2Rect = bruteNodes[array.length + j].getBoundingClientRect();
+                const containerRect = bruteContainer.getBoundingClientRect();
+                
+                const x1 = node1Rect.left + nodeRadius - containerRect.left;
+                const y1 = node1Rect.top + nodeRadius - containerRect.top;
+                const x2 = node2Rect.left + nodeRadius - containerRect.left;
+                const y2 = node2Rect.top + nodeRadius - containerRect.top;
+                
+                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                connector.element.style.width = `${distance}px`;
+                connector.element.style.left = `${x1}px`;
+                connector.element.style.top = `${y1}px`;
+                connector.element.style.transform = `rotate(${angle}deg)`;
+                connector.element.style.opacity = '1';
+            }
+        }
+        
+        function resetBruteConnector(i, j) {
+            const connector = bruteConnectors.find(c => c.i === i && c.j === j);
+            if (connector) {
+                connector.element.style.opacity = '0';
+            }
+        }
+        
+        // Navigation handlers
+        function next() {
+            if (currentStep < maxStep) {
+                currentStep++;
+                animationSteps[currentStep]();
+                prevBtn.disabled = false;
+                if (currentStep === maxStep) {
+                    nextBtn.disabled = true;
+                }
+            }
+        }
+        
+        function prev() {
+            if (currentStep > 0) {
+                currentStep--;
+                // Reset and replay all steps up to the current one
+                resetAnimation();
+                for (let i = 0; i <= currentStep; i++) {
+                    animationSteps[i]();
+                }
+                nextBtn.disabled = false;
+                if (currentStep === 0) {
+                    prevBtn.disabled = true;
+                }
+            }
+        }
+        
+        function resetAnimation() {
+            // Clear brute force
+            while (bruteContainer.firstChild) {
+                if (bruteContainer.lastChild.className !== 'message' && 
+                    bruteContainer.lastChild.className !== 'step-count') {
+                    bruteContainer.removeChild(bruteContainer.lastChild);
+                } else {
+                    break;
+                }
+            }
+            bruteNodesCreated = false;
+            bruteNodes.length = 0;
+            bruteConnectors.length = 0;
+            bruteMessage.style.opacity = "0";
+            bruteStepCount = 0;
+            
+            // Clear optimized
+            while (optimizedContainer.firstChild) {
+                if (optimizedContainer.lastChild.className !== 'message' && 
+                    optimizedContainer.lastChild.className !== 'step-count' &&
+                    optimizedContainer.lastChild.className !== 'hashbox') {
+                    optimizedContainer.removeChild(optimizedContainer.lastChild);
+                } else if (optimizedContainer.lastChild.className === 'hashbox') {
+                    break;
+                } else {
+                    break;
+                }
+            }
+            
+            // Clear hash items
+            while (hashContent.firstChild) {
+                hashContent.removeChild(hashContent.firstChild);
+            }
+            
+            optimizedNodesCreated = false;
+            optimizedNodes.length = 0;
+            hashItems.length = 0;
+            optimizedMessage.style.opacity = "0";
+            optimizedStepCount = 0;
+        }
+        
+        // Initialize animation
+        nextBtn.addEventListener('click', next);
+        prevBtn.addEventListener('click', prev);
+        animationSteps[0]();
+    </script>
+</body>
+</html>
