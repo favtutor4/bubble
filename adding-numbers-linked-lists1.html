@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List Representation of Numbers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin-bottom: 30px;
+            border: 2px solid #FD9F78;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #FD9F78;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 50px;
+            height: 2px;
+            background-color: #FF4800;
+            transition: all 0.5s ease;
+        }
+        
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #FF4800;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FFF;
+            border-radius: 10px;
+            border: 1px solid #FD9F78;
+            text-align: center;
+            min-height: 100px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #FD9F78;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .number-display {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .number-block {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #FD9F78;
+            border-radius: 5px;
+            width: 45%;
+        }
+        
+        .number-label {
+            font-weight: bold;
+            color: #FF4800;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linked List Representation of Numbers</h1>
+        
+        <div class="number-display">
+            <div class="number-block">
+                <div class="number-label">l1 represents:</div>
+                <div id="number1">342</div>
+            </div>
+            <div class="number-block">
+                <div class="number-label">l2 represents:</div>
+                <div id="number2">465</div>
+            </div>
+        </div>
+        
+        <div class="animation-container" id="animationContainer">
+            <!-- Nodes and arrows will be added here by JavaScript -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <!-- Explanation text will be added here by JavaScript -->
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+            <button class="nav-btn" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const animationContainer = document.getElementById('animationContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const number1Element = document.getElementById('number1');
+        const number2Element = document.getElementById('number2');
+
+        let currentStep = 0;
+        const totalSteps = 5;
+
+        // Function to create a node
+        function createNode(value, id, x, y) {
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.id = id;
+            node.textContent = value;
+            node.style.left = `${x}px`;
+            node.style.top = `${y}px`;
+            return node;
+        }
+
+        // Function to create an arrow
+        function createArrow(id, x1, y1, length, angle) {
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            arrow.id = id;
+            arrow.style.left = `${x1}px`;
+            arrow.style.top = `${y1}px`;
+            arrow.style.width = `${length}px`;
+            arrow.style.transform = `rotate(${angle}deg)`;
+            return arrow;
+        }
+
+        // Function to update the animation based on the current step
+        function updateAnimation() {
+            animationContainer.innerHTML = '';
+            
+            switch(currentStep) {
+                case 0:
+                    // Initial explanation
+                    explanation.innerHTML = `
+                        <p>In linked list representation of numbers, each digit is stored in a separate node.</p>
+                        <p>The linked list is typically stored in reverse order, with the least significant digit first.</p>
+                    `;
+                    
+                    number1Element.textContent = "342";
+                    number2Element.textContent = "465";
+                    break;
+                
+                case 1:
+                    // Show l1 = [2,4,3] representing 342
+                    const l1Node1 = createNode(2, 'l1-node1', 100, 150);
+                    const l1Node2 = createNode(4, 'l1-node2', 250, 150);
+                    const l1Node3 = createNode(3, 'l1-node3', 400, 150);
+                    
+                    const l1Arrow1 = createArrow('l1-arrow1', 160, 150, 90, 0);
+                    const l1Arrow2 = createArrow('l1-arrow2', 310, 150, 90, 0);
+                    
+                    animationContainer.appendChild(l1Node1);
+                    animationContainer.appendChild(l1Node2);
+                    animationContainer.appendChild(l1Node3);
+                    animationContainer.appendChild(l1Arrow1);
+                    animationContainer.appendChild(l1Arrow2);
+                    
+                    explanation.innerHTML = `
+                        <p>Here is the linked list l1 = [2,4,3]</p>
+                        <p>The number is read in reverse order: 3 → 4 → 2 = 342</p>
+                        <p>The least significant digit (2) is at the head of the list.</p>
+                    `;
+                    
+                    number1Element.innerHTML = "<span style='color:#FF4800'>3</span><span style='color:#FF4800'>4</span><span style='color:#FF4800'>2</span>";
+                    number2Element.textContent = "465";
+                    break;
+                
+                case 2:
+                    // Show l2 = [5,6,4] representing 465
+                    const l2Node1 = createNode(5, 'l2-node1', 100, 250);
+                    const l2Node2 = createNode(6, 'l2-node2', 250, 250);
+                    const l2Node3 = createNode(4, 'l2-node3', 400, 250);
+                    
+                    const l2Arrow1 = createArrow('l2-arrow1', 160, 250, 90, 0);
+                    const l2Arrow2 = createArrow('l2-arrow2', 310, 250, 90, 0);
+                    
+                    animationContainer.appendChild(l2Node1);
+                    animationContainer.appendChild(l2Node2);
+                    animationContainer.appendChild(l2Node3);
+                    animationContainer.appendChild(l2Arrow1);
+                    animationContainer.appendChild(l2Arrow2);
+                    
+                    explanation.innerHTML = `
+                        <p>Here is the linked list l2 = [5,6,4]</p>
+                        <p>The number is read in reverse order: 4 → 6 → 5 = 465</p>
+                        <p>The least significant digit (5) is at the head of the list.</p>
+                    `;
+                    
+                    number1Element.textContent = "342";
+                    number2Element.innerHTML = "<span style='color:#FF4800'>4</span><span style='color:#FF4800'>6</span><span style='color:#FF4800'>5</span>";
+                    break;
+                
+                case 3:
+                    // Show both lists with explanations
+                    const l1n1 = createNode(2, 'l1-node1', 100, 100);
+                    const l1n2 = createNode(4, 'l1-node2', 250, 100);
+                    const l1n3 = createNode(3, 'l1-node3', 400, 100);
+                    
+                    const l1a1 = createArrow('l1-arrow1', 160, 100, 90, 0);
+                    const l1a2 = createArrow('l1-arrow2', 310, 100, 90, 0);
+                    
+                    const l2n1 = createNode(5, 'l2-node1', 100, 200);
+                    const l2n2 = createNode(6, 'l2-node2', 250, 200);
+                    const l2n3 = createNode(4, 'l2-node3', 400, 200);
+                    
+                    const l2a1 = createArrow('l2-arrow1', 160, 200, 90, 0);
+                    const l2a2 = createArrow('l2-arrow2', 310, 200, 90, 0);
+                    
+                    animationContainer.appendChild(l1n1);
+                    animationContainer.appendChild(l1n2);
+                    animationContainer.appendChild(l1n3);
+                    animationContainer.appendChild(l1a1);
+                    animationContainer.appendChild(l1a2);
+                    
+                    animationContainer.appendChild(l2n1);
+                    animationContainer.appendChild(l2n2);
+                    animationContainer.appendChild(l2n3);
+                    animationContainer.appendChild(l2a1);
+                    animationContainer.appendChild(l2a2);
+                    
+                    // Add labels
+                    const l1Label = document.createElement('div');
+                    l1Label.textContent = 'l1 = [2,4,3] → 342';
+                    l1Label.style.position = 'absolute';
+                    l1Label.style.left = '500px';
+                    l1Label.style.top = '100px';
+                    l1Label.style.fontWeight = 'bold';
+                    l1Label.style.color = '#FF4800';
+                    
+                    const l2Label = document.createElement('div');
+                    l2Label.textContent = 'l2 = [5,6,4] → 465';
+                    l2Label.style.position = 'absolute';
+                    l2Label.style.left = '500px';
+                    l2Label.style.top = '200px';
+                    l2Label.style.fontWeight = 'bold';
+                    l2Label.style.color = '#FF4800';
+                    
+                    animationContainer.appendChild(l1Label);
+                    animationContainer.appendChild(l2Label);
+                    
+                    explanation.innerHTML = `
+                        <p>Both linked lists represent numbers in reverse order:</p>
+                        <p>l1 = [2,4,3] represents 342</p>
+                        <p>l2 = [5,6,4] represents 465</p>
+                    `;
+                    
+                    number1Element.innerHTML = "<span style='color:#FF4800'>3</span><span style='color:#FF4800'>4</span><span style='color:#FF4800'>2</span>";
+                    number2Element.innerHTML = "<span style='color:#FF4800'>4</span><span style='color:#FF4800'>6</span><span style='color:#FF4800'>5</span>";
+                    break;
+                
+                case 4:
+                    // Show the reverse order explanation with number conversion
+                    // Create left column for l1
+                    const l1Nodes = [
+                        createNode(2, 'l1-node1', 100, 80),
+                        createNode(4, 'l1-node2', 100, 160),
+                        createNode(3, 'l1-node3', 100, 240)
+                    ];
+                    
+                    // Create right column showing position values
+                    const posNodes = [
+                        createNode("10⁰", 'pos-node1', 250, 80),
+                        createNode("10¹", 'pos-node2', 250, 160),
+                        createNode("10²", 'pos-node3', 250, 240)
+                    ];
+                    
+                    // Create equal signs
+                    const equalSigns = [
+                        createNode("=", 'eq-node1', 350, 80),
+                        createNode("=", 'eq-node2', 350, 160),
+                        createNode("=", 'eq-node3', 350, 240)
+                    ];
+                    
+                    // Create result nodes
+                    const resultNodes = [
+                        createNode("2", 'res-node1', 450, 80),
+                        createNode("40", 'res-node2', 450, 160),
+                        createNode("300", 'res-node3', 450, 240)
+                    ];
+                    
+                    // Append all nodes
+                    l1Nodes.forEach(node => animationContainer.appendChild(node));
+                    posNodes.forEach(node => {
+                        node.style.backgroundColor = '#FF4800';
+                        node.style.color = '#FFFFFF';
+                        node.style.fontSize = '18px';
+                        animationContainer.appendChild(node);
+                    });
+                    equalSigns.forEach(node => {
+                        node.style.backgroundColor = '#FFFFFF';
+                        node.style.border = '1px solid #FD9F78';
+                        animationContainer.appendChild(node);
+                    });
+                    resultNodes.forEach(node => {
+                        node.style.backgroundColor = '#FFFFFF';
+                        node.style.border = '1px solid #FF4800';
+                        node.style.width = '80px';
+                        node.style.borderRadius = '10px';
+                        animationContainer.appendChild(node);
+                    });
+                    
+                    // Add final sum
+                    const sumNode = document.createElement('div');
+                    sumNode.className = 'node';
+                    sumNode.textContent = '342';
+                    sumNode.style.backgroundColor = '#FF4800';
+                    sumNode.style.color = '#FFFFFF';
+                    sumNode.style.width = '80px';
+                    sumNode.style.borderRadius = '10px';
+                    sumNode.style.left = '450px';
+                    sumNode.style.top = '320px';
+                    animationContainer.appendChild(sumNode);
+                    
+                    const plusSign = document.createElement('div');
+                    plusSign.className = 'node';
+                    plusSign.textContent = '+';
+                    plusSign.style.backgroundColor = '#FFFFFF';
+                    plusSign.style.border = '1px solid #FD9F78';
+                    plusSign.style.left = '350px';
+                    plusSign.style.top = '320px';
+                    animationContainer.appendChild(plusSign);
+                    
+                    explanation.innerHTML = `
+                        <p>To convert the linked list [2,4,3] to the number 342:</p>
+                        <p>1. First node (2) × 10⁰ = 2 × 1 = 2</p>
+                        <p>2. Second node (4) × 10¹ = 4 × 10 = 40</p>
+                        <p>3. Third node (3) × 10² = 3 × 100 = 300</p>
+                        <p>4. Sum: 2 + 40 + 300 = 342</p>
+                    `;
+                    
+                    number1Element.innerHTML = "<span style='color:#FF4800'>3</span><span style='color:#FF4800'>4</span><span style='color:#FF4800'>2</span>";
+                    number2Element.innerHTML = "<span style='color:#FF4800'>4</span><span style='color:#FF4800'>6</span><span style='color:#FF4800'>5</span>";
+                    break;
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentStep === 0;
+            nextBtn.disabled = currentStep === totalSteps - 1;
+        }
+
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateAnimation();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateAnimation();
+            }
+        });
+
+        // Initialize the animation
+        updateAnimation();
+    </script>
+</body>
+</html>
