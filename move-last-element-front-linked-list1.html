@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List Transformation Visual</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            color: #000000;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background-color: white;
+        }
+        h1 {
+            color: #FF4800;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .node {
+            width: 50px;
+            height: 50px;
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 1.5s ease;
+        }
+        .arrow {
+            position: absolute;
+            height: 2px;
+            background-color: #000000;
+            transform-origin: left center;
+            transition: all 1.5s ease;
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            border-style: solid;
+            border-width: 5px 0 5px 10px;
+            border-color: transparent transparent transparent #000000;
+        }
+        .explanation {
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #FD9F78;
+            border-radius: 5px;
+            color: #000000;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #FF4800;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #FD9F78;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linked List Transformation Visual</h1>
+        <div class="animation-container" id="animationContainer"></div>
+        <div class="explanation" id="explanation">
+            Starting with a linked list: 1->2->3->4->5. We will transform it to 5->1->2->3->4 by changing pointers.
+        </div>
+        <div class="controls">
+            <button id="prevBtn" disabled>Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        <div class="step-indicator" id="stepIndicator">Step 1 of 5</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('animationContainer');
+        const explanation = document.getElementById('explanation');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+
+        // Create initial nodes
+        const nodeCount = 5;
+        const nodes = [];
+        const arrows = [];
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        const nodeSize = 50;
+        const horizontalSpacing = (containerWidth - (nodeCount * nodeSize)) / (nodeCount + 1);
+        
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        // Create nodes
+        for (let i = 1; i <= nodeCount; i++) {
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.textContent = i;
+            
+            // Position nodes horizontally in the middle of the container
+            const xPos = horizontalSpacing * i + (i - 1) * nodeSize;
+            const yPos = containerHeight / 3 - nodeSize / 2;
+            
+            node.style.left = `${xPos}px`;
+            node.style.top = `${yPos}px`;
+            
+            container.appendChild(node);
+            nodes.push({
+                element: node,
+                id: i,
+                initialX: xPos,
+                initialY: yPos,
+                x: xPos,
+                y: yPos
+            });
+        }
+
+        // Create arrows
+        for (let i = 0; i < nodeCount - 1; i++) {
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            updateArrow(arrow, nodes[i], nodes[i + 1]);
+            container.appendChild(arrow);
+            arrows.push({
+                element: arrow,
+                from: i,
+                to: i + 1
+            });
+        }
+
+        function updateArrow(arrowElement, fromNode, toNode) {
+            // Calculate position and rotation for the arrow
+            const fromX = fromNode.x + nodeSize / 2;
+            const fromY = fromNode.y + nodeSize / 2;
+            const toX = toNode.x + nodeSize / 2;
+            const toY = toNode.y + nodeSize / 2;
+            
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const length = Math.sqrt((toX - fromX) ** 2 + (toY - fromY) ** 2) - nodeSize;
+            
+            arrowElement.style.width = `${length}px`;
+            arrowElement.style.left = `${fromX}px`;
+            arrowElement.style.top = `${fromY}px`;
+            arrowElement.style.transform = `rotate(${angle}rad)`;
+        }
+
+        function updateAllArrows() {
+            arrows.forEach(arrow => {
+                updateArrow(arrow.element, nodes[arrow.from], nodes[arrow.to]);
+            });
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateAnimation();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateAnimation();
+            }
+        }
+
+        function updateAnimation() {
+            stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
+            
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.disabled = currentStep === totalSteps;
+            
+            switch (currentStep) {
+                case 1:
+                    // Initial state
+                    resetPositions();
+                    explanation.textContent = "Starting with a linked list: 1->2->3->4->5. We will transform it to 5->1->2->3->4 by changing pointers.";
+                    break;
+                case 2:
+                    // Move node 5 to a different position (higher)
+                    nodes[4].y = containerHeight * 2/3 - nodeSize / 2;
+                    nodes[4].element.style.top = `${nodes[4].y}px`;
+                    updateAllArrows();
+                    explanation.textContent = "First step: We identify node 5 (the last node) which will become our new head node.";
+                    break;
+                case 3:
+                    // Create a new arrow from 5 to 1
+                    if (arrows.length === nodeCount - 1) {
+                        const newArrow = document.createElement('div');
+                        newArrow.className = 'arrow';
+                        container.appendChild(newArrow);
+                        arrows.push({
+                            element: newArrow,
+                            from: 4,
+                            to: 0
+                        });
+                    }
+                    updateAllArrows();
+                    explanation.textContent = "Second step: We create a new connection from node 5 to node 1, which will be the new link after transformation.";
+                    break;
+                case 4:
+                    // Remove the last arrow (4 to 5)
+                    if (arrows.length === nodeCount) {
+                        const lastArrow = arrows[nodeCount - 2];
+                        lastArrow.element.style.opacity = '0.2';
+                    }
+                    explanation.textContent = "Third step: We remove the connection from node 4 to node 5, as node 5 will no longer be the last node.";
+                    break;
+                case 5:
+                    // Final state - move node 5 to the front
+                    // Adjust all node positions
+                    for (let i = 0; i < nodes.length; i++) {
+                        if (i === 4) {
+                            // Node 5 moves to the front position
+                            nodes[i].x = horizontalSpacing;
+                            nodes[i].y = containerHeight / 3 - nodeSize / 2;
+                        } else {
+                            // Shift other nodes to the right
+                            nodes[i].x = horizontalSpacing * (i + 2) + (i + 1) * nodeSize;
+                        }
+                        nodes[i].element.style.left = `${nodes[i].x}px`;
+                        nodes[i].element.style.top = `${nodes[i].y}px`;
+                    }
+                    
+                    // Update all arrow connections
+                    arrows[nodeCount - 2].element.remove();
+                    arrows.splice(nodeCount - 2, 1);
+                    
+                    arrows[0].from = 4;
+                    arrows[0].to = 0;
+                    
+                    for (let i = 1; i < arrows.length; i++) {
+                        arrows[i].from = i - 1;
+                        arrows[i].to = i;
+                    }
+                    
+                    updateAllArrows();
+                    explanation.textContent = "Final transformation complete! The linked list has been transformed from 1->2->3->4->5 to 5->1->2->3->4. This is a common operation in linked list manipulation.";
+                    break;
+            }
+        }
+
+        function resetPositions() {
+            // Reset all nodes to initial positions
+            nodes.forEach(node => {
+                node.x = node.initialX;
+                node.y = node.initialY;
+                node.element.style.left = `${node.x}px`;
+                node.element.style.top = `${node.y}px`;
+            });
+            
+            // Reset arrows
+            while (arrows.length > nodeCount - 1) {
+                arrows[arrows.length - 1].element.remove();
+                arrows.pop();
+            }
+            
+            for (let i = 0; i < arrows.length; i++) {
+                arrows[i].from = i;
+                arrows[i].to = i + 1;
+                arrows[i].element.style.opacity = '1';
+            }
+            
+            updateAllArrows();
+        }
+
+        prevBtn.addEventListener('click', prevStep);
+        nextBtn.addEventListener('click', nextStep);
+        
+        // Initialize
+        updateAnimation();
+    </script>
+</body>
+</html>
